@@ -1,0 +1,15 @@
+D:\ECommerce\EcommerceProject\src\Application\bin\Debug\net10.0\Application.deps.json
+D:\ECommerce\EcommerceProject\src\Application\bin\Debug\net10.0\Application.dll
+D:\ECommerce\EcommerceProject\src\Application\bin\Debug\net10.0\Application.pdb
+D:\ECommerce\EcommerceProject\src\Application\bin\Debug\net10.0\Domain.dll
+D:\ECommerce\EcommerceProject\src\Application\bin\Debug\net10.0\Domain.pdb
+D:\ECommerce\EcommerceProject\src\Application\obj\Debug\net10.0\Application.csproj.AssemblyReference.cache
+D:\ECommerce\EcommerceProject\src\Application\obj\Debug\net10.0\Application.GeneratedMSBuildEditorConfig.editorconfig
+D:\ECommerce\EcommerceProject\src\Application\obj\Debug\net10.0\Application.AssemblyInfoInputs.cache
+D:\ECommerce\EcommerceProject\src\Application\obj\Debug\net10.0\Application.AssemblyInfo.cs
+D:\ECommerce\EcommerceProject\src\Application\obj\Debug\net10.0\Application.csproj.CoreCompileInputs.cache
+D:\ECommerce\EcommerceProject\src\Application\obj\Debug\net10.0\Applicat.44B5EDA2.Up2Date
+D:\ECommerce\EcommerceProject\src\Application\obj\Debug\net10.0\Application.dll
+D:\ECommerce\EcommerceProject\src\Application\obj\Debug\net10.0\refint\Application.dll
+D:\ECommerce\EcommerceProject\src\Application\obj\Debug\net10.0\Application.pdb
+D:\ECommerce\EcommerceProject\src\Application\obj\Debug\net10.0\ref\Application.dll
