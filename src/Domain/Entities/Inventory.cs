@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Domain.Common;
 
 namespace Domain.Entities;
@@ -15,5 +16,6 @@ public class Inventory : BaseEntity
     // Số lượng thực tế có thể bán = Stock - Reserved [cite: 97]
     public int AvailableQuantity => StockQuantity - ReservedQuantity;
 
+    [JsonIgnore]
     public virtual Product? Product { get; set; }
 }
