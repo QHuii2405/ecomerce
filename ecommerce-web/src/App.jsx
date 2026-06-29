@@ -4,7 +4,7 @@ import {
     ShoppingCart, Package, Tag, Database, Zap, ArrowRight, Star, 
     AlertCircle, ShoppingBag, Search, User, LogOut, Heart, 
     Phone, Mail, Share2, Globe, AtSign, Award, Truck, ShieldCheck, 
-    CheckCircle2, Menu, X, ArrowUpRight, ChevronRight, HelpCircle 
+    CheckCircle2, Menu, X, ArrowUpRight, ChevronRight, HelpCircle, Sparkles 
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { addToCart } from './api/cartStore';
@@ -362,7 +362,7 @@ export default function App() {
                 </section>
 
                 {/* Brand Story Section */}
-                <section id="about" className="py-xl max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop">
+                <section id="about" className="py-16 max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                         <div className="relative">
                             <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl relative group">
@@ -409,7 +409,7 @@ export default function App() {
                 </section>
 
                 {/* Featured Categories (Bento Grid) */}
-                <section className="py-xl bg-surface-container-low">
+                <section className="py-16 bg-surface-container-low">
                     <div className="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop">
                         <div className="flex justify-between items-end mb-12">
                             <div className="space-y-2">
@@ -502,7 +502,7 @@ export default function App() {
                 </section>
 
                 {/* Trending Products (Product Catalog) */}
-                <section id="shop" className="py-xl max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop scroll-mt-24">
+                <section id="shop" className="py-16 max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop scroll-mt-24">
                     <div className="text-center mb-16 space-y-4">
                         <h2 className="text-3xl font-bold text-on-surface">Sản Phẩm Đang Thịnh Hành</h2>
                         <p className="text-on-surface-variant max-w-xl mx-auto">
@@ -650,7 +650,7 @@ export default function App() {
                 </section>
 
                 {/* Value Props Section */}
-                <section className="py-lg border-y border-outline-variant/30 bg-surface-container-lowest">
+                <section className="py-10 border-y border-outline-variant/30 bg-surface-container-lowest">
                     <div className="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop">
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                             <div className="flex items-center gap-4">
@@ -694,7 +694,7 @@ export default function App() {
                 </section>
 
                 {/* Contact Section */}
-                <section id="contact" className="py-xl max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop">
+                <section id="contact" className="py-16 max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop">
                     <div className="bg-primary-container/20 rounded-3xl p-8 md:p-12 lg:p-20 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-1/2 h-full opacity-5 pointer-events-none hidden lg:block">
                             <HelpCircle size={400} className="absolute -right-20 -top-20 text-primary" />
@@ -771,8 +771,8 @@ export default function App() {
             </main>
 
             {/* Footer (Shared Component: Footer) */}
-            <footer className="w-full bg-surface-container-lowest border-t border-outline-variant/30 mt-xl">
-                <div className="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop py-xl">
+            <footer className="w-full bg-surface-container-lowest border-t border-outline-variant/30 mt-16">
+                <div className="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop py-16">
                     <div className="flex flex-col lg:flex-row justify-between gap-12 mb-16">
                         {/* Brand & Newsletter */}
                         <div className="max-w-sm space-y-6">
