@@ -6,11 +6,21 @@ using System.Text;
 using Microsoft.OpenApi;
 using System.Text.Json.Serialization;
 using Infrastructure.BackgroundServices;
+using Domain.Interfaces;
+using Infrastructure.Persistence.Repositories;
+using Application.Interfaces;
+using Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 // 1. Đăng ký Database Context với SQL Server [cite: 49]
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Đăng ký Unit of Work và Services
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 // 2. Đăng ký các dịch vụ Controller để hỗ trợ Web API 
 builder.Services.AddControllers()
@@ -86,7 +96,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // Port của Vite
+        policy.WithOrigins("http://localhost:5173", "http://localhost:5174", "http://localhost:5175") // Hỗ trợ nhiều port phòng khi 5173 bị kẹt
               .AllowAnyMethod()
               .AllowAnyHeader();
     });

@@ -24,7 +24,11 @@ public class OrderService : IOrderService
                 UserId = userId,
                 Status = "Pending",
                 TotalAmount = 0,
-                Note = request.Note
+                Note = request.Note,
+                ShippingAddress = request.ShippingAddress,
+                RecipientName = request.RecipientName,
+                RecipientPhone = request.RecipientPhone,
+                PaymentMethod = request.PaymentMethod
             };
 
             foreach (var item in request.Items)

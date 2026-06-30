@@ -230,8 +230,33 @@ export default function Cart() {
   const [vietqrModal, setVietqrModal] = useState(null);
   const [successOrderId, setSuccessOrderId] = useState(null);
 
+  const [recipientName, setRecipientName] = useState('');
+  const [recipientPhone, setRecipientPhone] = useState('');
+  const [shippingAddress, setShippingAddress] = useState('');
+
   useEffect(() => {
     setCartItems(getCart());
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const res = await api.get('/auth/me');
+        if (res.data) {
+          setRecipientName(res.data.fullName || '');
+          setRecipientPhone(res.data.phoneNumber || '');
+          
+          let firstAddr = res.data.address || '';
+          if (res.data.savedAddresses) {
+            try {
+               const parsed = JSON.parse(res.data.savedAddresses);
+               if (parsed && parsed.length > 0) firstAddr = parsed[0];
+            } catch(e){}
+          }
+          setShippingAddress(firstAddr);
+        }
+      } catch (err) {}
+    }
+    fetchUser();
   }, []);
 
   const totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -255,11 +280,20 @@ export default function Cart() {
     const token = localStorage.getItem('token');
     if (!token) { navigate('/login'); return; }
 
+    if (!recipientName.trim() || !recipientPhone.trim() || !shippingAddress.trim()) {
+      alert("Vui lòng điền đầy đủ thông tin giao hàng!");
+      return;
+    }
+
     setLoading(true);
     try {
       const orderData = {
         items: cartItems.map(item => ({ productId: item.id, quantity: item.quantity })),
-        note: paymentMethod === 'COD' ? 'COD' : paymentMethod
+        note: paymentMethod === 'COD' ? 'COD' : paymentMethod,
+        recipientName,
+        recipientPhone,
+        shippingAddress,
+        paymentMethod
       };
 
       const res = await api.post('/Orders', orderData);
@@ -402,6 +436,43 @@ export default function Cart() {
 
             {/* Checkout Panel */}
             <div className="space-y-5">
+              {/* Shipping Info */}
+              <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-5 space-y-4">
+                <h3 className="font-bold text-on-surface text-sm">Thông tin giao hàng</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Người nhận</label>
+                    <input
+                      type="text"
+                      value={recipientName}
+                      onChange={e => setRecipientName(e.target.value)}
+                      placeholder="Họ và tên người nhận"
+                      className="w-full bg-surface-container-low border border-outline-variant/30 text-on-surface rounded-xl px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Số điện thoại</label>
+                    <input
+                      type="text"
+                      value={recipientPhone}
+                      onChange={e => setRecipientPhone(e.target.value)}
+                      placeholder="Số điện thoại liên hệ"
+                      className="w-full bg-surface-container-low border border-outline-variant/30 text-on-surface rounded-xl px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Địa chỉ giao hàng</label>
+                    <textarea
+                      value={shippingAddress}
+                      onChange={e => setShippingAddress(e.target.value)}
+                      placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố"
+                      rows={2}
+                      className="w-full bg-surface-container-low border border-outline-variant/30 text-on-surface rounded-xl px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all resize-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* Payment Method */}
               <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-5 space-y-4">
                 <h3 className="font-bold text-on-surface text-sm">Phương thức thanh toán</h3>
@@ -465,7 +536,7 @@ export default function Cart() {
                   )}
                 </button>
                 <p className="text-center text-[10px] text-on-surface-variant flex items-center justify-center gap-1">
-                  <AlertCircle size={10} /> Bằng cách đặt hàng, bạn đồng ý với điều khoản dịch vụ của Lumina Tech
+                  <AlertCircle size={10} /> Bằng cách đặt hàng, bạn đồng ý với điều khoản dịch vụ của iLuminaty Shop
                 </p>
               </div>
 

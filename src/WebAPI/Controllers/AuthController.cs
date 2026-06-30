@@ -136,12 +136,36 @@ public class AuthController : ControllerBase
                 user.PhoneNumber,
                 user.Address,
                 user.Role,
+                user.AvatarUrl,
+                user.SavedAddresses,
                 user.CreatedAt
             });
         }
         catch (KeyNotFoundException ex)
         {
             return NotFound(new { Message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
+    }
+
+    [HttpPut("profile")]
+    [Authorize]
+    public async Task<IActionResult> UpdateProfile(UpdateProfileRequest request)
+    {
+        try
+        {
+            var userIdVal = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdVal == null) return Unauthorized();
+
+            var userId = Guid.Parse(userIdVal);
+            var success = await _authService.UpdateProfileAsync(request, userId);
+
+            if (success)
+                return Ok(new { Message = "Cập nhật thông tin thành công" });
+            return BadRequest(new { Message = "Không thể cập nhật thông tin" });
         }
         catch (Exception ex)
         {

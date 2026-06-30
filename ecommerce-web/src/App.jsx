@@ -22,6 +22,7 @@ export default function App() {
     
     // UI Interaction states
     const [isScrolled, setIsScrolled] = useState(false);
+    const [activeSection, setActiveSection] = useState('shop');
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
     const [contactSubmitted, setContactSubmitted] = useState(false);
@@ -55,7 +56,25 @@ export default function App() {
             }
         };
         window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    setActiveSection(entry.target.id);
+                }
+            });
+        }, { threshold: 0.3 });
+        
+        setTimeout(() => {
+            document.querySelectorAll('section[id]').forEach((section) => {
+                observer.observe(section);
+            });
+        }, 500);
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            observer.disconnect();
+        };
     }, []);
 
     const fetchProducts = async () => {
@@ -73,14 +92,16 @@ export default function App() {
         }
     };
 
-    const handleAddToCart = (product) => {
+    const handleAddToCart = (e, product) => {
+        e.preventDefault();
+        e.stopPropagation();
         if (!token) {
             alert("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
             navigate('/login');
             return;
         }
         addToCart(product);
-        showToast(`Ä đã thêm "${product.name.slice(0, 20)}..." vào giỏ hàng!`);
+        showToast(`Đã thêm "${product.name.slice(0, 20)}..." vào giỏ hàng!`);
     };
 
     const handleLogout = () => {
@@ -181,25 +202,25 @@ export default function App() {
                     {/* Brand Identity */}
                     <Link to="/" className="flex items-center gap-3">
                         <img 
-                            alt="Lumina Tech Logo" 
+                            alt="iLuminaty Shop Logo" 
                             className="h-8 w-8 object-contain rounded-md" 
                             src="https://lh3.googleusercontent.com/aida/AP1WRLt8R8qnJRl8MJ87JVsCo4oWwIQihTtnOO6tqxLHg9B88FAlGazKoHhw0meBOUHUMSjcUi_jImPJD4V4a97ziZK1g8-i0xn03MPBmuwl7_5ppv_slq3vxE-RQg59JwOndUAYZOyWNEe2hNm71Muzya549heQQyDtqAafi2N-mipd9JK3BoufOd1PIqe7tizT46EvOwfa3LnCSKar-FDpDC9_eysvaaxMWyqS9Eeyu5S7d_l3Xwk9lz7JmiA"
                         />
-                        <span className="font-bold text-xl tracking-tighter text-primary">Lumina Tech</span>
+                        <span className="font-bold text-xl tracking-tighter text-primary">iLuminaty Shop</span>
                     </Link>
 
                     {/* Navigation Links */}
                     <div className="hidden md:flex items-center gap-8 font-medium text-sm text-on-surface-variant">
                         <a 
-                            onClick={() => setSelectedCategory('All')} 
+                            onClick={(e) => { e.preventDefault(); document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' }); }} 
                             href="#shop" 
-                            className={`hover:text-primary transition-colors duration-200 ${selectedCategory === 'All' ? 'text-primary font-bold border-b-2 border-primary pb-1' : ''}`}
+                            className={`hover:text-primary transition-colors duration-200 ${activeSection === 'shop' ? 'text-primary font-bold border-b-2 border-primary pb-1' : ''}`}
                         >
                             Sản Phẩm
                         </a>
-                        <a href="#about" className="hover:text-primary transition-colors duration-200">Giới Thiệu</a>
-                        <a href="#contact" className="hover:text-primary transition-colors duration-200">Liên Hệ</a>
-                        <a href="#support" className="hover:text-primary transition-colors duration-200">Hỗ Trợ</a>
+                        <a href="#about" onClick={(e) => { e.preventDefault(); document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' }); }} className={`hover:text-primary transition-colors duration-200 ${activeSection === 'about' ? 'text-primary font-bold border-b-2 border-primary pb-1' : ''}`}>Giới Thiệu</a>
+                        <a href="#contact" onClick={(e) => { e.preventDefault(); document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }); }} className={`hover:text-primary transition-colors duration-200 ${activeSection === 'contact' ? 'text-primary font-bold border-b-2 border-primary pb-1' : ''}`}>Liên Hệ</a>
+                        <a href="#support" onClick={(e) => { e.preventDefault(); document.getElementById('support')?.scrollIntoView({ behavior: 'smooth' }); }} className={`hover:text-primary transition-colors duration-200 ${activeSection === 'support' ? 'text-primary font-bold border-b-2 border-primary pb-1' : ''}`}>Hỗ Trợ</a>
                     </div>
 
                     {/* Search & Actions */}
@@ -370,7 +391,7 @@ export default function App() {
                                 <span className="text-primary bg-gradient-to-r from-primary to-primary-container bg-clip-text text-transparent">Kỷ Nguyên Mới</span>
                             </h1>
                             <p className="text-base md:text-lg text-on-surface-variant max-w-lg leading-relaxed">
-                                Nâng tầm cuộc sống số của bạn với các thiết bị phần cứng được chế tác tinh xảo. Từ dàn máy gaming đỉnh cao đến hệ sinh thái kết nối di động liền mạch, Lumina Tech đem tương lai đến hôm nay.
+                                Nâng tầm cuộc sống số của bạn với các thiết bị phần cứng được chế tác tinh xảo. Từ dàn máy gaming đỉnh cao đến hệ sinh thái kết nối di động liền mạch, iLuminaty Shop đem tương lai đến hôm nay.
                             </p>
                             <div className="flex flex-wrap gap-4 pt-4">
                                 <a 
@@ -418,7 +439,7 @@ export default function App() {
                             <span className="text-primary font-bold text-sm tracking-widest uppercase">Sứ Mệnh Của Chúng Tôi</span>
                             <h2 className="text-3xl md:text-4xl font-bold text-on-surface leading-tight">Chế Tác Vượt Trội. <br/>Kiến Tạo Cuộc Sống.</h2>
                             <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
-                                Tại Lumina Tech, chúng tôi tin rằng công nghệ phải là sự mở rộng năng lực vô hạn của bạn. Kể từ khi thành lập, chúng tôi luôn bứt phá các rào cản phần cứng thông thường để tạo nên các tuyệt tác cả về thẩm mỹ lẫn hiệu năng tối đa.
+                                Tại iLuminaty Shop, chúng tôi tin rằng công nghệ phải là sự mở rộng năng lực vô hạn của bạn. Kể từ khi thành lập, chúng tôi luôn bứt phá các rào cản phần cứng thông thường để tạo nên các tuyệt tác cả về thẩm mỹ lẫn hiệu năng tối đa.
                             </p>
                             <div className="grid grid-cols-2 gap-8 pt-4">
                                 <div className="space-y-1">
@@ -446,13 +467,12 @@ export default function App() {
                                 <h2 className="text-2xl md:text-3xl font-bold text-on-surface">Danh Mục Mua Sắm</h2>
                                 <p className="text-sm text-on-surface-variant">Tìm kiếm công cụ tối ưu cho công việc và giải trí của bạn.</p>
                             </div>
-                            <button 
-                                onClick={() => setSelectedCategory('All')} 
+                            <Link 
+                                to="/products"
                                 className="text-primary font-semibold text-sm flex items-center gap-2 hover:underline"
                             >
-                                Xem Tất Cả {selectedCategory !== 'All' && `(${selectedCategory})`} 
-                                <ChevronRight size={16} />
-                            </button>
+                                Xem Tất Cả <ChevronRight size={16} />
+                            </Link>
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter h-auto md:h-[600px]">
@@ -557,7 +577,7 @@ export default function App() {
                                     onClick={() => { setSelectedCategory('All'); setSearchTerm(''); }}
                                     className="text-xs text-rose-500 hover:text-rose-600 font-bold hover:underline"
                                 >
-                                    Xóa tất cả bộ lọc
+                                    Xóa bộ lọc trang chủ
                                 </button>
                             </div>
                         )}
@@ -595,13 +615,14 @@ export default function App() {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
-                            {filteredProducts.map((product, index) => {
+                            {filteredProducts.slice(0, 8).map((product, index) => {
                                 const isAvailable = product.inventory?.availableQuantity > 0;
                                 const isNew = index % 3 === 0;
                                 const isSale = index % 4 === 1;
                                 
                                 return (
-                                    <div 
+                                    <Link 
+                                        to={`/product/${product.id}`}
                                         key={product.id} 
                                         className="group bg-surface-container-lowest rounded-2xl border border-outline-variant/30 hover-lift overflow-hidden flex flex-col justify-between"
                                     >
@@ -664,7 +685,7 @@ export default function App() {
                                                 </div>
 
                                                 <button 
-                                                    onClick={() => handleAddToCart(product)}
+                                                    onClick={(e) => handleAddToCart(e, product)}
                                                     disabled={!isAvailable}
                                                     className="w-full bg-surface-container border border-outline-variant/50 text-on-surface py-3 rounded-xl text-xs font-semibold hover:bg-primary hover:text-white hover:border-primary disabled:opacity-50 disabled:pointer-events-none transition-all flex items-center justify-center gap-2"
                                                 >
@@ -672,7 +693,7 @@ export default function App() {
                                                 </button>
                                             </div>
                                         </div>
-                                    </div>
+                                    </Link>
                                 );
                             })}
                         </div>
@@ -755,7 +776,7 @@ export default function App() {
                                         </div>
                                         <h3 className="text-lg font-bold text-on-surface">Đã gửi tin nhắn thành công!</h3>
                                         <p className="text-xs text-on-surface-variant max-w-xs mx-auto">
-                                            Cảm ơn bạn đã liên hệ. Đội ngũ chuyên gia kỹ thuật của Lumina Tech sẽ liên hệ lại qua email trong vòng 24 giờ.
+                                            Cảm ơn bạn đã liên hệ. Đội ngũ chuyên gia kỹ thuật của iLuminaty Shop sẽ liên hệ lại qua email trong vòng 24 giờ.
                                         </p>
                                     </div>
                                 ) : (
@@ -808,11 +829,11 @@ export default function App() {
                         <div className="max-w-sm space-y-6">
                             <div className="flex items-center gap-3">
                                 <img 
-                                    alt="Lumina Tech Logo" 
+                                    alt="iLuminaty Shop Logo" 
                                     className="h-8 w-8 object-contain rounded-md" 
                                     src="https://lh3.googleusercontent.com/aida/AP1WRLt8R8qnJRl8MJ87JVsCo4oWwIQihTtnOO6tqxLHg9B88FAlGazKoHhw0meBOUHUMSjcUi_jImPJD4V4a97ziZK1g8-i0xn03MPBmuwl7_5ppv_slq3vxE-RQg59JwOndUAYZOyWNEe2hNm71Muzya549heQQyDtqAafi2N-mipd9JK3BoufOd1PIqe7tizT46EvOwfa3LnCSKar-FDpDC9_eysvaaxMWyqS9Eeyu5S7d_l3Xwk9lz7JmiA"
                                 />
-                                <span className="font-bold text-xl text-on-surface">Lumina Tech</span>
+                                <span className="font-bold text-xl text-on-surface">iLuminaty Shop</span>
                             </div>
                             <p className="text-sm text-on-surface-variant leading-relaxed">
                                 Đăng ký nhận tin tức để không bỏ lỡ các công nghệ phần cứng đột phá và sự kiện khuyến mãi mới nhất.
@@ -862,7 +883,7 @@ export default function App() {
 
                     {/* Copyright and Legal */}
                     <div className="pt-8 border-t border-outline-variant/20 flex flex-col sm:flex-row justify-between items-center gap-4">
-                        <p className="text-xs text-on-surface-variant">© 2026 Lumina Tech. Mọi quyền được bảo lưu.</p>
+                        <p className="text-xs text-on-surface-variant">© 2026 iLuminaty Shop. Mọi quyền được bảo lưu.</p>
                         <div className="flex flex-wrap justify-center gap-6 text-xs text-on-surface-variant">
                             <a className="hover:text-primary transition-colors" href="#">Chính Sách Bảo Mật</a>
                             <a className="hover:text-primary transition-colors" href="#">Điều Khoản Dịch Vụ</a>

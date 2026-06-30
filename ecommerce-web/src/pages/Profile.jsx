@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   User, Package, MapPin, Phone, Mail, ArrowLeft,
   ChevronDown, ChevronUp, Truck, CheckCircle2, Clock,
-  XCircle, ShoppingBag, AlertCircle, RefreshCw
+  XCircle, ShoppingBag, AlertCircle, RefreshCw, Save, Plus, Trash2, Edit, Camera
 } from 'lucide-react';
 
 // Delivery tracking timeline config
 const ORDER_STEPS = [
-  { key: 'Pending',   label: 'Đã đặt hàng',     icon: ShoppingBag,  desc: 'Đơn hàng đang chờ xác nhận' },
-  { key: 'Confirmed', label: 'Đã xác nhận',      icon: CheckCircle2, desc: 'Đơn hàng đã được xác nhận' },
-  { key: 'Shipping',  label: 'Đang giao hàng',   icon: Truck,        desc: 'Đơn hàng đang trên đường giao' },
-  { key: 'Delivered', label: 'Đã nhận hàng',     icon: CheckCircle2, desc: 'Giao hàng thành công' },
+  { key: 'Pending', label: 'Đã đặt hàng', icon: ShoppingBag, desc: 'Đơn hàng đang chờ xác nhận' },
+  { key: 'Confirmed', label: 'Đã xác nhận', icon: CheckCircle2, desc: 'Đơn hàng đã được xác nhận' },
+  { key: 'Shipping', label: 'Đang giao hàng', icon: Truck, desc: 'Đơn hàng đang trên đường giao' },
+  { key: 'Delivered', label: 'Đã nhận hàng', icon: CheckCircle2, desc: 'Giao hàng thành công' },
 ];
 
 const STATUS_ORDER = ['Pending', 'Confirmed', 'Shipping', 'Delivered'];
@@ -22,11 +22,11 @@ function getStatusIndex(status) {
 }
 
 const STATUS_CONFIG = {
-  Pending:   { label: 'Chờ xử lý',     cls: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
-  Confirmed: { label: 'Đã xác nhận',   cls: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
-  Shipping:  { label: 'Đang giao',     cls: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20' },
-  Delivered: { label: 'Đã giao',       cls: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
-  Cancelled: { label: 'Đã hủy',        cls: 'bg-rose-500/10 text-rose-600 border-rose-500/20' },
+  Pending: { label: 'Chờ xử lý', cls: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
+  Confirmed: { label: 'Đã xác nhận', cls: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
+  Shipping: { label: 'Đang giao', cls: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20' },
+  Delivered: { label: 'Đã giao', cls: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
+  Cancelled: { label: 'Đã hủy', cls: 'bg-rose-500/10 text-rose-600 border-rose-500/20' },
 };
 
 function StatusBadge({ status }) {
@@ -69,13 +69,12 @@ function DeliveryTimeline({ status }) {
 
             return (
               <div key={step.key} className="flex items-start gap-4 relative">
-                <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 ${
-                  isDone
+                <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 ${isDone
                     ? isCurrent
                       ? 'bg-primary text-white shadow-md shadow-primary/30 ring-2 ring-primary/20'
                       : 'bg-primary/10 text-primary'
                     : 'bg-surface-container border border-outline-variant/30 text-on-surface-variant'
-                }`}>
+                  }`}>
                   <Icon size={14} />
                 </div>
                 <div className={`flex-1 pb-1 ${isDone ? '' : 'opacity-40'}`}>
@@ -192,11 +191,22 @@ function OrderCard({ order, onCancel }) {
 }
 
 export default function Profile() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [orders, setOrders] = useState([]);
   const [loadingUser, setLoadingUser] = useState(true);
   const [loadingOrders, setLoadingOrders] = useState(true);
-  const [activeTab, setActiveTab] = useState('orders');
+  const [activeTab, setActiveTab] = useState('info'); // 'info', 'addresses', 'orders'
+
+  // Edit Profile States
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ fullName: '', phoneNumber: '', avatarUrl: '' });
+  const [updating, setUpdating] = useState(false);
+
+  // Address States
+  const [addresses, setAddresses] = useState([]);
+  const [addressParts, setAddressParts] = useState({ street: '', ward: '', district: '', city: '' });
+  const [showAddAddress, setShowAddAddress] = useState(false);
 
   useEffect(() => {
     fetchUser();
@@ -207,8 +217,18 @@ export default function Profile() {
     try {
       const res = await api.get('/auth/me');
       setUser(res.data);
+      setEditForm({
+        fullName: res.data.fullName || '',
+        phoneNumber: res.data.phoneNumber || '',
+        avatarUrl: res.data.avatarUrl || ''
+      });
+      if (res.data.savedAddresses) {
+        try {
+          setAddresses(JSON.parse(res.data.savedAddresses));
+        } catch(e) {}
+      }
     } catch {
-      /* ignore */
+      navigate('/login');
     } finally {
       setLoadingUser(false);
     }
@@ -229,6 +249,64 @@ export default function Profile() {
     setOrders(prev => prev.map(o => o.id === cancelledId ? { ...o, status: 'Cancelled' } : o));
   };
 
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    setUpdating(true);
+    try {
+      await api.put('/auth/profile', editForm);
+      setUser({ ...user, ...editForm });
+      setIsEditing(false);
+      alert('Cập nhật thông tin thành công!');
+    } catch (err) {
+      alert('Lỗi: ' + (err.response?.data?.message || 'Không thể cập nhật'));
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Vui lòng chọn ảnh nhỏ hơn 2MB');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setEditForm({ ...editForm, avatarUrl: reader.result });
+        };
+        reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAddAddress = async () => {
+    const { street, ward, district, city } = addressParts;
+    if (!street.trim() || !ward.trim() || !district.trim() || !city.trim()) {
+        alert('Vui lòng điền đầy đủ các phần của địa chỉ!');
+        return;
+    }
+    const fullAddress = `${street.trim()}, ${ward.trim()}, ${district.trim()}, ${city.trim()}`;
+    const updatedAddresses = [...addresses, fullAddress];
+    try {
+      await api.put('/auth/profile', { savedAddresses: JSON.stringify(updatedAddresses) });
+      setAddresses(updatedAddresses);
+      setAddressParts({ street: '', ward: '', district: '', city: '' });
+      setShowAddAddress(false);
+    } catch (err) {
+      alert('Không thể thêm địa chỉ');
+    }
+  };
+
+  const handleDeleteAddress = async (index) => {
+    const updatedAddresses = addresses.filter((_, i) => i !== index);
+    try {
+      await api.put('/auth/profile', { savedAddresses: JSON.stringify(updatedAddresses) });
+      setAddresses(updatedAddresses);
+    } catch (err) {
+      alert('Không thể xóa địa chỉ');
+    }
+  };
+
   const pendingCount = orders.filter(o => o.status === 'Pending' || o.status === 'Confirmed' || o.status === 'Shipping').length;
 
   return (
@@ -241,19 +319,27 @@ export default function Profile() {
             <span className="text-sm font-medium">Trang chủ</span>
           </Link>
           <span className="font-bold text-on-surface">Tài khoản của tôi</span>
-          <div className="w-28" />
+          <div className="w-28 text-right">
+             <button onClick={() => { localStorage.removeItem('token'); navigate('/login'); }} className="text-rose-500 text-sm font-semibold hover:underline">Đăng xuất</button>
+          </div>
         </div>
       </nav>
 
       <main className="max-w-[1440px] mx-auto px-4 md:px-12 py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
 
-          {/* Left Panel — User Info */}
-          <div className="space-y-5">
-            {/* Avatar + Name */}
+          {/* Sidebar */}
+          <div className="lg:col-span-1 space-y-5">
+            {/* User Summary */}
             <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-6 text-center space-y-3">
-              <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary-container rounded-full flex items-center justify-center mx-auto text-white font-bold text-2xl shadow-lg shadow-primary/20">
-                {loadingUser ? '?' : (user?.fullName?.[0] || 'U')}
+              <div className="relative inline-block">
+                {user?.avatarUrl ? (
+                  <img src={user.avatarUrl} alt="Avatar" className="w-20 h-20 rounded-full object-cover border-2 border-primary/20 mx-auto" />
+                ) : (
+                  <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary-container rounded-full flex items-center justify-center mx-auto text-white font-bold text-3xl shadow-lg shadow-primary/20">
+                    {loadingUser ? '?' : (user?.fullName?.[0] || 'U')}
+                  </div>
+                )}
               </div>
               {loadingUser ? (
                 <div className="space-y-2">
@@ -266,103 +352,251 @@ export default function Profile() {
                     <h2 className="font-bold text-on-surface text-lg">{user?.fullName}</h2>
                     <p className="text-xs text-on-surface-variant">{user?.email}</p>
                   </div>
-                  <span className={`inline-block text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border ${
-                    user?.role === 'Admin' ? 'bg-purple-500/10 text-purple-600 border-purple-500/20' :
-                    user?.role === 'Staff' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
-                    'bg-primary/10 text-primary border-primary/20'
-                  }`}>
+                  <span className={`inline-block text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border ${user?.role === 'Admin' ? 'bg-purple-500/10 text-purple-600 border-purple-500/20' :
+                      user?.role === 'Staff' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
+                        'bg-primary/10 text-primary border-primary/20'
+                    }`}>
                     {user?.role}
                   </span>
                 </>
               )}
             </div>
 
-            {/* Info Card */}
-            {!loadingUser && user && (
-              <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-5 space-y-4">
-                <h3 className="font-bold text-on-surface text-sm">Thông tin cá nhân</h3>
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-start gap-3">
-                    <Mail size={14} className="text-on-surface-variant mt-0.5 flex-shrink-0" />
+            {/* Navigation Tabs */}
+            <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl overflow-hidden">
+              <button 
+                onClick={() => setActiveTab('info')}
+                className={`w-full flex items-center gap-3 px-5 py-4 text-sm font-semibold transition-colors ${activeTab === 'info' ? 'bg-primary/10 text-primary border-l-2 border-primary' : 'text-on-surface hover:bg-surface-container-low'}`}
+              >
+                <User size={18} /> Thông tin cá nhân
+              </button>
+              <button 
+                onClick={() => setActiveTab('addresses')}
+                className={`w-full flex items-center gap-3 px-5 py-4 text-sm font-semibold transition-colors ${activeTab === 'addresses' ? 'bg-primary/10 text-primary border-l-2 border-primary' : 'text-on-surface hover:bg-surface-container-low'}`}
+              >
+                <MapPin size={18} /> Địa chỉ giao hàng
+              </button>
+              <button 
+                onClick={() => setActiveTab('orders')}
+                className={`w-full flex items-center gap-3 px-5 py-4 text-sm font-semibold transition-colors ${activeTab === 'orders' ? 'bg-primary/10 text-primary border-l-2 border-primary' : 'text-on-surface hover:bg-surface-container-low'}`}
+              >
+                <ShoppingBag size={18} /> Lịch sử đơn hàng
+              </button>
+            </div>
+          </div>
+
+          {/* Main Content Area */}
+          <div className="lg:col-span-3">
+            
+            {/* TAB: INFO */}
+            {activeTab === 'info' && (
+              <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-8 space-y-6 animate-in fade-in duration-300">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-on-surface">Thông tin cá nhân</h2>
+                    <p className="text-sm text-on-surface-variant">Quản lý thông tin hồ sơ của bạn</p>
+                  </div>
+                  {!isEditing && (
+                    <button onClick={() => setIsEditing(true)} className="flex items-center gap-2 px-4 py-2 bg-surface-container-low border border-outline-variant/30 rounded-xl text-sm font-semibold hover:bg-surface-container transition-colors">
+                      <Edit size={16} /> Chỉnh sửa
+                    </button>
+                  )}
+                </div>
+
+                {!isEditing ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                     <div>
-                      <p className="text-[10px] text-on-surface-variant">Email</p>
-                      <p className="font-medium text-on-surface">{user.email}</p>
+                      <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Họ và tên</p>
+                      <p className="font-semibold text-on-surface">{user?.fullName}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Email</p>
+                      <p className="font-semibold text-on-surface">{user?.email}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Số điện thoại</p>
+                      <p className="font-semibold text-on-surface">{user?.phoneNumber || 'Chưa cập nhật'}</p>
                     </div>
                   </div>
-                  {user.phoneNumber && (
-                    <div className="flex items-start gap-3">
-                      <Phone size={14} className="text-on-surface-variant mt-0.5 flex-shrink-0" />
+                ) : (
+                  <form onSubmit={handleUpdateProfile} className="space-y-5 pt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div>
-                        <p className="text-[10px] text-on-surface-variant">Điện thoại</p>
-                        <p className="font-medium text-on-surface">{user.phoneNumber}</p>
+                        <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Họ và tên</label>
+                        <input type="text" value={editForm.fullName} onChange={e => setEditForm({...editForm, fullName: e.target.value})} className="w-full bg-surface-container-low border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm focus:border-primary outline-none" required />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Số điện thoại</label>
+                        <input type="text" value={editForm.phoneNumber} onChange={e => setEditForm({...editForm, phoneNumber: e.target.value})} className="w-full bg-surface-container-low border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm focus:border-primary outline-none" />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Ảnh đại diện (Nhỏ hơn 2MB)</label>
+                        <div className="flex gap-3 items-center">
+                          {editForm.avatarUrl && (
+                              <img src={editForm.avatarUrl} alt="Preview" className="w-12 h-12 rounded-full object-cover border border-primary/20" />
+                          )}
+                          <input type="file" accept="image/*" onChange={handleAvatarChange} className="flex-1 bg-surface-container-low border border-outline-variant/30 rounded-xl px-4 py-2 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" />
+                        </div>
                       </div>
                     </div>
+                    <div className="flex gap-3 pt-2">
+                      <button type="submit" disabled={updating} className="px-6 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-container transition-all flex items-center gap-2 shadow-lg shadow-primary/20">
+                        {updating ? 'Đang lưu...' : <><Save size={16} /> Lưu thay đổi</>}
+                      </button>
+                      <button type="button" onClick={() => setIsEditing(false)} className="px-6 py-2.5 border border-outline-variant/30 text-on-surface rounded-xl text-sm font-semibold hover:bg-surface-container transition-all">
+                        Hủy
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            )}
+
+            {/* TAB: ADDRESSES */}
+            {activeTab === 'addresses' && (
+              <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-8 space-y-6 animate-in fade-in duration-300">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-on-surface">Địa chỉ giao hàng</h2>
+                    <p className="text-sm text-on-surface-variant">Quản lý danh sách địa chỉ nhận hàng của bạn</p>
+                  </div>
+                  {!showAddAddress && (
+                    <button onClick={() => setShowAddAddress(true)} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-container transition-all shadow-md shadow-primary/20">
+                      <Plus size={16} /> Thêm địa chỉ
+                    </button>
                   )}
-                  {user.address && (
-                    <div className="flex items-start gap-3">
-                      <MapPin size={14} className="text-on-surface-variant mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-[10px] text-on-surface-variant">Địa chỉ</p>
-                        <p className="font-medium text-on-surface">{user.address}</p>
+                </div>
+
+                {showAddAddress && (
+                  <div className="bg-surface-container-low border border-primary/30 p-5 rounded-2xl space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="col-span-2 md:col-span-1">
+                        <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-2">Tỉnh / Thành phố</label>
+                        <input
+                          value={addressParts.city}
+                          onChange={e => setAddressParts({...addressParts, city: e.target.value})}
+                          placeholder="VD: TP.HCM, Hà Nội..."
+                          className="w-full bg-surface-container border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm focus:border-primary outline-none"
+                        />
+                      </div>
+                      <div className="col-span-2 md:col-span-1">
+                        <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-2">Quận / Huyện</label>
+                        <input
+                          value={addressParts.district}
+                          onChange={e => setAddressParts({...addressParts, district: e.target.value})}
+                          placeholder="VD: Quận 1, Quận Bình Thạnh..."
+                          className="w-full bg-surface-container border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm focus:border-primary outline-none"
+                        />
+                      </div>
+                      <div className="col-span-2 md:col-span-1">
+                        <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-2">Phường / Xã</label>
+                        <input
+                          value={addressParts.ward}
+                          onChange={e => setAddressParts({...addressParts, ward: e.target.value})}
+                          placeholder="VD: Phường Bến Nghé..."
+                          className="w-full bg-surface-container border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm focus:border-primary outline-none"
+                        />
+                      </div>
+                      <div className="col-span-2 md:col-span-1">
+                        <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-2">Số nhà / Đường</label>
+                        <input
+                          value={addressParts.street}
+                          onChange={e => setAddressParts({...addressParts, street: e.target.value})}
+                          placeholder="VD: 123 Nguyễn Huệ..."
+                          className="w-full bg-surface-container border border-outline-variant/30 rounded-xl px-4 py-2.5 text-sm focus:border-primary outline-none"
+                        />
                       </div>
                     </div>
+                    <div className="flex gap-3">
+                      <button onClick={handleAddAddress} className="px-5 py-2 bg-primary text-white rounded-xl text-sm font-semibold">Lưu địa chỉ</button>
+                      <button onClick={() => setShowAddAddress(false)} className="px-5 py-2 border border-outline-variant/30 text-on-surface rounded-xl text-sm font-semibold hover:bg-surface-container">Hủy</button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-3 pt-2">
+                  {addresses.length === 0 ? (
+                    <div className="text-center py-8 text-on-surface-variant border border-dashed border-outline-variant/30 rounded-2xl">
+                      <MapPin size={24} className="mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">Bạn chưa lưu địa chỉ nào.</p>
+                    </div>
+                  ) : (
+                    addresses.map((addr, idx) => (
+                      <div key={idx} className="flex items-start justify-between p-4 bg-surface-container-lowest border border-outline-variant/30 rounded-2xl hover:border-primary/20 transition-colors">
+                        <div className="flex gap-3 items-start">
+                          <MapPin size={18} className="text-primary mt-0.5" />
+                          <div>
+                            <p className="text-sm font-medium text-on-surface leading-relaxed">{addr}</p>
+                            {idx === 0 && <span className="inline-block mt-2 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Mặc định</span>}
+                          </div>
+                        </div>
+                        <button onClick={() => handleDeleteAddress(idx)} className="p-2 text-rose-400 hover:text-rose-600 hover:bg-rose-500/10 rounded-lg transition-colors">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))
                   )}
                 </div>
               </div>
             )}
 
-            {/* Order stats */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-4 text-center">
-                <p className="text-2xl font-extrabold text-primary">{orders.length}</p>
-                <p className="text-[10px] text-on-surface-variant font-medium">Tổng đơn hàng</p>
-              </div>
-              <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-4 text-center">
-                <p className="text-2xl font-extrabold text-amber-500">{pendingCount}</p>
-                <p className="text-[10px] text-on-surface-variant font-medium">Đang xử lý</p>
-              </div>
-            </div>
-          </div>
+            {/* TAB: ORDERS */}
+            {activeTab === 'orders' && (
+              <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-8 space-y-6 animate-in fade-in duration-300">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-on-surface">Lịch sử đơn hàng</h2>
+                    <p className="text-sm text-on-surface-variant">Theo dõi và quản lý các đơn hàng của bạn</p>
+                  </div>
+                  <button onClick={fetchOrders} className="p-2 text-primary hover:bg-primary/10 rounded-xl transition-colors">
+                    <RefreshCw size={18} />
+                  </button>
+                </div>
 
-          {/* Right Panel — Orders */}
-          <div className="lg:col-span-2 space-y-5">
-            <div className="flex items-center justify-between">
-              <h2 className="font-bold text-on-surface text-xl">Lịch sử đơn hàng</h2>
-              <button onClick={fetchOrders} className="text-primary hover:text-primary-container transition-colors">
-                <RefreshCw size={16} />
-              </button>
-            </div>
-
-            {loadingOrders ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-4 animate-pulse">
-                    <div className="flex justify-between">
-                      <div className="space-y-2 flex-1">
-                        <div className="h-3 bg-surface-container-low rounded w-24" />
-                        <div className="h-2 bg-surface-container-low rounded w-48" />
-                      </div>
-                      <div className="h-5 bg-surface-container-low rounded w-20" />
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="bg-surface-container-low border border-outline-variant/20 rounded-2xl p-4 flex items-center gap-4">
+                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary"><ShoppingBag size={20} /></div>
+                    <div>
+                      <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Tổng đơn</p>
+                      <p className="text-xl font-extrabold text-on-surface">{orders.length}</p>
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : orders.length === 0 ? (
-              <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-12 text-center space-y-4">
-                <Package size={36} className="mx-auto text-on-surface-variant opacity-30" />
-                <h3 className="font-bold text-on-surface">Chưa có đơn hàng nào</h3>
-                <p className="text-sm text-on-surface-variant">Hãy khám phá sản phẩm và đặt đơn hàng đầu tiên!</p>
-                <Link to="/" className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary-container transition-all shadow-lg shadow-primary/20">
-                  Mua sắm ngay
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {orders.map(order => (
-                  <OrderCard key={order.id} order={order} onCancel={handleCancelOrder} />
-                ))}
+                  <div className="bg-surface-container-low border border-outline-variant/20 rounded-2xl p-4 flex items-center gap-4">
+                    <div className="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500"><Clock size={20} /></div>
+                    <div>
+                      <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Đang xử lý</p>
+                      <p className="text-xl font-extrabold text-on-surface">{pendingCount}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {loadingOrders ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="h-24 bg-surface-container-low rounded-2xl animate-pulse" />
+                    ))}
+                  </div>
+                ) : orders.length === 0 ? (
+                  <div className="text-center py-12 border border-dashed border-outline-variant/30 rounded-2xl space-y-4">
+                    <Package size={36} className="mx-auto text-on-surface-variant opacity-30" />
+                    <div>
+                      <h3 className="font-bold text-on-surface">Chưa có đơn hàng nào</h3>
+                      <p className="text-sm text-on-surface-variant">Hãy khám phá sản phẩm và đặt đơn hàng đầu tiên!</p>
+                    </div>
+                    <Link to="/" className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary-container transition-all shadow-lg shadow-primary/20">
+                      Mua sắm ngay
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {orders.map(order => (
+                      <OrderCard key={order.id} order={order} onCancel={handleCancelOrder} />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
+            
           </div>
         </div>
       </main>

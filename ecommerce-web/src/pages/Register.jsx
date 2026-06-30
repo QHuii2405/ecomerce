@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import api from '../api/axios';
-import { UserPlus, Mail, Lock, Phone, MapPin, User } from 'lucide-react';
+import { UserPlus, Mail, Lock, Phone, MapPin, User, ArrowRight, AlertCircle } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 
 function Register() {
@@ -13,6 +13,7 @@ function Register() {
         address: ''
     });
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -23,14 +24,13 @@ function Register() {
         e.preventDefault();
         setError('');
 
-        // Kiểm tra mật khẩu khớp
         if (formData.password !== formData.confirmPassword) {
             setError("Mật khẩu xác nhận không khớp!");
             return;
         }
 
+        setLoading(true);
         try {
-            // Gửi sang Backend (Backend cần nhận đúng các trường này)
             await api.post('/Auth/register', {
                 fullName: formData.fullName,
                 email: formData.email,
@@ -42,62 +42,83 @@ function Register() {
             alert("Đăng ký thành công! Hãy đăng nhập.");
             navigate('/login');
         } catch (err) {
-            setError(err.response?.data || "Đăng ký thất bại, vui lòng thử lại.");
+            setError(err.response?.data?.message || err.response?.data || "Đăng ký thất bại, vui lòng thử lại.");
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-            <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
-                <div className="text-center mb-8">
-                    <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <UserPlus className="text-blue-600" size={32} />
+        <div className="min-h-screen flex items-center justify-center bg-surface px-4 py-12 relative overflow-hidden">
+            {/* Background Decorations */}
+            <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+            <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-96 h-96 bg-tertiary/5 rounded-full blur-3xl" />
+
+            <div className="w-full max-w-md space-y-8 bg-surface-container-lowest border border-outline-variant/30 p-8 rounded-3xl shadow-xl relative z-10">
+                <div className="text-center">
+                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-container text-on-primary-container shadow-lg shadow-primary/20 mb-4">
+                        <UserPlus size={24} />
                     </div>
-                    <h2 className="text-2xl font-black text-slate-800">Tạo Tài Khoản</h2>
-                    <p className="text-gray-500">Tham gia ECO-SHOP ngay hôm nay</p>
+                    <h2 className="text-3xl font-bold tracking-tight text-on-surface">Tạo Tài Khoản</h2>
+                    <p className="mt-2 text-sm text-on-surface-variant">
+                        Tham gia <span className="font-bold text-primary">iLuminaty Shop</span> ngay hôm nay
+                    </p>
                 </div>
 
-                {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm font-medium">{error}</div>}
+                {error && (
+                    <div className="flex items-center gap-3 rounded-2xl border border-error/20 bg-error-container p-4 text-sm text-on-error-container">
+                        <AlertCircle size={18} className="shrink-0 text-error" />
+                        <p>{error}</p>
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="relative">
-                        <User className="absolute left-3 top-3 text-gray-400" size={18} />
-                        <input name="fullName" type="text" placeholder="Họ và tên" required className="w-full pl-10 p-2.5 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" onChange={handleChange} />
+                        <User className="absolute left-4 top-3.5 text-on-surface-variant" size={18} />
+                        <input name="fullName" type="text" placeholder="Họ và tên" required className="w-full pl-11 pr-4 py-3 bg-surface-container-low border border-outline-variant/30 rounded-2xl text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" onChange={handleChange} />
                     </div>
 
                     <div className="relative">
-                        <Mail className="absolute left-3 top-3 text-gray-400" size={18} />
-                        <input name="email" type="email" placeholder="Email" required className="w-full pl-10 p-2.5 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" onChange={handleChange} />
+                        <Mail className="absolute left-4 top-3.5 text-on-surface-variant" size={18} />
+                        <input name="email" type="email" placeholder="Email" required className="w-full pl-11 pr-4 py-3 bg-surface-container-low border border-outline-variant/30 rounded-2xl text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" onChange={handleChange} />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="relative">
-                            <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
-                            <input name="password" type="password" placeholder="Mật khẩu" required className="w-full pl-10 p-2.5 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" onChange={handleChange} />
+                            <Lock className="absolute left-4 top-3.5 text-on-surface-variant" size={18} />
+                            <input name="password" type="password" placeholder="Mật khẩu" required className="w-full pl-11 pr-4 py-3 bg-surface-container-low border border-outline-variant/30 rounded-2xl text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" onChange={handleChange} />
                         </div>
                         <div className="relative">
-                            <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
-                            <input name="confirmPassword" type="password" placeholder="Xác nhận" required className="w-full pl-10 p-2.5 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" onChange={handleChange} />
+                            <Lock className="absolute left-4 top-3.5 text-on-surface-variant" size={18} />
+                            <input name="confirmPassword" type="password" placeholder="Xác nhận" required className="w-full pl-11 pr-4 py-3 bg-surface-container-low border border-outline-variant/30 rounded-2xl text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" onChange={handleChange} />
                         </div>
                     </div>
 
                     <div className="relative">
-                        <Phone className="absolute left-3 top-3 text-gray-400" size={18} />
-                        <input name="phoneNumber" type="text" placeholder="Số điện thoại" className="w-full pl-10 p-2.5 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" onChange={handleChange} />
+                        <Phone className="absolute left-4 top-3.5 text-on-surface-variant" size={18} />
+                        <input name="phoneNumber" type="text" placeholder="Số điện thoại" className="w-full pl-11 pr-4 py-3 bg-surface-container-low border border-outline-variant/30 rounded-2xl text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" onChange={handleChange} />
                     </div>
 
                     <div className="relative">
-                        <MapPin className="absolute left-3 top-3 text-gray-400" size={18} />
-                        <textarea name="address" placeholder="Địa chỉ giao hàng" rows="2" className="w-full pl-10 p-2.5 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" onChange={handleChange}></textarea>
+                        <MapPin className="absolute left-4 top-3.5 text-on-surface-variant" size={18} />
+                        <textarea name="address" placeholder="Địa chỉ giao hàng" rows="2" className="w-full pl-11 pr-4 py-3 bg-surface-container-low border border-outline-variant/30 rounded-2xl text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none" onChange={handleChange}></textarea>
                     </div>
 
-                    <button type="submit" className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-blue-600 transition shadow-lg">
-                        Đăng Ký Miễn Phí
+                    <button 
+                        type="submit" 
+                        disabled={loading}
+                        className="w-full flex items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-sm font-bold text-on-primary shadow-lg shadow-primary/20 hover:bg-primary-container active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none transition-all duration-200 hover-lift mt-2"
+                    >
+                        {loading ? 'Đang xử lý...' : 'Đăng Ký Miễn Phí'}
+                        {!loading && <ArrowRight size={16} />}
                     </button>
                 </form>
 
-                <p className="text-center mt-6 text-gray-600 text-sm">
-                    Đã có tài khoản? <Link to="/login" className="text-blue-600 font-bold hover:underline">Đăng nhập</Link>
+                <p className="text-center mt-6 text-sm text-on-surface-variant">
+                    Đã có tài khoản?{' '}
+                    <Link to="/login" className="font-bold text-primary hover:text-primary-container transition-colors">
+                        Đăng nhập
+                    </Link>
                 </p>
             </div>
         </div>

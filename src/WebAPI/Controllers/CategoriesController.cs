@@ -1,45 +1,81 @@
+namespace WebAPI.Controllers;
+
 using Application.DTOs;
 using Domain.Entities;
-using Infrastructure.Persistence;
+using Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-
-namespace WebAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 public class CategoriesController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public CategoriesController(ApplicationDbContext context)
+    public CategoriesController(IUnitOfWork unitOfWork)
     {
-        _context = context;
+        _unitOfWork = unitOfWork;
     }
 
-    // Lấy danh sách danh mục (Công khai) 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var categories = await _context.Categories.ToListAsync();
-        return Ok(categories);
+        try
+        {
+            var categories = await _unitOfWork.Categories.GetAllAsync();
+            return Ok(categories.Where(c => !c.IsDeleted));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest("Loi khi lay danh sach danh muc: " + ex.Message);
+        }
     }
 
-    // Thêm danh mục mới (Chỉ Staff/Admin mới được làm) [cite: 35, 47]
     [HttpPost]
     [Authorize(Roles = "Staff,Admin")]
     public async Task<IActionResult> Create(CreateCategoryRequest request)
     {
-        var category = new Category
+        try
         {
-            Name = request.Name,
-            Description = request.Description
-        };
+            var category = new Category
+            {
+                Name = request.Name,
+                Description = request.Description
+            };
 
-        _context.Categories.Add(category);
-        await _context.SaveChangesAsync();
+            await _unitOfWork.Categories.AddAsync(category);
+            await _unitOfWork.SaveChangesAsync();
 
-        return Ok(new { Message = "Tạo danh mục thành công!", CategoryId = category.Id });
+            return Ok(new { Message = "Tao danh muc thanh cong!", CategoryId = category.Id });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest("Loi khi tao danh muc: " + ex.Message);
+        }
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Staff,Admin")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        try
+        {
+            var category = await _unitOfWork.Categories.GetByIdAsync(id);
+            if (category == null || category.IsDeleted)
+            {
+                return NotFound(new { Message = "Khong tim thay danh muc." });
+            }
+
+            category.IsDeleted = true;
+            category.UpdatedAt = DateTime.UtcNow;
+            _unitOfWork.Categories.Update(category);
+            await _unitOfWork.SaveChangesAsync();
+
+            return Ok(new { Message = "Da xoa danh muc." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = "Loi khi xoa danh muc: " + ex.Message });
+        }
     }
 }

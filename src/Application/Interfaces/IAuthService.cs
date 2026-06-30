@@ -11,5 +11,6 @@ public interface IAuthService
     Task<bool> RevokeTokenAsync(string email);
     Task<string> UpdateRoleAsync(UpdateRoleRequest request);
     Task<User> GetCurrentUserAsync(Guid userId);
+    Task<bool> UpdateProfileAsync(UpdateProfileRequest request, Guid userId);
     Task<IEnumerable<User>> GetAllUsersAsync();
 }

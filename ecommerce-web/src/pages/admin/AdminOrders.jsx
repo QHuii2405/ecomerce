@@ -9,11 +9,11 @@ import {
 const STATUS_TABS = ['All', 'Pending', 'Confirmed', 'Shipping', 'Delivered', 'Cancelled'];
 
 const STATUS_CONFIG = {
-  Pending:   { label: 'Chờ xử lý',   cls: 'bg-amber-500/10 text-amber-500 border-amber-500/20',   nextStatus: 'Confirmed', nextLabel: 'Xác nhận đơn', nextIcon: Check },
-  Confirmed: { label: 'Đã xác nhận', cls: 'bg-blue-500/10 text-blue-400 border-blue-500/20',      nextStatus: 'Shipping',  nextLabel: 'Bắt đầu giao',  nextIcon: Truck },
-  Shipping:  { label: 'Đang giao',   cls: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20', nextStatus: 'Delivered', nextLabel: 'Xác nhận giao xong', nextIcon: Check },
-  Delivered: { label: 'Đã giao',     cls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', nextStatus: null },
-  Cancelled: { label: 'Đã hủy',      cls: 'bg-rose-500/10 text-rose-400 border-rose-500/20',      nextStatus: null },
+  Pending: { label: 'Chờ xử lý', cls: 'bg-amber-500/10 text-amber-500 border-amber-500/20', nextStatus: 'Confirmed', nextLabel: 'Xác nhận đơn', nextIcon: Check },
+  Confirmed: { label: 'Đã xác nhận', cls: 'bg-blue-500/10 text-blue-400 border-blue-500/20', nextStatus: 'Shipping', nextLabel: 'Bắt đầu giao', nextIcon: Truck },
+  Shipping: { label: 'Đang giao', cls: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20', nextStatus: 'Delivered', nextLabel: 'Xác nhận giao xong', nextIcon: Check },
+  Delivered: { label: 'Đã giao', cls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', nextStatus: null },
+  Cancelled: { label: 'Đã hủy', cls: 'bg-rose-500/10 text-rose-400 border-rose-500/20', nextStatus: null },
 };
 
 function StatusBadge({ status }) {
@@ -222,20 +222,18 @@ export default function AdminOrders() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-              activeTab === tab
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === tab
                 ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
                 : 'bg-white/5 border border-white/5 text-slate-400 hover:border-white/10 hover:text-slate-200'
-            }`}
+              }`}
           >
             {tab === 'All' ? 'Tất Cả' :
-             tab === 'Pending' ? 'Chờ Xử Lý' :
-             tab === 'Confirmed' ? 'Đã Xác Nhận' :
-             tab === 'Shipping' ? 'Đang Giao' :
-             tab === 'Delivered' ? 'Đã Giao' : 'Đã Hủy'}
-            <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-              activeTab === tab ? 'bg-white/20' : 'bg-white/5'
-            }`}>
+              tab === 'Pending' ? 'Chờ Xử Lý' :
+                tab === 'Confirmed' ? 'Đã Xác Nhận' :
+                  tab === 'Shipping' ? 'Đang Giao' :
+                    tab === 'Delivered' ? 'Đã Giao' : 'Đã Hủy'}
+            <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${activeTab === tab ? 'bg-white/20' : 'bg-white/5'
+              }`}>
               {countByStatus(tab)}
             </span>
           </button>

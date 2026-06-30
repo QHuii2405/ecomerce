@@ -197,6 +197,23 @@ public class AuthService : IAuthService
         return user;
     }
 
+    public async Task<bool> UpdateProfileAsync(UpdateProfileRequest request, Guid userId)
+    {
+        var user = await _unitOfWork.Users.GetByIdAsync(userId);
+        if (user == null)
+            throw new KeyNotFoundException("Người dùng không tồn tại");
+
+        if (request.FullName != null) user.FullName = request.FullName;
+        if (request.PhoneNumber != null) user.PhoneNumber = request.PhoneNumber;
+        if (request.AvatarUrl != null) user.AvatarUrl = request.AvatarUrl;
+        if (request.SavedAddresses != null) user.SavedAddresses = request.SavedAddresses;
+
+        user.UpdatedAt = DateTime.UtcNow;
+        _unitOfWork.Users.Update(user);
+        await _unitOfWork.SaveChangesAsync();
+        return true;
+    }
+
     public async Task<IEnumerable<User>> GetAllUsersAsync()
     {
         var users = await _unitOfWork.Users.FindAsync(_ => true);
