@@ -1,134 +1,175 @@
-using Application.DTOs;
-using Domain.Entities;
-using Infrastructure.Persistence;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Authorization;
-
 namespace WebAPI.Controllers;
+
+using Application.DTOs;
+using Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IAuthService _authService;
 
-    public AuthController(ApplicationDbContext context)
+    public AuthController(IAuthService authService)
     {
-        _context = context;
+        _authService = authService;
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request)
     {
-        if (await _context.Users.AnyAsync(u => u.Email == request.Email))
+        try
         {
-            return BadRequest("Email này đã được sử dụng.");
+            var message = await _authService.RegisterAsync(request);
+            return Ok(new { Message = message });
         }
-
-        // Sử dụng BCrypt để mã hóa mật khẩu trước khi lưu vào DB [cite: 54]
-        string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
-
-        var user = new User
+        catch (InvalidOperationException ex)
         {
-            Id = Guid.NewGuid(),
-            Email = request.Email,
-            FullName = request.FullName, // Gán thêm trường này
-            PhoneNumber = request.PhoneNumber, // Gán thêm trường này
-            Address = request.Address, // Gán thêm trường này
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-            Role = "Customer"
-        };
-
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
-
-        return Ok("Đăng ký thành công!");
+            return BadRequest(new { Message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = "Đăng ký thất bại: " + ex.Message });
+        }
     }
+
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-        if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+        try
         {
-            return Unauthorized("Email hoặc mật khẩu không chính xác.");
+            var response = await _authService.LoginAsync(request);
+            return Ok(response);
         }
-
-        // TẠO TOKEN
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes("ChaoBanDayLaKeyBiMatSieuCapVipPro2026"); // Lưu ý: Nên lấy từ Config
-
-        var tokenDescriptor = new SecurityTokenDescriptor
+        catch (UnauthorizedAccessException ex)
         {
-            Subject = new ClaimsIdentity(new[]
-            {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role)
-        }),
-            Expires = DateTime.UtcNow.AddHours(1),
-            Issuer = "EcommerceAPI",
-            Audience = "EcommerceUsers",
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-        };
-
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        var tokenString = tokenHandler.WriteToken(token);
-
-        return Ok(new { Token = tokenString, User = user.FullName });
+            return Unauthorized(new { Message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = "Đăng nhập thất bại: " + ex.Message });
+        }
     }
+
+    [HttpPost("refresh-token")]
+    public async Task<IActionResult> RefreshToken(TokenRequest request)
+    {
+        try
+        {
+            var response = await _authService.RefreshTokenAsync(request);
+            return Ok(response);
+        }
+        catch (SecurityTokenException ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = "Làm mới mã token thất bại: " + ex.Message });
+        }
+    }
+
+    [HttpPost("revoke-token")]
+    [Authorize] // Chỉ người dùng đã đăng nhập mới được thu hồi token (đăng xuất)
+    public async Task<IActionResult> RevokeToken()
+    {
+        try
+        {
+            var email = User.FindFirstValue(ClaimTypes.Email);
+            if (email == null) return Unauthorized();
+
+            var success = await _authService.RevokeTokenAsync(email);
+            if (success)
+            {
+                return Ok(new { Message = "Đã thu hồi token thành công (Đăng xuất thành công)." });
+            }
+            return BadRequest(new { Message = "Không thể thu hồi token." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = "Lỗi: " + ex.Message });
+        }
+    }
+
     [HttpPost("update-role")]
-    // Tạm thời comment Authorize để bạn có thể tự nâng quyền cho mình mà không cần Token Admin
-    // [Authorize(Roles = "Admin")] 
+    [Authorize(Roles = "Admin")] // Chỉ Admin thực sự mới được nâng quyền cho người khác
     public async Task<IActionResult> UpdateRole(UpdateRoleRequest request)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-
-        if (user == null)
+        try
         {
-            return NotFound("Không tìm thấy người dùng.");
+            var message = await _authService.UpdateRoleAsync(request);
+            return Ok(new { Message = message });
         }
-
-        // Kiểm tra Role hợp lệ
-        var validRoles = new List<string> { "Customer", "Staff", "Admin" };
-        if (!validRoles.Contains(request.NewRole))
+        catch (KeyNotFoundException ex)
         {
-            return BadRequest("Role không hợp lệ. Chỉ chấp nhận: Customer, Staff, Admin.");
+            return NotFound(new { Message = ex.Message });
         }
-
-        user.Role = request.NewRole;
-        user.UpdatedAt = DateTime.UtcNow;
-
-        await _context.SaveChangesAsync();
-
-        return Ok($"Đã cập nhật quyền của {user.Email} thành {user.Role}. Hãy đăng nhập lại để lấy Token mới.");
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = "Cập nhật quyền thất bại: " + ex.Message });
+        }
     }
 
     [HttpGet("me")]
     [Authorize]
     public async Task<IActionResult> GetCurrentUser()
     {
-        // Lấy UserId từ Token
-        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        if (userId == null) return Unauthorized();
-
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == Guid.Parse(userId));
-
-        if (user == null) return NotFound("Người dùng không tồn tại");
-
-        return Ok(new
+        try
         {
-            user.FullName,
-            user.Email,
-            user.PhoneNumber,
-            user.Address,
-            user.Role,
-            user.CreatedAt
-        });
+            var userIdVal = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdVal == null) return Unauthorized();
+
+            var userId = Guid.Parse(userIdVal);
+            var user = await _authService.GetCurrentUserAsync(userId);
+
+            return Ok(new
+            {
+                user.FullName,
+                user.Email,
+                user.PhoneNumber,
+                user.Address,
+                user.Role,
+                user.CreatedAt
+            });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { Message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
+    }
+
+    [HttpGet("users")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetAllUsers()
+    {
+        try
+        {
+            var users = await _authService.GetAllUsersAsync();
+            return Ok(users.Select(u => new
+            {
+                u.Id,
+                u.FullName,
+                u.Email,
+                u.PhoneNumber,
+                u.Address,
+                u.Role,
+                u.CreatedAt
+            }));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
     }
 }

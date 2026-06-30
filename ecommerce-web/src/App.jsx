@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import api from './api/axios';
 import { 
     ShoppingCart, Package, Tag, Database, Zap, ArrowRight, Star, 
@@ -7,7 +7,7 @@ import {
     CheckCircle2, Menu, X, ArrowUpRight, ChevronRight, HelpCircle, Sparkles 
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { addToCart } from './api/cartStore';
+import { addToCart, getCartCount } from './api/cartStore';
 
 export default function App() {
     const navigate = useNavigate();
@@ -29,6 +29,20 @@ export default function App() {
     const token = localStorage.getItem('token');
     const userName = localStorage.getItem('userName');
     const userRole = localStorage.getItem('userRole');
+    const [cartCount, setCartCount] = useState(getCartCount);
+    const [toast, setToast] = useState(null); // { message: string }
+
+    const showToast = (message) => {
+        setToast(message);
+        setTimeout(() => setToast(null), 2500);
+    };
+
+    // Lắng nghe sự kiện cart-updated để cập nhật badge real-time
+    useEffect(() => {
+        const updateCount = () => setCartCount(getCartCount());
+        window.addEventListener('cart-updated', updateCount);
+        return () => window.removeEventListener('cart-updated', updateCount);
+    }, []);
 
     useEffect(() => {
         fetchProducts();
@@ -66,7 +80,7 @@ export default function App() {
             return;
         }
         addToCart(product);
-        alert(`Đã thêm "${product.name}" vào giỏ hàng!`);
+        showToast(`Ä đã thêm "${product.name.slice(0, 20)}..." vào giỏ hàng!`);
     };
 
     const handleLogout = () => {
@@ -152,6 +166,15 @@ export default function App() {
 
     return (
         <div className="min-h-screen bg-background text-on-surface flex flex-col relative overflow-x-hidden font-sans">
+            {/* Toast Notification */}
+            {toast && (
+                <div className="fixed top-20 right-4 z-[999] bg-slate-900 border border-emerald-500/20 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-right duration-300">
+                    <div className="w-6 h-6 bg-emerald-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                        <CheckCircle2 size={14} className="text-emerald-400" />
+                    </div>
+                    <p className="text-sm font-medium">{toast}</p>
+                </div>
+            )}
             {/* Header (Shared Component: TopNavBar) */}
             <nav className={`fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-outline-variant/30 transition-all duration-300 ease-in-out ${isScrolled ? 'py-2 shadow-md' : 'py-4 shadow-sm'}`}>
                 <div className="max-w-[1440px] mx-auto flex justify-between items-center px-margin-mobile md:px-margin-desktop">
@@ -208,15 +231,22 @@ export default function App() {
                         {/* Cart Icon */}
                         <Link to="/cart" className="relative p-1.5 text-on-surface-variant hover:text-primary transition-colors">
                             <ShoppingCart size={20} />
-                            <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] w-4.5 h-4.5 flex items-center justify-center rounded-full font-bold">
-                                2
-                            </span>
+                            {cartCount > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full font-bold px-1">
+                                    {cartCount > 99 ? '99+' : cartCount}
+                                </span>
+                            )}
                         </Link>
 
                         {/* Session / Authentication UI */}
                         {token ? (
                             <div className="flex items-center gap-3">
-                                <span className="text-xs font-medium text-on-surface-variant hidden md:inline">Chào, {userName}</span>
+                                <Link to="/profile" className="flex items-center gap-2 text-xs font-medium text-on-surface-variant hover:text-primary transition-colors">
+                                    <div className="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center border border-primary/20">
+                                        <User size={13} className="text-primary" />
+                                    </div>
+                                    <span className="hidden md:inline">{userName}</span>
+                                </Link>
                                 
                                 {(userRole === 'Admin' || userRole === 'Staff') && (
                                     <Link 

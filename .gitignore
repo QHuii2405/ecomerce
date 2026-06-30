@@ -1,0 +1,37 @@
+# .NET Build artifacts
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Release directories
+**/bin/Release/
+**/obj/Release/
+**/bin/Debug/
+**/obj/Debug/
+
+# Node.js
+node_modules/
+dist/
+.next/
+.nuxt/
+coverage/
+
+# Environment & Secrets
+.env
+.env.local
+.env.production
+appsettings.*.json
+!appsettings.json
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.idea/
+.vscode/settings.json
+*.swp
+*.swo
