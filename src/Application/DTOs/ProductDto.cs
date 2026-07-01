@@ -63,6 +63,13 @@ public class ProductReviewResponse
     public DateTime CreatedAt { get; set; }
 }
 
+public class ProductReviewEligibilityResponse
+{
+    public bool CanReview { get; set; }
+    public string Reason { get; set; } = string.Empty;
+    public Guid? EligibleOrderId { get; set; }
+}
+
 public class CreateProductReviewRequest
 {
     public Guid OrderId { get; set; }
@@ -99,5 +106,14 @@ public class UpdateProductRequest
     public Guid CategoryId { get; set; }
     public string Brand { get; set; } = "iLuminaty";
     public Dictionary<string, string> Attributes { get; set; } = new();
+    public int StockQuantity { get; set; }
+}
+
+public class UpdateProductVariantRequest
+{
+    public string Sku { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public Dictionary<string, string> Attributes { get; set; } = new();
+    public decimal Price { get; set; }
     public int StockQuantity { get; set; }
 }

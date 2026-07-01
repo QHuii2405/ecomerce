@@ -4,11 +4,7 @@ export const getCart = () => {
     return cart ? JSON.parse(cart) : [];
 };
 
-const normalizeVariant = (variant = {}) => Object.keys(variant)
-    .sort()
-    .reduce((acc, key) => ({ ...acc, [key]: variant[key] }), {});
-
-export const getCartItemKey = (item) => item.cartItemKey || `${item.id}-${JSON.stringify(normalizeVariant(item.variant))}`;
+export const getCartItemKey = (item) => item.cartItemKey || `${item.id}:${item.variantId || 'default'}`;
 
 // Hàm thêm sản phẩm vào giỏ
 export const addToCart = (product) => {
@@ -44,12 +40,23 @@ export const updateQuantity = (cartItemKey, quantity) => {
     }
 };
 
-export const updateCartItemVariant = (cartItemKey, updates) => {
+export const updateCartItemVariant = (cartItemKey, newVariant) => {
     let cart = getCart();
     const index = cart.findIndex(item => getCartItemKey(item) === cartItemKey);
     if (index !== -1) {
-        cart[index].variant = { ...(cart[index].variant || {}), ...updates };
-        cart[index].cartItemKey = `${cart[index].id}-${JSON.stringify(normalizeVariant(cart[index].variant))}`;
+        const item = cart[index];
+        item.variantId = newVariant.id;
+        item.variantName = newVariant.name;
+        item.variantAttributes = newVariant.attributes;
+        item.price = newVariant.price;
+        item.cartItemKey = `${item.id}:${newVariant.id || 'default'}`;
+
+        const existingIndex = cart.findIndex((i, idx) => idx !== index && getCartItemKey(i) === item.cartItemKey);
+        if (existingIndex !== -1) {
+            cart[existingIndex].quantity += item.quantity;
+            cart.splice(index, 1);
+        }
+        
         localStorage.setItem('cart', JSON.stringify(cart));
         window.dispatchEvent(new Event('cart-updated'));
     }

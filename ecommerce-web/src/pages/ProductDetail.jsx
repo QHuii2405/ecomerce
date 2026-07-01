@@ -2,11 +2,11 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { addToCart } from '../api/cartStore';
-import { getProductExtras, calcVariantPrice, getSuggestedAccessories } from '../utils/productExtras';
+import { getSuggestedAccessories } from '../utils/productExtras';
 import {
   ArrowLeft, ShoppingCart, Zap, Package, Tag, Star,
   Check, AlertCircle, ChevronRight, Truck, ShieldCheck, RotateCcw,
-  Plus, Minus, Info, FileText, MessageSquare, Layers
+  Plus, Minus, Info, FileText, MessageSquare, Layers, Heart
 } from 'lucide-react';
 
 const PRODUCT_IMAGES = {
@@ -32,25 +32,33 @@ function StockBadge({ product }) {
   return <span className="text-emerald-400 text-sm font-semibold flex items-center gap-1"><Check size={14} /> Còn hàng ({qty})</span>;
 }
 
-function ColorSwatch({ color, selected, onClick }) {
-  const isGradient = color.hex?.startsWith('linear');
+function ColorSwatch({ colorName, selected, onClick }) {
+  const hexMap = {
+    'Black': '#000000', 'White': '#ffffff', 'Silver': '#c0c0c0', 'Midnight': '#191970',
+    'Natural Titanium': '#b0b0b0', 'Blue Titanium': '#2a4b7c', 'Titanium Black': '#1a1a1a', 'Titanium Yellow': '#f5d547',
+    'Đen Midnight': '#191970', 'Bạc Titan': '#b0b0b0', 'Trắng Ngọc': '#ffffff', 'Xanh Aurora': '#2a4b7c',
+    'Đen Obsidian': '#000000', 'Bạc Platinum': '#e5e4e2', 'Vàng Champagne': '#f7e7ce',
+    'Đen Matte': '#28282b', 'Trắng Snow': '#fffafa', 'Hồng Sakura': '#ffb7c5', 'RGB Limited': 'linear-gradient(45deg, red, blue, green)'
+  };
+  const hex = hexMap[colorName] || '#999999';
+  const isGradient = hex.startsWith('linear');
   return (
     <button
       onClick={onClick}
-      title={color.name}
+      title={colorName}
       className={`relative w-10 h-10 rounded-full border-2 transition-all active:scale-95 ${
         selected ? 'border-primary ring-2 ring-primary/30 scale-110' : 'border-outline-variant/40 hover:border-primary/50'
       }`}
     >
       <span
         className="absolute inset-1 rounded-full"
-        style={isGradient ? { background: color.hex } : { backgroundColor: color.hex }}
+        style={isGradient ? { background: hex } : { backgroundColor: hex }}
       />
     </button>
   );
 }
 
-function OptionButton({ option, selected, onClick, showPrice }) {
+function OptionButton({ value, selected, onClick }) {
   return (
     <button
       onClick={onClick}
@@ -60,13 +68,7 @@ function OptionButton({ option, selected, onClick, showPrice }) {
           : 'border-outline-variant/40 text-on-surface-variant hover:border-primary/40'
       }`}
     >
-      {option.name}
-      {showPrice && option.priceAdj > 0 && (
-        <span className="block text-[10px] font-normal text-primary mt-0.5">+{option.priceAdj.toLocaleString()}đ</span>
-      )}
-      {showPrice && option.priceAdj < 0 && (
-        <span className="block text-[10px] font-normal text-emerald-500 mt-0.5">{option.priceAdj.toLocaleString()}đ</span>
-      )}
+      {value}
     </button>
   );
 }
@@ -86,26 +88,62 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [addedToast, setAddedToast] = useState(false);
   const [activeTab, setActiveTab] = useState('info');
-  const [selectedColor, setSelectedColor] = useState(null);
-  const [selectedSecond, setSelectedSecond] = useState(null);
-  const [selectedThird, setSelectedThird] = useState(null);
+  const [selectedAttributes, setSelectedAttributes] = useState({});
+  const [reviews, setReviews] = useState([]);
+  const [reviewEligibility, setReviewEligibility] = useState(null);
+  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
+  const [submittingReview, setSubmittingReview] = useState(false);
+  
+  const [isFavorited, setIsFavorited] = useState(false);
 
   const token = localStorage.getItem('token');
 
-  const extras = useMemo(() => product ? getProductExtras(product) : null, [product]);
+  const optionGroups = useMemo(() => {
+    if (!product || !product.variants) return {};
+    const groups = {};
+    product.variants.forEach(v => {
+      if (v.attributes) {
+        Object.entries(v.attributes).forEach(([key, value]) => {
+          if (!groups[key]) groups[key] = new Set();
+          groups[key].add(value);
+        });
+      }
+    });
+    const result = {};
+    Object.keys(groups).forEach(key => {
+      result[key] = Array.from(groups[key]);
+    });
+    return result;
+  }, [product]);
 
   useEffect(() => {
-    if (extras) {
-      setSelectedColor(extras.colors[0]);
-      setSelectedSecond(extras.secondAttr.options[0]);
-      setSelectedThird(extras.thirdAttr?.options[0] ?? null);
+    if (product && product.variants && product.variants.length > 0) {
+      const defaultVariant = product.variants.find(v => v.availableQuantity > 0) || product.variants[0];
+      setSelectedAttributes(defaultVariant.attributes || {});
     }
-  }, [extras]);
+  }, [product]);
 
-  const currentPrice = useMemo(() => {
-    if (!product) return 0;
-    return calcVariantPrice(product.price, selectedColor, selectedSecond, selectedThird);
-  }, [product, selectedColor, selectedSecond, selectedThird]);
+  const handleAttrChange = (key, val) => {
+    setSelectedAttributes(prev => {
+      const next = { ...prev, [key]: val };
+      const exists = product.variants.find(v => v.attributes && Object.entries(next).every(([k, v2]) => v.attributes[k] === v2));
+      if (!exists) {
+        const fallback = product.variants.find(v => v.attributes && v.attributes[key] === val);
+        if (fallback) return fallback.attributes;
+      }
+      return next;
+    });
+  };
+
+  const selectedVariant = useMemo(() => {
+    if (!product || !product.variants || product.variants.length === 0) return null;
+    return product.variants.find(v => {
+      if (!v.attributes) return false;
+      return Object.entries(selectedAttributes).every(([k, val]) => v.attributes[k] === val);
+    });
+  }, [product, selectedAttributes]);
+
+  const currentPrice = selectedVariant ? selectedVariant.price : (product ? product.price : 0);
 
   const related = useMemo(() => {
     if (!product) return [];
@@ -125,12 +163,24 @@ export default function ProductDetail() {
   const fetchProduct = async () => {
     setLoading(true);
     try {
-      const [productRes, allRes] = await Promise.all([
+      const [productRes, allRes, reviewsRes] = await Promise.all([
         api.get(`/products/${id}`),
         api.get('/products'),
+        api.get(`/products/${id}/reviews`).catch(() => ({ data: [] }))
       ]);
       setProduct(productRes.data);
       setAllProducts(allRes.data.data || []);
+      setReviews(reviewsRes.data || []);
+
+      if (token) {
+        api.get(`/products/${id}/reviews/eligibility`)
+           .then(res => setReviewEligibility(res.data))
+           .catch(() => setReviewEligibility(null));
+           
+        api.get(`/Wishlist/${id}/check`)
+           .then(res => setIsFavorited(res.data.isFavorited))
+           .catch(() => setIsFavorited(false));
+      }
     } catch (err) {
       console.error('ProductDetail fetch error:', err);
       setProduct(null);
@@ -139,14 +189,41 @@ export default function ProductDetail() {
     }
   };
 
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    if (!reviewEligibility?.canReview || !reviewEligibility?.eligibleOrderId) return;
+    if (!reviewForm.comment.trim()) {
+      alert("Vui lòng nhập nội dung đánh giá!");
+      return;
+    }
+
+    setSubmittingReview(true);
+    try {
+      await api.post(`/products/${id}/reviews`, {
+        orderId: reviewEligibility.eligibleOrderId,
+        rating: reviewForm.rating,
+        comment: reviewForm.comment
+      });
+      const reviewsRes = await api.get(`/products/${id}/reviews`);
+      setReviews(reviewsRes.data || []);
+      const eligRes = await api.get(`/products/${id}/reviews/eligibility`);
+      setReviewEligibility(eligRes.data);
+      setReviewForm({ rating: 5, comment: '' });
+      alert("Cảm ơn bạn đã đánh giá sản phẩm!");
+    } catch (err) {
+      alert(err.response?.data?.message || "Lỗi gửi đánh giá");
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
   const buildCartItem = () => ({
     ...product,
     price: currentPrice,
-    variant: {
-      color: selectedColor?.name,
-      [extras?.secondAttr?.key]: selectedSecond?.name,
-      ...(extras?.thirdAttr ? { [extras.thirdAttr.key]: selectedThird?.name } : {}),
-    },
+    variantId: selectedVariant?.id,
+    variantName: selectedVariant?.name,
+    variantAttributes: selectedVariant?.attributes,
+    variants: product.variants,
   });
 
   const handleAddToCart = () => {
@@ -162,6 +239,20 @@ export default function ProductDetail() {
     const item = buildCartItem();
     for (let i = 0; i < quantity; i++) addToCart(item);
     navigate('/cart');
+  };
+
+  const handleToggleWishlist = async () => {
+    if (!token) {
+        alert("Vui lòng đăng nhập để lưu sản phẩm!");
+        navigate('/login');
+        return;
+    }
+    try {
+        await api.post(`/Wishlist/${id}/toggle`);
+        setIsFavorited(!isFavorited);
+    } catch (err) {
+        alert("Có lỗi xảy ra khi lưu sản phẩm");
+    }
   };
 
   if (loading) {
@@ -186,7 +277,7 @@ export default function ProductDetail() {
     );
   }
 
-  if (!product || !extras) {
+  if (!product) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center font-sans">
         <div className="text-center space-y-4">
@@ -198,8 +289,11 @@ export default function ProductDetail() {
     );
   }
 
-  const stockQty = product.inventory?.availableQuantity ?? product.inventory?.stockQuantity ?? 0;
+  const stockQty = selectedVariant ? selectedVariant.availableQuantity : (product.inventory?.availableQuantity ?? product.inventory?.stockQuantity ?? 0);
   const imgSrc = getProductImage(product);
+  
+  // Lấy color từ selectedAttributes để highlight image nếu cần
+  const selectedColorName = selectedAttributes['color'] || selectedAttributes['Màu'] || selectedAttributes['Màu sắc'];
 
   return (
     <div className="min-h-screen bg-background text-on-surface font-sans">
@@ -233,9 +327,15 @@ export default function ProductDetail() {
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 onError={e => { e.target.src = PRODUCT_IMAGES.laptop; }}
               />
-              {selectedColor && (
+              <button 
+                onClick={handleToggleWishlist}
+                className={`absolute top-4 right-4 p-3 rounded-full backdrop-blur-md border shadow-sm transition-all ${isFavorited ? 'bg-rose-500/10 border-rose-500/20 text-rose-500' : 'bg-white/80 border-outline-variant/30 text-on-surface-variant hover:text-rose-500 hover:scale-110'}`}
+              >
+                <Heart size={20} className={isFavorited ? "fill-rose-500" : ""} />
+              </button>
+              {selectedColorName && (
                 <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full">
-                  {selectedColor.name}
+                  {selectedColorName}
                 </div>
               )}
               {stockQty <= 0 && (
@@ -245,16 +345,18 @@ export default function ProductDetail() {
               )}
             </div>
             {/* Color thumbnails */}
-            <div className="flex gap-3 justify-center">
-              {extras.colors.map(c => (
-                <ColorSwatch
-                  key={c.name}
-                  color={c}
-                  selected={selectedColor?.name === c.name}
-                  onClick={() => setSelectedColor(c)}
-                />
-              ))}
-            </div>
+            {optionGroups['color'] && (
+              <div className="flex gap-3 justify-center">
+                {optionGroups['color'].map(val => (
+                  <ColorSwatch
+                    key={val}
+                    colorName={val}
+                    selected={selectedAttributes['color'] === val}
+                    onClick={() => handleAttrChange('color', val)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Info + Variants */}
@@ -264,15 +366,14 @@ export default function ProductDetail() {
                 <Tag size={11} />
                 {product.category?.name || 'Sản phẩm'}
               </span>
-              <h1 className="text-3xl font-black text-on-surface tracking-tight leading-tight">{product.name}</h1>
               <div className="flex items-center gap-3 mt-2">
                 <div className="flex items-center gap-1">
                   {[1,2,3,4,5].map(s => (
-                    <Star key={s} size={14} className={s <= Math.round(extras.avgRating) ? 'fill-amber-500 text-amber-500' : 'text-on-surface-variant/30'} />
+                    <Star key={s} size={14} className={s <= Math.round(product.reviewSummary?.averageRating || 0) ? 'fill-amber-500 text-amber-500' : 'text-on-surface-variant/30'} />
                   ))}
-                  <span className="text-sm font-bold text-on-surface ml-1">{extras.avgRating.toFixed(1)}</span>
+                  <span className="text-sm font-bold text-on-surface ml-1">{(product.reviewSummary?.averageRating || 0).toFixed(1)}</span>
                 </div>
-                <span className="text-xs text-on-surface-variant">({extras.reviewCount} đánh giá)</span>
+                <span className="text-xs text-on-surface-variant">({product.reviewSummary?.reviewCount || 0} đánh giá)</span>
               </div>
             </div>
 
@@ -283,64 +384,30 @@ export default function ProductDetail() {
               )}
             </div>
 
-            <StockBadge product={product} />
+            <StockBadge product={{ inventory: { availableQuantity: stockQty } }} />
 
-            {/* Color selector */}
-            <div className="space-y-2">
-              <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">
-                Màu sắc: <span className="text-on-surface normal-case">{selectedColor?.name}</span>
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {extras.colors.map(c => (
-                  <button
-                    key={c.name}
-                    onClick={() => setSelectedColor(c)}
-                    className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
-                      selectedColor?.name === c.name
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-outline-variant/40 text-on-surface-variant hover:border-primary/40'
-                    }`}
-                  >
-                    {c.name}
-                    {c.priceAdj > 0 && <span className="text-primary ml-1">+{(c.priceAdj / 1000)}K</span>}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Second attribute (RAM / Gram / Storage...) */}
-            <div className="space-y-2">
-              <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">{extras.secondAttr.label}</p>
-              <div className="flex flex-wrap gap-2">
-                {extras.secondAttr.options.map(opt => (
-                  <OptionButton
-                    key={opt.name}
-                    option={opt}
-                    selected={selectedSecond?.name === opt.name}
-                    onClick={() => setSelectedSecond(opt)}
-                    showPrice
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Third attribute if exists */}
-            {extras.thirdAttr && (
-              <div className="space-y-2">
-                <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">{extras.thirdAttr.label}</p>
-                <div className="flex flex-wrap gap-2">
-                  {extras.thirdAttr.options.map(opt => (
-                    <OptionButton
-                      key={opt.name}
-                      option={opt}
-                      selected={selectedThird?.name === opt.name}
-                      onClick={() => setSelectedThird(opt)}
-                      showPrice
-                    />
-                  ))}
+            {/* Attributes selector */}
+            {Object.entries(optionGroups).map(([attrKey, values]) => {
+              const isColor = attrKey.toLowerCase().includes('color') || attrKey.toLowerCase() === 'màu';
+              return (
+                <div key={attrKey} className="space-y-2">
+                  <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+                    {attrKey}: <span className="text-on-surface normal-case">{selectedAttributes[attrKey]}</span>
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {values.map(val => {
+                      const selected = selectedAttributes[attrKey] === val;
+                      const onClick = () => handleAttrChange(attrKey, val);
+                      
+                      if (isColor) {
+                        return <ColorSwatch key={val} colorName={val} selected={selected} onClick={onClick} />;
+                      }
+                      return <OptionButton key={val} value={val} selected={selected} onClick={onClick} />;
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })}
 
             {/* Quantity */}
             {stockQty > 0 && (
@@ -408,22 +475,14 @@ export default function ProductDetail() {
               <h3 className="font-bold text-on-surface flex items-center gap-2"><Info size={18} className="text-primary" /> Mô tả sản phẩm</h3>
               <p className="text-sm text-on-surface-variant leading-relaxed">{product.description || 'Chưa có mô tả chi tiết.'}</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4 border-t border-outline-variant/20">
-                <div className="text-center p-3">
-                  <p className="text-xs text-on-surface-variant">Màu đã chọn</p>
-                  <p className="text-sm font-bold text-on-surface mt-1">{selectedColor?.name}</p>
-                </div>
-                <div className="text-center p-3">
-                  <p className="text-xs text-on-surface-variant">{extras.secondAttr.label}</p>
-                  <p className="text-sm font-bold text-on-surface mt-1">{selectedSecond?.name}</p>
-                </div>
-                {extras.thirdAttr && (
-                  <div className="text-center p-3">
-                    <p className="text-xs text-on-surface-variant">{extras.thirdAttr.label}</p>
-                    <p className="text-sm font-bold text-on-surface mt-1">{selectedThird?.name}</p>
+                {Object.entries(selectedAttributes).map(([key, val]) => (
+                  <div key={key} className="text-center p-3">
+                    <p className="text-xs text-on-surface-variant uppercase">{key}</p>
+                    <p className="text-sm font-bold text-on-surface mt-1">{val}</p>
                   </div>
-                )}
+                ))}
                 <div className="text-center p-3">
-                  <p className="text-xs text-on-surface-variant">Giá cấu hình</p>
+                  <p className="text-xs text-on-surface-variant uppercase">Giá</p>
                   <p className="text-sm font-bold text-primary mt-1">{currentPrice.toLocaleString()}đ</p>
                 </div>
               </div>
@@ -432,67 +491,85 @@ export default function ProductDetail() {
 
           {activeTab === 'specs' && (
             <div className="bg-surface-container-low border border-outline-variant/20 rounded-2xl overflow-hidden">
-              <table className="w-full text-sm">
-                <tbody>
-                  {extras.specs.map((spec, i) => (
-                    <tr key={spec.label} className={i % 2 === 0 ? 'bg-surface-container-lowest' : ''}>
-                      <td className="px-6 py-3 font-semibold text-on-surface w-1/3 border-b border-outline-variant/10">{spec.label}</td>
-                      <td className="px-6 py-3 text-on-surface-variant border-b border-outline-variant/10">{spec.value}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="p-6 text-center text-sm text-on-surface-variant">Thông số kỹ thuật đang cập nhật.</div>
             </div>
           )}
 
           {activeTab === 'reviews' && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-4 bg-surface-container-low border border-outline-variant/20 rounded-2xl p-6">
-                <div className="text-center">
-                  <p className="text-5xl font-black text-primary">{extras.avgRating.toFixed(1)}</p>
-                  <div className="flex justify-center mt-1">
-                    {[1,2,3,4,5].map(s => (
-                      <Star key={s} size={14} className="fill-amber-500 text-amber-500" />
-                    ))}
-                  </div>
-                  <p className="text-xs text-on-surface-variant mt-1">{extras.reviewCount} đánh giá</p>
-                </div>
-                <div className="flex-1 space-y-1">
-                  {[5,4,3,2,1].map(star => (
-                    <div key={star} className="flex items-center gap-2 text-xs">
-                      <span className="w-3 text-on-surface-variant">{star}</span>
-                      <Star size={10} className="fill-amber-500 text-amber-500" />
-                      <div className="flex-1 h-1.5 bg-surface-container rounded-full overflow-hidden">
-                        <div className="h-full bg-amber-500 rounded-full" style={{ width: `${star === 5 ? 70 : star === 4 ? 20 : 5}%` }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              {extras.reviews.map(review => (
-                <div key={review.id} className="bg-surface-container-low border border-outline-variant/20 rounded-2xl p-5 space-y-2">
-                  <div className="flex items-center justify-between">
+            <div className="space-y-6">
+              {reviewEligibility?.canReview && (
+                <div className="bg-surface-container-low border border-outline-variant/20 rounded-2xl p-6 space-y-4">
+                  <h3 className="font-bold text-lg text-on-surface">Viết đánh giá của bạn</h3>
+                  <form onSubmit={handleSubmitReview} className="space-y-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-xs font-bold text-primary">
-                        {review.author[0]}
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-on-surface">{review.author}</p>
-                        {review.verified && <p className="text-[10px] text-emerald-500 font-semibold">✓ Đã mua hàng</p>}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex">
-                        {[1,2,3,4,5].map(s => (
-                          <Star key={s} size={12} className={s <= review.rating ? 'fill-amber-500 text-amber-500' : 'text-on-surface-variant/20'} />
+                      <span className="text-sm font-semibold text-on-surface-variant">Đánh giá sao:</span>
+                      <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 5].map(star => (
+                          <button type="button" key={star} onClick={() => setReviewForm(prev => ({ ...prev, rating: star }))}>
+                            <Star size={24} className={star <= reviewForm.rating ? "fill-amber-500 text-amber-500" : "text-on-surface-variant/30"} />
+                          </button>
                         ))}
                       </div>
-                      <span className="text-xs text-on-surface-variant">{review.date}</span>
                     </div>
-                  </div>
-                  <p className="text-sm text-on-surface-variant leading-relaxed">{review.comment}</p>
+                    <textarea
+                      placeholder="Chia sẻ cảm nhận của bạn về sản phẩm này..."
+                      rows={4}
+                      value={reviewForm.comment}
+                      onChange={e => setReviewForm(prev => ({ ...prev, comment: e.target.value }))}
+                      className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                    />
+                    <button type="submit" disabled={submittingReview} className="px-6 py-2 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-container active:scale-95 transition-all disabled:opacity-50">
+                      {submittingReview ? 'Đang gửi...' : 'Gửi đánh giá'}
+                    </button>
+                  </form>
                 </div>
-              ))}
+              )}
+              
+              {!reviewEligibility?.canReview && reviewEligibility?.reason && token && (
+                <div className="p-4 bg-surface-container-lowest border border-outline-variant/20 rounded-xl text-sm text-on-surface-variant text-center">
+                  {reviewEligibility.reason}
+                </div>
+              )}
+
+              {!token && (
+                <div className="p-4 bg-surface-container-lowest border border-outline-variant/20 rounded-xl text-sm text-on-surface-variant text-center">
+                  Vui lòng <Link to="/login" className="text-primary hover:underline">đăng nhập</Link> để đánh giá sản phẩm.
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <h3 className="font-bold text-lg text-on-surface flex items-center gap-2"><MessageSquare size={20} className="text-primary"/> Đánh giá từ khách hàng ({reviews.length})</h3>
+                {reviews.length === 0 ? (
+                  <p className="text-sm text-on-surface-variant italic">Chưa có đánh giá nào cho sản phẩm này.</p>
+                ) : (
+                  reviews.map(review => (
+                    <div key={review.id} className="bg-surface-container-lowest border border-outline-variant/20 rounded-2xl p-5 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-sm font-bold text-primary">
+                            {review.userName[0]}
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-on-surface">{review.userName}</p>
+                            <div className="flex items-center gap-2">
+                              <div className="flex">
+                                {[1, 2, 3, 4, 5].map(s => (
+                                  <Star key={s} size={12} className={s <= review.rating ? "fill-amber-500 text-amber-500" : "text-on-surface-variant/20"} />
+                                ))}
+                              </div>
+                              <span className="text-[10px] text-on-surface-variant">{new Date(review.createdAt).toLocaleDateString('vi-VN')}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <span className="text-[10px] font-semibold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded flex items-center gap-1">
+                          <ShieldCheck size={12}/> Đã mua hàng
+                        </span>
+                      </div>
+                      <p className="text-sm text-on-surface-variant leading-relaxed">{review.comment}</p>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           )}
         </section>

@@ -60,24 +60,24 @@ function OrderRow({ order, onStatusUpdate }) {
   };
 
   return (
-    <div className="backdrop-blur-md bg-white/5 border border-white/5 rounded-2xl overflow-hidden hover:border-white/10 transition-all">
+    <div className="backdrop-blur-md bg-surface border border-outline-variant/30 rounded-2xl overflow-hidden hover:border-primary/20 hover:shadow-sm transition-all shadow-sm">
       {/* Row Header */}
       <div className="p-4 flex items-center gap-4">
         <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-4 gap-3 items-center">
           {/* Order ID */}
           <div>
-            <p className="text-[10px] text-slate-500 uppercase tracking-wider">Mã đơn</p>
-            <p className="text-xs font-mono text-slate-300 truncate">...{order.id?.slice(-8)}</p>
+            <p className="text-[10px] text-outline uppercase tracking-wider">Mã đơn</p>
+            <p className="text-xs font-mono text-on-surface truncate">...{order.id?.slice(-8)}</p>
           </div>
           {/* Date */}
           <div>
-            <p className="text-[10px] text-slate-500 uppercase tracking-wider">Ngày đặt</p>
-            <p className="text-xs text-slate-300">{formattedDate}</p>
+            <p className="text-[10px] text-outline uppercase tracking-wider">Ngày đặt</p>
+            <p className="text-xs text-on-surface">{formattedDate}</p>
           </div>
           {/* Amount */}
           <div>
-            <p className="text-[10px] text-slate-500 uppercase tracking-wider">Tổng tiền</p>
-            <p className="text-sm font-bold text-indigo-400">{order.totalAmount?.toLocaleString()}đ</p>
+            <p className="text-[10px] text-outline uppercase tracking-wider">Tổng tiền</p>
+            <p className="text-sm font-bold text-primary">{order.totalAmount?.toLocaleString()}đ</p>
           </div>
           {/* Status */}
           <div>
@@ -91,7 +91,7 @@ function OrderRow({ order, onStatusUpdate }) {
             <button
               onClick={() => handleStatusUpdate(config.nextStatus)}
               disabled={updating}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600/80 text-white text-xs font-semibold rounded-xl hover:bg-indigo-500 transition-all active:scale-95 disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white text-xs font-semibold rounded-xl hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-50"
             >
               {updating ? (
                 <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white" />
@@ -108,7 +108,7 @@ function OrderRow({ order, onStatusUpdate }) {
             <button
               onClick={handleCancel}
               disabled={updating}
-              className="p-1.5 text-rose-400 hover:text-rose-300 transition-colors disabled:opacity-50"
+              className="p-1.5 text-rose-500 hover:text-rose-600 transition-colors disabled:opacity-50"
               title="Hủy đơn"
             >
               <XCircle size={16} />
@@ -117,7 +117,7 @@ function OrderRow({ order, onStatusUpdate }) {
 
           <button
             onClick={() => setExpanded(!expanded)}
-            className="p-1.5 text-slate-400 hover:text-slate-200 transition-colors"
+            className="p-1.5 text-on-surface-variant hover:text-primary transition-colors"
           >
             {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </button>
@@ -126,35 +126,35 @@ function OrderRow({ order, onStatusUpdate }) {
 
       {/* Expanded Details */}
       {expanded && (
-        <div className="border-t border-white/5 p-4 space-y-4">
+        <div className="border-t border-outline-variant/30 p-4 space-y-4 bg-surface-container-lowest">
           {/* Order Items */}
           {order.orderItems && order.orderItems.length > 0 ? (
             <div className="space-y-2">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Chi tiết sản phẩm</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-outline">Chi tiết sản phẩm</p>
               {order.orderItems.map((item, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+                <div key={i} className="flex items-center justify-between py-2 border-b border-outline-variant/10 last:border-0">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center">
-                      <Package size={14} className="text-slate-400" />
+                    <div className="w-8 h-8 bg-surface-container rounded-lg flex items-center justify-center">
+                      <Package size={14} className="text-outline" />
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-white">{item.product?.name || `Sản phẩm #${i + 1}`}</p>
-                      <p className="text-[10px] text-slate-500">{item.unitPrice?.toLocaleString()}đ × {item.quantity}</p>
+                      <p className="text-xs font-semibold text-on-surface">{item.product?.name || `Sản phẩm #${i + 1}`}</p>
+                      <p className="text-[10px] text-on-surface-variant">{item.unitPrice?.toLocaleString()}đ × {item.quantity}</p>
                     </div>
                   </div>
-                  <span className="text-xs font-bold text-slate-300">{(item.unitPrice * item.quantity)?.toLocaleString()}đ</span>
+                  <span className="text-xs font-bold text-on-surface">{(item.unitPrice * item.quantity)?.toLocaleString()}đ</span>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-xs text-slate-500 italic">Không có thông tin sản phẩm</p>
+            <p className="text-xs text-outline italic">Không có thông tin sản phẩm</p>
           )}
 
           {/* Order meta */}
           {order.note && (
-            <div className="bg-white/5 rounded-xl p-3">
-              <p className="text-[10px] text-slate-500 mb-1">Ghi chú</p>
-              <p className="text-xs text-slate-300">{order.note}</p>
+            <div className="bg-surface-container rounded-xl p-3">
+              <p className="text-[10px] text-outline mb-1">Ghi chú</p>
+              <p className="text-xs text-on-surface">{order.note}</p>
             </div>
           )}
         </div>
@@ -204,12 +204,12 @@ export default function AdminOrders() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Quản Lý Đơn Hàng</h1>
-          <p className="text-slate-400 mt-1">Xử lý, duyệt và theo dõi đơn hàng từ khách hàng.</p>
+          <h1 className="text-3xl font-bold text-on-surface tracking-tight">Quản Lý Đơn Hàng</h1>
+          <p className="text-on-surface-variant mt-1">Xử lý, duyệt và theo dõi đơn hàng từ khách hàng.</p>
         </div>
         <button
           onClick={fetchOrders}
-          className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 text-slate-300 rounded-xl text-sm hover:bg-white/10 transition-all"
+          className="flex items-center gap-2 px-4 py-2.5 bg-surface border border-outline-variant/30 text-on-surface-variant rounded-xl text-sm hover:bg-surface-container-low transition-all"
         >
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           Làm mới
@@ -223,8 +223,8 @@ export default function AdminOrders() {
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === tab
-                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                : 'bg-white/5 border border-white/5 text-slate-400 hover:border-white/10 hover:text-slate-200'
+                ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                : 'bg-surface border border-outline-variant/30 text-on-surface-variant hover:border-primary/20 hover:text-on-surface'
               }`}
           >
             {tab === 'All' ? 'Tất Cả' :
@@ -232,7 +232,7 @@ export default function AdminOrders() {
                 tab === 'Confirmed' ? 'Đã Xác Nhận' :
                   tab === 'Shipping' ? 'Đang Giao' :
                     tab === 'Delivered' ? 'Đã Giao' : 'Đã Hủy'}
-            <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${activeTab === tab ? 'bg-white/20' : 'bg-white/5'
+            <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${activeTab === tab ? 'bg-white/20' : 'bg-surface-container-high'
               }`}>
               {countByStatus(tab)}
             </span>
@@ -253,12 +253,12 @@ export default function AdminOrders() {
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="backdrop-blur-md bg-white/5 border border-white/5 rounded-2xl p-4 animate-pulse">
+            <div key={i} className="backdrop-blur-md bg-surface border border-outline-variant/30 rounded-2xl p-4 animate-pulse">
               <div className="grid grid-cols-4 gap-4">
                 {[1, 2, 3, 4].map(j => (
                   <div key={j} className="space-y-1">
-                    <div className="h-2 bg-white/10 rounded w-16" />
-                    <div className="h-3 bg-white/10 rounded w-24" />
+                    <div className="h-2 bg-surface-container rounded w-16" />
+                    <div className="h-3 bg-surface-container rounded w-24" />
                   </div>
                 ))}
               </div>
@@ -266,12 +266,12 @@ export default function AdminOrders() {
           ))}
         </div>
       ) : filteredOrders.length === 0 ? (
-        <div className="backdrop-blur-md bg-white/5 border border-white/5 p-12 rounded-3xl text-center space-y-4">
-          <div className="h-16 w-16 bg-white/5 border border-white/5 text-slate-400 rounded-3xl flex items-center justify-center mx-auto">
+        <div className="backdrop-blur-md bg-surface border border-outline-variant/30 p-12 rounded-3xl text-center space-y-4 shadow-sm">
+          <div className="h-16 w-16 bg-surface-container border border-outline-variant/20 text-outline rounded-3xl flex items-center justify-center mx-auto">
             <ShoppingCart size={28} />
           </div>
-          <h3 className="text-lg font-bold text-white">Không có đơn hàng</h3>
-          <p className="text-slate-400 text-sm">
+          <h3 className="text-lg font-bold text-on-surface">Không có đơn hàng</h3>
+          <p className="text-on-surface-variant text-sm">
             {activeTab === 'All' ? 'Chưa có đơn hàng nào trong hệ thống.' : `Không có đơn ở trạng thái "${activeTab}".`}
           </p>
         </div>
@@ -280,7 +280,7 @@ export default function AdminOrders() {
           {filteredOrders.map(order => (
             <OrderRow key={order.id} order={order} onStatusUpdate={handleStatusUpdate} />
           ))}
-          <p className="text-center text-xs text-slate-500 pt-2">
+          <p className="text-center text-xs text-outline pt-2">
             Hiển thị {filteredOrders.length} / {orders.length} đơn hàng
           </p>
         </div>

@@ -10,11 +10,15 @@ public class PaymentGatewayService : IPaymentGatewayService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IConfiguration _configuration;
+    private readonly IMomoPaymentProvider _momoProvider;
+    private readonly IPayOsPaymentProvider _payOsProvider;
 
-    public PaymentGatewayService(IUnitOfWork unitOfWork, IConfiguration configuration)
+    public PaymentGatewayService(IUnitOfWork unitOfWork, IConfiguration configuration, IMomoPaymentProvider momoProvider, IPayOsPaymentProvider payOsProvider)
     {
         _unitOfWork = unitOfWork;
         _configuration = configuration;
+        _momoProvider = momoProvider;
+        _payOsProvider = payOsProvider;
     }
 
     public async Task<PaymentInitResponse> CreatePaymentAsync(CreatePaymentRequest request)
@@ -24,9 +28,47 @@ public class PaymentGatewayService : IPaymentGatewayService
         if (order.Status != "Pending") throw new InvalidOperationException("Đơn hàng không ở trạng thái chờ thanh toán.");
 
         var provider = NormalizeProvider(request.Provider);
-        var transactionCode = $"{provider}{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
-        var paymentUrl = BuildPaymentUrl(provider, order.Id, order.TotalAmount, transactionCode, request.ReturnUrl);
-        var qrCodeUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=280x280&data={Uri.EscapeDataString(paymentUrl)}";
+        
+        // PayOS requires orderCode to be a long/int, up to 9007199254740991. 
+        // MoMo accepts strings. So we generate a numeric timestamp-based code for both for consistency,
+        // or keep prefix for MoMo. Let's use numeric for PayOS.
+        var transactionCode = provider == "PayOS" 
+            ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString() 
+            : $"{provider}{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+        
+        string paymentUrl;
+        string qrCodeUrl;
+        var isDemoModeStr = _configuration["PaymentSettings:IsDemoMode"];
+        var isDemoMode = string.IsNullOrEmpty(isDemoModeStr) || isDemoModeStr.Equals("true", StringComparison.OrdinalIgnoreCase);
+
+        if (isDemoMode)
+        {
+            // Demo mode: Return a local URL that indicates success and auto-confirm order
+            paymentUrl = $"http://localhost:5173/payment-result?orderId={order.Id}&resultCode=0&code=00";
+            qrCodeUrl = paymentUrl;
+
+            order.PaymentStatus = "Paid";
+            order.Status = "Confirmed";
+            _unitOfWork.Orders.Update(order);
+        }
+        else
+        {
+            try 
+            {
+                if (provider == "MoMo")
+                {
+                    (paymentUrl, qrCodeUrl) = await _momoProvider.CreatePaymentAsync(order, transactionCode);
+                }
+                else 
+                {
+                    (paymentUrl, qrCodeUrl) = await _payOsProvider.CreatePaymentAsync(order, transactionCode);
+                }
+            }
+            catch (Exception ex)
+            {
+                 throw new Exception($"Lỗi khi tạo giao dịch {provider}: {ex.Message}");
+            }
+        }
 
         var transaction = new PaymentTransaction
         {
@@ -91,16 +133,15 @@ public class PaymentGatewayService : IPaymentGatewayService
         }
     }
 
-    private string BuildPaymentUrl(string provider, Guid orderId, decimal amount, string transactionCode, string returnUrl)
+    public async Task ConfirmPaymentByTransactionCodeAsync(string provider, string transactionCode)
     {
-        if (provider == "MoMo")
-        {
-            var endpoint = _configuration["MoMo:Endpoint"] ?? "https://test-payment.momo.vn/v2/gateway/pay";
-            return $"{endpoint}?orderId={orderId}&amount={amount:0}&requestId={transactionCode}&redirectUrl={Uri.EscapeDataString(returnUrl)}";
-        }
+        var normalizedProvider = NormalizeProvider(provider);
+        var transactions = await _unitOfWork.Repository<PaymentTransaction>().FindAsync(t =>
+            t.Provider == normalizedProvider && t.TransactionCode == transactionCode && !t.IsDeleted);
+        var transaction = transactions.OrderByDescending(t => t.CreatedAt).FirstOrDefault();
+        if (transaction == null) throw new KeyNotFoundException("Không tìm thấy giao dịch thanh toán.");
 
-        var payOsEndpoint = _configuration["PayOS:Endpoint"] ?? "https://pay.payos.vn/web";
-        return $"{payOsEndpoint}?orderCode={transactionCode}&amount={amount:0}&returnUrl={Uri.EscapeDataString(returnUrl)}";
+        await ConfirmPaymentAsync(transaction.OrderId, provider, transactionCode);
     }
 
     private static string NormalizeProvider(string provider)

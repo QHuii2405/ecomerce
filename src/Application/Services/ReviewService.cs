@@ -81,4 +81,26 @@ public class ReviewService : IReviewService
             CreatedAt = review.CreatedAt
         };
     }
+
+    public async Task<ProductReviewEligibilityResponse> GetReviewEligibilityAsync(Guid productId, Guid userId)
+    {
+        var orders = await _unitOfWork.Orders.GetOrdersByUserIdWithItemsAsync(userId);
+        var deliveredOrdersWithProduct = orders.Where(o => o.Status == "Delivered" && o.OrderItems.Any(i => i.ProductId == productId));
+
+        if (!deliveredOrdersWithProduct.Any())
+        {
+            return new ProductReviewEligibilityResponse { CanReview = false, Reason = "Bạn cần mua và nhận hàng thành công trước khi đánh giá." };
+        }
+
+        var hasReviewed = await _unitOfWork.Repository<ProductReview>().FindAsync(r => 
+            r.ProductId == productId && r.UserId == userId && !r.IsDeleted);
+
+        if (hasReviewed.Any())
+        {
+            return new ProductReviewEligibilityResponse { CanReview = false, Reason = "Bạn đã đánh giá sản phẩm này." };
+        }
+
+        var eligibleOrder = deliveredOrdersWithProduct.OrderByDescending(o => o.CreatedAt).First();
+        return new ProductReviewEligibilityResponse { CanReview = true, EligibleOrderId = eligibleOrder.Id };
+    }
 }

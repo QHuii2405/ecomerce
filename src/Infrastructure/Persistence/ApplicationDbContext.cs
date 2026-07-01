@@ -21,7 +21,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<JobPosting> JobPostings => Set<JobPosting>();
-
+    public DbSet<GoodsReceipt> GoodsReceipts => Set<GoodsReceipt>();
+    public DbSet<GoodsReceiptDetail> GoodsReceiptDetails => Set<GoodsReceiptDetail>();
+    public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
+    public DbSet<Voucher> Vouchers => Set<Voucher>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -74,6 +77,63 @@ public class ApplicationDbContext : DbContext
             .WithMany(o => o.PaymentTransactions)
             .HasForeignKey(p => p.OrderId);
 
+        // GoodsReceipt Configuration
+        modelBuilder.Entity<GoodsReceipt>()
+            .HasOne(r => r.CreatedByUser)
+            .WithMany()
+            .HasForeignKey(r => r.CreatedByUserId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        modelBuilder.Entity<GoodsReceipt>()
+            .HasOne(r => r.ApprovedByUser)
+            .WithMany()
+            .HasForeignKey(r => r.ApprovedByUserId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        modelBuilder.Entity<GoodsReceiptDetail>()
+            .HasOne(d => d.GoodsReceipt)
+            .WithMany(r => r.Details)
+            .HasForeignKey(d => d.GoodsReceiptId);
+
+        modelBuilder.Entity<GoodsReceiptDetail>()
+            .Property(d => d.ImportPrice)
+            .HasColumnType("decimal(18,2)");
+
+        modelBuilder.Entity<GoodsReceipt>()
+            .Property(r => r.TotalAmount)
+            .HasColumnType("decimal(18,2)");
+
+        // Voucher & Wishlist Configuration
+        modelBuilder.Entity<WishlistItem>()
+            .HasIndex(w => new { w.UserId, w.ProductId })
+            .IsUnique();
+
+        modelBuilder.Entity<Order>()
+            .HasOne(o => o.Voucher)
+            .WithMany()
+            .HasForeignKey(o => o.VoucherId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Voucher>()
+            .HasIndex(v => v.Code)
+            .IsUnique();
+
+        modelBuilder.Entity<Voucher>()
+            .Property(v => v.DiscountValue)
+            .HasColumnType("decimal(18,2)");
+            
+        modelBuilder.Entity<Voucher>()
+            .Property(v => v.MinOrderValue)
+            .HasColumnType("decimal(18,2)");
+
+        modelBuilder.Entity<Voucher>()
+            .Property(v => v.MaxDiscountValue)
+            .HasColumnType("decimal(18,2)");
+            
+        modelBuilder.Entity<User>()
+            .Property(u => u.TotalSpent)
+            .HasColumnType("decimal(18,2)");
+
         // ==================== USERS ====================
         var adminId = Guid.Parse("a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d");
         var staffId = Guid.Parse("f6e5d4c3-b2a1-0f9e-8d7c-6b5a4f3e2d1c");
@@ -82,9 +142,9 @@ public class ApplicationDbContext : DbContext
             new User
             {
                 Id = adminId,
-                Email = "admin@iluminaty.com",
+                Email = "admin@ecommerce.com",
                 FullName = "System Administrator",
-                PasswordHash = "$2a$11$Le3WZPxhWsgyNrsgQ5oEEOQ6uCYXNMpEWZ14rRqQAkZejS75R/zJK",
+                PasswordHash = "$2a$11$y2CddBh0H5CK9EmBsbo1EOj8pN26ACgU/Eme8ITQEqi3syLHxEFRG",
                 Role = "Admin",
                 PhoneNumber = "0901234567",
                 Address = "123 iLuminaty HQ, TP.HCM",
@@ -122,52 +182,52 @@ public class ApplicationDbContext : DbContext
         // ==================== PRODUCTS — LAPTOPS (10) ====================
         var products = new List<Product>
         {
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000001"), Name = "iLuminaty Pro X1",        Description = "Flagship laptop với Intel Core Ultra 9, RAM 32GB, màn OLED 4K, siêu mỏng 14mm.", Price = 52_490_000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000002"), Name = "iLuminaty Air 15",        Description = "Laptop văn phòng 15 inch nhẹ 1.2kg, pin 20 giờ, AMD Ryzen 7 8845HS.", Price = 28_990_000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000003"), Name = "Phantom Studio Pro",      Description = "Workstation sáng tạo với RTX 4090, RAM 64GB ECC, thiết kế CNC aluminium.", Price = 89_900_000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000004"), Name = "Nexus Book S13",          Description = "Ultrabook 13 inch gọn nhẹ, màn hình 2.8K AMOLED 120Hz, Intel Arc GPU.", Price = 22_590_000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000005"), Name = "Lumina Elite X Pro",      Description = "Business laptop bảo mật cấp cao, TPM 2.0, khuôn mặt IR, RAM 16GB LPDDR5X.", Price = 35_990_000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000006"), Name = "ProVision 16 Max",        Description = "Laptop đồ họa chuyên dụng 16 inch, RTX 4070, bàn phím cơ Cherry MX.", Price = 45_990_000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000007"), Name = "Swift Creator X",         Description = "Creator laptop màn 4K OLED touch, Ryzen 9 8945HX, card đồ họa Radeon 890M.", Price = 38_500_000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000008"), Name = "Nova Slim 14",            Description = "Mỏng nhẹ nhất phân khúc, chỉ 0.9kg, màn 14 inch QHD+, pin 18 giờ.", Price = 19_990_000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000009"), Name = "Titan Gamer Pro",         Description = "Gaming laptop 17 inch, RTX 4080 12GB, màn 240Hz QHD, tản nhiệt vapor chamber.", Price = 58_990_000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000010"), Name = "CodeBook Developer Ed.", Description = "Laptop cho lập trình viên, Linux ready, 32GB RAM, SSD 2TB NVMe PCIe 5.0.", Price = 31_990_000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000001"), Name = "Dell XPS 15",             Brand = "Dell",   Description = "Flagship laptop với Intel Core Ultra 9, RAM 32GB, màn OLED 4K, siêu mỏng 14mm.", Price = 52_490_000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000002"), Name = "MacBook Air 15",          Brand = "Apple",  Description = "Laptop văn phòng 15 inch nhẹ 1.2kg, pin 20 giờ, M3 chip.", Price = 28_990_000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000003"), Name = "Asus ROG Zephyrus G14",   Brand = "Asus",   Description = "Workstation sáng tạo với RTX 4090, RAM 64GB ECC, thiết kế CNC aluminium.", Price = 89_900_000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000004"), Name = "Lenovo ThinkPad X1",      Brand = "Lenovo", Description = "Ultrabook 13 inch gọn nhẹ, màn hình 2.8K AMOLED 120Hz, Intel Arc GPU.", Price = 22_590_000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000005"), Name = "HP Spectre x360",         Brand = "HP",     Description = "Business laptop bảo mật cấp cao, TPM 2.0, khuôn mặt IR, RAM 16GB LPDDR5X.", Price = 35_990_000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000006"), Name = "MSI Stealth 16",          Brand = "MSI",    Description = "Laptop đồ họa chuyên dụng 16 inch, RTX 4070, bàn phím cơ Cherry MX.", Price = 45_990_000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000007"), Name = "Dell Alienware m16",      Brand = "Dell",   Description = "Creator laptop màn 4K OLED touch, Ryzen 9 8945HX, card đồ họa Radeon 890M.", Price = 38_500_000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000008"), Name = "MacBook Pro 14",          Brand = "Apple",  Description = "Mỏng nhẹ nhất phân khúc, chỉ 0.9kg, màn 14 inch QHD+, pin 18 giờ.", Price = 19_990_000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000009"), Name = "Asus Zenbook 14",         Brand = "Asus",   Description = "Gaming laptop 17 inch, RTX 4080 12GB, màn 240Hz QHD, tản nhiệt vapor chamber.", Price = 58_990_000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000010"), Name = "Lenovo Legion Pro 5",     Brand = "Lenovo", Description = "Laptop cho lập trình viên, Linux ready, 32GB RAM, SSD 2TB NVMe PCIe 5.0.", Price = 31_990_000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false },
 
             // ==================== GAMING (10) ====================
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000011"), Name = "Ghost Mechanical Keyboard", Description = "Bàn phím cơ không dây đỉnh cao, switch êm ái, đèn nền RGB per-key.", Price = 4_725_000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000012"), Name = "Phantom Mouse Pro X",      Description = "Chuột gaming 26000 DPI, sensor quang học, trọng lượng 58g siêu nhẹ.", Price = 2_990_000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000013"), Name = "HyperPad XL RGB",          Description = "Mousepad gaming khổng lồ 900×400mm, bề mặt tốc độ cao, viền LED RGB.", Price = 890_000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000014"), Name = "Storm Gaming Chair",       Description = "Ghế gaming ergonomic, đệm memory foam, tựa đầu 4D, chịu tải 150kg.", Price = 8_990_000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000015"), Name = "NitroView 27\" 165Hz",    Description = "Màn hình gaming 27 inch QHD 165Hz, 1ms GTG, FreeSync Premium, HDR400.", Price = 9_990_000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000016"), Name = "StreamDeck Pro",           Description = "Bảng điều khiển stream 32 phím LCD, tích hợp OBS, Twitch, Discord.", Price = 3_490_000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000017"), Name = "VortexKeys 60%",           Description = "Bàn phím compact 60%, hot-swap socket, keycap PBT double-shot.", Price = 2_190_000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000018"), Name = "CoreController Pro",       Description = "Tay cầm chơi game PC/Mobile, kết nối USB-C + Bluetooth, trigger haptic.", Price = 1_990_000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000019"), Name = "UltraCapture 4K Cam",     Description = "Webcam gaming 4K 30fps, AI background removal, ring light LED tích hợp.", Price = 3_290_000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000020"), Name = "Aurora Gaming Headset",   Description = "Headset gaming 7.1 surround, mic khử ồn AI, đệm tai foam ngủ ngon.", Price = 2_490_000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000011"), Name = "Logitech G Pro X",        Brand = "Logitech", Description = "Bàn phím cơ không dây đỉnh cao, switch êm ái, đèn nền RGB per-key.", Price = 4_725_000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000012"), Name = "Razer DeathAdder V3 Pro", Brand = "Razer",    Description = "Chuột gaming 26000 DPI, sensor quang học, trọng lượng 58g siêu nhẹ.", Price = 2_990_000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000013"), Name = "Asus ROG Falchion",       Brand = "Asus",     Description = "Mousepad gaming khổng lồ 900×400mm, bề mặt tốc độ cao, viền LED RGB.", Price = 890_000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000014"), Name = "MSI Vigor GK71",          Brand = "MSI",      Description = "Ghế gaming ergonomic, đệm memory foam, tựa đầu 4D, chịu tải 150kg.", Price = 8_990_000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000015"), Name = "Logitech G915 TKL",       Brand = "Logitech", Description = "Màn hình gaming 27 inch QHD 165Hz, 1ms GTG, FreeSync Premium, HDR400.", Price = 9_990_000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000016"), Name = "Razer Huntsman V2",       Brand = "Razer",    Description = "Bảng điều khiển stream 32 phím LCD, tích hợp OBS, Twitch, Discord.", Price = 3_490_000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000017"), Name = "Asus ROG Gladius III",    Brand = "Asus",     Description = "Bàn phím compact 60%, hot-swap socket, keycap PBT double-shot.", Price = 2_190_000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000018"), Name = "MSI Clutch GM41",         Brand = "MSI",      Description = "Tay cầm chơi game PC/Mobile, kết nối USB-C + Bluetooth, trigger haptic.", Price = 1_990_000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000019"), Name = "Logitech G733",           Brand = "Logitech", Description = "Webcam gaming 4K 30fps, AI background removal, ring light LED tích hợp.", Price = 3_290_000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000020"), Name = "Razer BlackShark V2",     Brand = "Razer",    Description = "Headset gaming 7.1 surround, mic khử ồn AI, đệm tai foam ngủ ngon.", Price = 2_490_000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false },
 
             // ==================== AUDIO (10) ====================
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000021"), Name = "Sonic Buds Pro",          Description = "Tai nghe chống ồn ANC thế hệ 3, driver 11mm, pin 36 giờ kèm case.", Price = 6_225_000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000022"), Name = "CrystalAir Studio Mic",   Description = "Micro condenser USB-C cho studio, cardioid/omnidirectional, 192kHz.", Price = 4_590_000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000023"), Name = "BassBoom Speaker 360",    Description = "Loa Bluetooth 360 độ IPX7, bass mạnh, pin 24 giờ, kết nối đa điểm.", Price = 3_190_000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000024"), Name = "Lumina Over-Ear H1",      Description = "Tai nghe over-ear cao cấp, driver planar 50mm, DAC tích hợp 32-bit.", Price = 12_990_000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000025"), Name = "AudioBar Pro 2.1",        Description = "Thanh loa soundbar 2.1 kèm subwoofer, Dolby Atmos, HDMI ARC.", Price = 8_490_000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000026"), Name = "VoiceLink Pro Earbuds",   Description = "TWS earbuds cho công việc, mic MEMS 4 array, ENC khử ồn, pin 28 giờ.", Price = 3_990_000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000027"), Name = "PocketDAC Ultra",         Description = "DAC/Amp di động, ES9038Q2M chip, power 300mW vào 32Ω, USB-C.", Price = 5_290_000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000028"), Name = "SonicWave IEM S5",        Description = "In-ear monitor 5 driver hybrid, cáp bạc 8 lõi, dải tần 8Hz-45kHz.", Price = 9_990_000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000029"), Name = "ClearCast Podcast Kit",   Description = "Bộ podcast: mic arm + mic + pop filter + audio interface USB.", Price = 4_290_000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000030"), Name = "HomeAudio Amp X3",        Description = "Amplifier hi-fi cho loa passive, 2×100W class AB, Bluetooth 5.3.", Price = 6_990_000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000021"), Name = "Sony WH-1000XM5",         Brand = "Sony",      Description = "Tai nghe chống ồn ANC thế hệ 3, driver 11mm, pin 36 giờ kèm case.", Price = 6_225_000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000022"), Name = "AirPods Pro 2",           Brand = "Apple",     Description = "Micro condenser USB-C cho studio, cardioid/omnidirectional, 192kHz.", Price = 4_590_000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000023"), Name = "Samsung Galaxy Buds 2",   Brand = "Samsung",   Description = "Loa Bluetooth 360 độ IPX7, bass mạnh, pin 24 giờ, kết nối đa điểm.", Price = 3_190_000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000024"), Name = "Sony WF-1000XM5",         Brand = "Sony",      Description = "Tai nghe over-ear cao cấp, driver planar 50mm, DAC tích hợp 32-bit.", Price = 12_990_000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000025"), Name = "AirPods Max",             Brand = "Apple",     Description = "Thanh loa soundbar 2.1 kèm subwoofer, Dolby Atmos, HDMI ARC.", Price = 8_490_000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000026"), Name = "iLuminaty SoundCore",     Brand = "iLuminaty", Description = "TWS earbuds cho công việc, mic MEMS 4 array, ENC khử ồn, pin 28 giờ.", Price = 3_990_000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000027"), Name = "Sony SRS-XG300",          Brand = "Sony",      Description = "DAC/Amp di động, ES9038Q2M chip, power 300mW vào 32Ω, USB-C.", Price = 5_290_000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000028"), Name = "Samsung Soundbar Q990C",  Brand = "Samsung",   Description = "In-ear monitor 5 driver hybrid, cáp bạc 8 lõi, dải tần 8Hz-45kHz.", Price = 9_990_000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000029"), Name = "iLuminaty Boom 360",      Brand = "iLuminaty", Description = "Bộ podcast: mic arm + mic + pop filter + audio interface USB.", Price = 4_290_000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000030"), Name = "Apple HomePod",           Brand = "Apple",     Description = "Amplifier hi-fi cho loa passive, 2×100W class AB, Bluetooth 5.3.", Price = 6_990_000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false },
 
             // ==================== SMARTPHONES (10) ====================
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000031"), Name = "Nexus Watch S",           Description = "Đồng hồ thông minh AMOLED 1.8\", đo SpO2/ECG/BP, GPS độc lập.", Price = 9_975_000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000032"), Name = "iLuminaty Phone Pro",     Description = "Flagship phone Snapdragon 8 Elite, camera 200MP, sạc 100W, IP68.", Price = 28_990_000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000033"), Name = "NovaPad Ultra 12",        Description = "Tablet 12 inch 2.8K 144Hz, M2 chip, 5G, bút stylus thế hệ 2.", Price = 22_490_000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000034"), Name = "FoldX Premium",           Description = "Smartphone màn hình gập 7.6 inch, chống nước IPX8, khung titan.", Price = 45_990_000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000035"), Name = "MidRange Hero A55",       Description = "Smartphone tầm trung tốt nhất, Dimensity 7300, camera 108MP, pin 6000mAh.", Price = 9_490_000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000036"), Name = "WristBand Fit Pro",       Description = "Vòng tay thể thao đo 24 chỉ số sức khỏe, pin 21 ngày, chống nước 5ATM.", Price = 2_490_000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000037"), Name = "AirTab Kids 8",           Description = "Tablet trẻ em 8 inch, bảo vệ mắt EyeShield+, khóa ứng dụng theo độ tuổi.", Price = 4_990_000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000038"), Name = "PowerBank Turbo 25K",     Description = "Pin dự phòng 25000mAh, sạc 140W, 3 cổng ra, hiển thị số dung lượng.", Price = 1_990_000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000039"), Name = "SmartGlasses AR-1",       Description = "Kính AR thế hệ đầu, hiển thị thông tin ngay trên kính, kết nối BT 5.3.", Price = 15_990_000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000040"), Name = "ChargeStation 8-in-1",    Description = "Trạm sạc không dây 8 thiết bị cùng lúc, 100W tổng, chân đế sang trọng.", Price = 3_490_000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000031"), Name = "iPhone 15 Pro Max",       Brand = "Apple",   Description = "Đồng hồ thông minh AMOLED 1.8\", đo SpO2/ECG/BP, GPS độc lập.", Price = 29_990_000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000032"), Name = "Samsung Galaxy S24 Ultra",Brand = "Samsung", Description = "Flagship phone Snapdragon 8 Elite, camera 200MP, sạc 100W, IP68.", Price = 28_990_000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000033"), Name = "Xiaomi 14 Pro",           Brand = "Xiaomi",  Description = "Tablet 12 inch 2.8K 144Hz, M2 chip, 5G, bút stylus thế hệ 2.", Price = 22_490_000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000034"), Name = "Oppo Find X7 Ultra",      Brand = "Oppo",    Description = "Smartphone màn hình gập 7.6 inch, chống nước IPX8, khung titan.", Price = 25_990_000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000035"), Name = "iPhone 14",               Brand = "Apple",   Description = "Smartphone tầm trung tốt nhất, Dimensity 7300, camera 108MP, pin 6000mAh.", Price = 19_490_000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000036"), Name = "Samsung Galaxy Z Fold 5", Brand = "Samsung", Description = "Vòng tay thể thao đo 24 chỉ số sức khỏe, pin 21 ngày, chống nước 5ATM.", Price = 32_490_000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000037"), Name = "Xiaomi Redmi Note 13",    Brand = "Xiaomi",  Description = "Tablet trẻ em 8 inch, bảo vệ mắt EyeShield+, khóa ứng dụng theo độ tuổi.", Price = 4_990_000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000038"), Name = "Oppo Reno 11",            Brand = "Oppo",    Description = "Pin dự phòng 25000mAh, sạc 140W, 3 cổng ra, hiển thị số dung lượng.", Price = 11_990_000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000039"), Name = "Samsung Galaxy A55",      Brand = "Samsung", Description = "Kính AR thế hệ đầu, hiển thị thông tin ngay trên kính, kết nối BT 5.3.", Price = 9_990_000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("d0000000-0000-0000-0000-000000000040"), Name = "iPhone 13",               Brand = "Apple",   Description = "Trạm sạc không dây 8 thiết bị cùng lúc, 100W tổng, chân đế sang trọng.", Price = 13_490_000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false },
         };
 
         modelBuilder.Entity<Product>().HasData(products);
@@ -184,6 +244,35 @@ public class ApplicationDbContext : DbContext
         }).ToList();
 
         modelBuilder.Entity<Inventory>().HasData(inventories);
+
+        // ==================== PRODUCT VARIANTS ====================
+        var variants = new List<ProductVariant>
+        {
+            // Dell XPS 15 (d000...0001)
+            new() { Id = Guid.Parse("a0000000-0000-0000-0000-000000000001"), ProductId = Guid.Parse("d0000000-0000-0000-0000-000000000001"), Sku = "DELL-XPS15-16-512-BLK", Name = "16GB / 512GB / Black", AttributesJson = "{\"ram\":\"16GB\",\"storage\":\"512GB\",\"color\":\"Black\"}", Price = 52_490_000, StockQuantity = 10, ReservedQuantity = 0, IsActive = true, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("a0000000-0000-0000-0000-000000000002"), ProductId = Guid.Parse("d0000000-0000-0000-0000-000000000001"), Sku = "DELL-XPS15-32-1TB-SLV", Name = "32GB / 1TB / Silver", AttributesJson = "{\"ram\":\"32GB\",\"storage\":\"1TB\",\"color\":\"Silver\"}", Price = 59_990_000, StockQuantity = 5, ReservedQuantity = 0, IsActive = true, CreatedAt = seedDate, IsDeleted = false },
+
+            // MacBook Air 15 (d000...0002)
+            new() { Id = Guid.Parse("a0000000-0000-0000-0000-000000000003"), ProductId = Guid.Parse("d0000000-0000-0000-0000-000000000002"), Sku = "MAC-AIR15-16-512-SLV", Name = "16GB / 512GB / Silver", AttributesJson = "{\"ram\":\"16GB\",\"storage\":\"512GB\",\"color\":\"Silver\"}", Price = 28_990_000, StockQuantity = 15, ReservedQuantity = 0, IsActive = true, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("a0000000-0000-0000-0000-000000000004"), ProductId = Guid.Parse("d0000000-0000-0000-0000-000000000002"), Sku = "MAC-AIR15-32-1TB-BLK", Name = "32GB / 1TB / Midnight", AttributesJson = "{\"ram\":\"32GB\",\"storage\":\"1TB\",\"color\":\"Midnight\"}", Price = 34_990_000, StockQuantity = 8, ReservedQuantity = 0, IsActive = true, CreatedAt = seedDate, IsDeleted = false },
+
+            // iPhone 15 Pro Max (d000...0031)
+            new() { Id = Guid.Parse("a0000000-0000-0000-0000-000000000005"), ProductId = Guid.Parse("d0000000-0000-0000-0000-000000000031"), Sku = "IP15PM-256-BLK", Name = "256GB / Natural Titanium", AttributesJson = "{\"storage\":\"256GB\",\"color\":\"Natural Titanium\"}", Price = 29_990_000, StockQuantity = 20, ReservedQuantity = 0, IsActive = true, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("a0000000-0000-0000-0000-000000000006"), ProductId = Guid.Parse("d0000000-0000-0000-0000-000000000031"), Sku = "IP15PM-512-BLU", Name = "512GB / Blue Titanium", AttributesJson = "{\"storage\":\"512GB\",\"color\":\"Blue Titanium\"}", Price = 34_990_000, StockQuantity = 10, ReservedQuantity = 0, IsActive = true, CreatedAt = seedDate, IsDeleted = false },
+
+            // Samsung Galaxy S24 Ultra (d000...0032)
+            new() { Id = Guid.Parse("a0000000-0000-0000-0000-000000000007"), ProductId = Guid.Parse("d0000000-0000-0000-0000-000000000032"), Sku = "S24U-256-BLK", Name = "256GB / Titanium Black", AttributesJson = "{\"storage\":\"256GB\",\"color\":\"Titanium Black\"}", Price = 28_990_000, StockQuantity = 25, ReservedQuantity = 0, IsActive = true, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("a0000000-0000-0000-0000-000000000008"), ProductId = Guid.Parse("d0000000-0000-0000-0000-000000000032"), Sku = "S24U-512-YLW", Name = "512GB / Titanium Yellow", AttributesJson = "{\"storage\":\"512GB\",\"color\":\"Titanium Yellow\"}", Price = 32_990_000, StockQuantity = 12, ReservedQuantity = 0, IsActive = true, CreatedAt = seedDate, IsDeleted = false },
+
+            // Logitech G Pro X (d000...0011)
+            new() { Id = Guid.Parse("a0000000-0000-0000-0000-000000000009"), ProductId = Guid.Parse("d0000000-0000-0000-0000-000000000011"), Sku = "LOGI-GPX-RED-BLK", Name = "Red Switch / Black", AttributesJson = "{\"switch\":\"Red\",\"color\":\"Black\"}", Price = 4_725_000, StockQuantity = 30, ReservedQuantity = 0, IsActive = true, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("a0000000-0000-0000-0000-000000000010"), ProductId = Guid.Parse("d0000000-0000-0000-0000-000000000011"), Sku = "LOGI-GPX-BLU-WHT", Name = "Blue Switch / White", AttributesJson = "{\"switch\":\"Blue\",\"color\":\"White\"}", Price = 4_725_000, StockQuantity = 15, ReservedQuantity = 0, IsActive = true, CreatedAt = seedDate, IsDeleted = false },
+            
+            // Asus ROG Falchion (d000...0013)
+            new() { Id = Guid.Parse("a0000000-0000-0000-0000-000000000011"), ProductId = Guid.Parse("d0000000-0000-0000-0000-000000000013"), Sku = "ASUS-FAL-BRN-BLK", Name = "Brown Switch / Black", AttributesJson = "{\"switch\":\"Brown\",\"color\":\"Black\"}", Price = 890_000, StockQuantity = 20, ReservedQuantity = 0, IsActive = true, CreatedAt = seedDate, IsDeleted = false },
+        };
+
+        modelBuilder.Entity<ProductVariant>().HasData(variants);
 
         // ==================== SEED ORDERS (10) ====================
         var p1Id = Guid.Parse("d0000000-0000-0000-0000-000000000001");

@@ -8,6 +8,7 @@ public interface IUnitOfWork : IDisposable
     IProductRepository Products { get; }
     IInventoryRepository Inventories { get; }
     IOrderRepository Orders { get; }
+    IGoodsReceiptRepository GoodsReceipts { get; }
     IGenericRepository<Category> Categories { get; }
     IGenericRepository<User> Users { get; }
 

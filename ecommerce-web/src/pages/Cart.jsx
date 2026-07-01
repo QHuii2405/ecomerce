@@ -4,7 +4,7 @@ import api from '../api/axios';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ShoppingBag, Trash2, CreditCard, ArrowLeft, X, CheckCircle2,
-  Truck, Banknote, QrCode, Clock, ChevronRight, Package, AlertCircle, SlidersHorizontal
+  Truck, Banknote, QrCode, Clock, ChevronRight, Package, AlertCircle, SlidersHorizontal, Tag
 } from 'lucide-react';
 
 // Helper: payment method config
@@ -26,9 +26,9 @@ const PAYMENT_METHODS = [
     bg: 'bg-pink-500/10 border-pink-500/30'
   },
   {
-    id: 'VietQR',
-    label: 'Chuyển khoản ngân hàng',
-    sublabel: 'VietQR — quét mã ngân hàng nội địa',
+    id: 'PayOS',
+    label: 'Chuyển khoản VietQR',
+    sublabel: 'Thanh toán an toàn qua PayOS',
     icon: CreditCard,
     color: 'text-primary',
     bg: 'bg-primary/10 border-primary/30'
@@ -52,187 +52,21 @@ function StatusBadge({ status }) {
   );
 }
 
-// MoMo payment modal
-function MomoModal({ orderId, amount, onSuccess, onClose }) {
-  const [qrData, setQrData] = useState(null);
-  const [timeLeft, setTimeLeft] = useState(300);
-  const [loading, setLoading] = useState(true);
-  const [confirming, setConfirming] = useState(false);
-
-  useEffect(() => {
-    const fetchQr = async () => {
-      try {
-        const res = await api.post('/payments/momo/create', { orderId, amount });
-        setQrData(res.data);
-      } catch {
-        setQrData({ qrImageUrl: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=MOMO-DEMO-${orderId}` });
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchQr();
-  }, [orderId, amount]);
-
-  useEffect(() => {
-    if (timeLeft <= 0) return;
-    const t = setInterval(() => setTimeLeft(p => p - 1), 1000);
-    return () => clearInterval(t);
-  }, [timeLeft]);
-
-  const mins = String(Math.floor(timeLeft / 60)).padStart(2, '0');
-  const secs = String(timeLeft % 60).padStart(2, '0');
-
-  const handleConfirm = async () => {
-    setConfirming(true);
-    try {
-      await api.post('/payments/momo/confirm', { orderId, simulateSuccess: true });
-      onSuccess();
-    } catch {
-      alert('Thanh toán thất bại!');
-    } finally {
-      setConfirming(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-surface-container-lowest rounded-3xl shadow-2xl w-full max-w-sm border border-outline-variant/30 overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-pink-500 to-pink-600 p-6 text-center relative">
-          <button onClick={onClose} className="absolute top-4 right-4 text-white/70 hover:text-white">
-            <X size={20} />
-          </button>
-          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-2">
-            <QrCode size={24} className="text-white" />
-          </div>
-          <h3 className="text-white font-bold text-lg">Thanh toán MoMo</h3>
-          <p className="text-white/80 text-xs mt-1">{amount.toLocaleString()}đ</p>
-        </div>
-
-        <div className="p-6 space-y-4">
-          {/* QR Code */}
-          <div className="aspect-square max-w-[200px] mx-auto bg-surface-container-low rounded-2xl overflow-hidden flex items-center justify-center border border-outline-variant/30">
-            {loading ? (
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500" />
-            ) : (
-              <img src={qrData?.qrImageUrl} alt="QR MoMo" className="w-full h-full object-contain p-2" />
-            )}
-          </div>
-
-          {/* Countdown */}
-          <div className="flex items-center justify-center gap-2 text-sm">
-            <Clock size={14} className={timeLeft < 60 ? 'text-rose-500' : 'text-on-surface-variant'} />
-            <span className={`font-mono font-bold ${timeLeft < 60 ? 'text-rose-500' : 'text-on-surface'}`}>
-              {mins}:{secs}
-            </span>
-            <span className="text-on-surface-variant text-xs">còn lại</span>
-          </div>
-
-          <p className="text-center text-xs text-on-surface-variant">
-            Mở ứng dụng <strong className="text-pink-600">MoMo</strong> và quét mã QR hoặc nhấn nút dưới để giả lập thanh toán thành công.
-          </p>
-
-          <button
-            onClick={handleConfirm}
-            disabled={confirming || timeLeft <= 0}
-            className="w-full bg-gradient-to-r from-pink-500 to-pink-600 text-white py-3.5 rounded-2xl font-bold text-sm hover:shadow-lg hover:shadow-pink-500/20 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {confirming ? (
-              <><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" /> Đang xử lý...</>
-            ) : (
-              <><CheckCircle2 size={16} /> Xác nhận đã thanh toán</>
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// VietQR modal
-function VietQRModal({ orderId, amount, onClose }) {
-  const [qrData, setQrData] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchQr = async () => {
-      try {
-        const res = await api.post('/payments/vietqr/create', { orderId, amount });
-        setQrData(res.data);
-      } catch {
-        setQrData({
-          qrImageUrl: `https://img.vietqr.io/image/MB-0123456789-compact.png?amount=${amount}&addInfo=LUMINA${orderId.replace(/-/g, '').slice(0, 8).toUpperCase()}&accountName=LUMINA%20TECH%20STORE`,
-          bankId: 'MB',
-          accountNo: '0123456789',
-          accountName: 'LUMINA TECH STORE',
-          transferContent: `LUMINA${orderId.replace(/-/g, '').slice(0, 8).toUpperCase()}`
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchQr();
-  }, [orderId, amount]);
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-surface-container-lowest rounded-3xl shadow-2xl w-full max-w-sm border border-outline-variant/30 overflow-hidden">
-        <div className="bg-gradient-to-r from-primary to-primary-container p-6 text-center relative">
-          <button onClick={onClose} className="absolute top-4 right-4 text-white/70 hover:text-white">
-            <X size={20} />
-          </button>
-          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-2">
-            <CreditCard size={24} className="text-white" />
-          </div>
-          <h3 className="text-white font-bold text-lg">VietQR — Chuyển khoản</h3>
-          <p className="text-white/80 text-xs mt-1">{amount.toLocaleString()}đ</p>
-        </div>
-
-        <div className="p-6 space-y-4">
-          <div className="aspect-square max-w-[200px] mx-auto bg-surface-container-low rounded-2xl overflow-hidden flex items-center justify-center border border-outline-variant/30">
-            {loading ? (
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-            ) : (
-              <img src={qrData?.qrImageUrl} alt="VietQR" className="w-full h-full object-contain p-2"
-                onError={(e) => { e.target.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=VIETQR-DEMO`; }} />
-            )}
-          </div>
-
-          {qrData && (
-            <div className="bg-surface-container-low rounded-2xl p-4 space-y-2 text-xs">
-              <div className="flex justify-between"><span className="text-on-surface-variant">Ngân hàng</span><span className="font-bold">{qrData.bankId} Bank</span></div>
-              <div className="flex justify-between"><span className="text-on-surface-variant">Số tài khoản</span><span className="font-bold">{qrData.accountNo}</span></div>
-              <div className="flex justify-between"><span className="text-on-surface-variant">Chủ TK</span><span className="font-bold">{qrData.accountName}</span></div>
-              <div className="flex justify-between"><span className="text-on-surface-variant">Nội dung CK</span><span className="font-bold text-primary">{qrData.transferContent}</span></div>
-              <div className="flex justify-between"><span className="text-on-surface-variant">Số tiền</span><span className="font-bold text-primary">{amount.toLocaleString()}đ</span></div>
-            </div>
-          )}
-
-          <p className="text-center text-xs text-on-surface-variant">
-            Sau khi chuyển khoản, nhân viên sẽ xác nhận đơn hàng trong vòng <strong>15 phút</strong>.
-          </p>
-
-          <button onClick={onClose} className="w-full bg-surface-container border border-outline-variant text-on-surface py-3 rounded-2xl font-semibold text-sm hover:bg-surface-container-high transition-all">
-            Đã chuyển khoản
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function Cart() {
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]);
   const [paymentMethod, setPaymentMethod] = useState('COD');
   const [loading, setLoading] = useState(false);
-  const [momoModal, setMomoModal] = useState(null); // { orderId, amount }
-  const [vietqrModal, setVietqrModal] = useState(null);
   const [successOrderId, setSuccessOrderId] = useState(null);
 
   const [recipientName, setRecipientName] = useState('');
   const [recipientPhone, setRecipientPhone] = useState('');
   const [shippingAddress, setShippingAddress] = useState('');
+
+  const [voucherCode, setVoucherCode] = useState('');
+  const [appliedVoucher, setAppliedVoucher] = useState(null);
+  const [voucherError, setVoucherError] = useState('');
 
   useEffect(() => {
     setCartItems(getCart());
@@ -276,8 +110,42 @@ export default function Cart() {
   };
 
   const handleVariantChange = (cartItemKey, key, value) => {
-    updateCartItemVariant(cartItemKey, { [key]: value });
-    setCartItems(getCart());
+    const item = cartItems.find(i => getCartItemKey(i) === cartItemKey);
+    if (!item || !item.variants) return;
+    
+    const currentAttr = item.variantAttributes || {};
+    const nextAttr = { ...currentAttr, [key]: value };
+    
+    let newVariant = item.variants.find(v => v.attributes && Object.entries(nextAttr).every(([k, v2]) => v.attributes[k] === v2));
+    
+    if (!newVariant) {
+        newVariant = item.variants.find(v => v.attributes && v.attributes[key] === value);
+    }
+    
+    if (newVariant) {
+        updateCartItemVariant(cartItemKey, newVariant);
+        setCartItems(getCart());
+    }
+  };
+
+  const handleApplyVoucher = async () => {
+    if (!voucherCode.trim()) return;
+    setVoucherError('');
+    try {
+      const res = await api.post('/Vouchers/apply', { code: voucherCode, orderTotal: totalAmount });
+      if (res.data && res.data.data) {
+        setAppliedVoucher(res.data.data);
+      }
+    } catch (error) {
+      setVoucherError(error.response?.data?.message || 'Mã giảm giá không hợp lệ');
+      setAppliedVoucher(null);
+    }
+  };
+
+  const removeVoucher = () => {
+    setAppliedVoucher(null);
+    setVoucherCode('');
+    setVoucherError('');
   };
 
   const handleCheckout = async () => {
@@ -293,12 +161,13 @@ export default function Cart() {
     setLoading(true);
     try {
       const orderData = {
-        items: cartItems.map(item => ({ productId: item.id, quantity: item.quantity })),
+        items: cartItems.map(item => ({ productId: item.id, productVariantId: item.variantId || null, quantity: item.quantity })),
         note: paymentMethod === 'COD' ? 'COD' : paymentMethod,
         recipientName,
         recipientPhone,
         shippingAddress,
-        paymentMethod
+        paymentMethod,
+        voucherId: appliedVoucher ? appliedVoucher.voucherId : null
       };
 
       const res = await api.post('/Orders', orderData);
@@ -309,10 +178,15 @@ export default function Cart() {
 
       if (paymentMethod === 'COD') {
         setSuccessOrderId(orderId);
-      } else if (paymentMethod === 'MoMo') {
-        setMomoModal({ orderId, amount: totalAmount });
-      } else if (paymentMethod === 'VietQR') {
-        setVietqrModal({ orderId, amount: totalAmount });
+      } else {
+        const paymentRes = await api.post('/payments/create', {
+          orderId,
+          provider: paymentMethod,
+          returnUrl: window.location.origin + '/payment-result'
+        });
+        if (paymentRes.data?.paymentUrl) {
+          window.location.href = paymentRes.data.paymentUrl;
+        }
       }
     } catch (error) {
       alert('Lỗi đặt hàng: ' + (error.response?.data?.message || error.response?.data || 'Vui lòng thử lại'));
@@ -330,35 +204,21 @@ export default function Cart() {
   };
 
   const getVariantOptions = (item) => {
-    const name = item.name?.toLowerCase() || '';
-    const category = item.category?.name?.toLowerCase() || '';
-    const isLaptop = category.includes('laptop') || name.includes('laptop') || name.includes('book');
-    const isPhone = category.includes('smart') || name.includes('phone');
-    const isGaming = category.includes('gaming') || name.includes('keyboard') || name.includes('mouse');
-
-    if (isLaptop) {
-      return {
-        color: ['Đen Midnight', 'Bạc Titan', 'Trắng Ngọc', 'Xanh Aurora'],
-        ram: ['16GB', '32GB', '64GB'],
-        ssd: ['512GB SSD', '1TB SSD', '2TB SSD']
-      };
-    }
-    if (isPhone) {
-      return {
-        color: ['Đen Midnight', 'Bạc Titan', 'Trắng Ngọc', 'Xanh Aurora'],
-        storage: ['128GB', '256GB', '512GB', '1TB']
-      };
-    }
-    if (isGaming) {
-      return {
-        color: ['Đen Matte', 'Trắng Snow', 'Hồng Sakura', 'RGB Limited'],
-        switch: ['Red Linear', 'Brown Tactile', 'Blue Clicky']
-      };
-    }
-    return {
-      color: ['Đen Obsidian', 'Bạc Platinum', 'Vàng Champagne'],
-      edition: ['Standard', 'Pro', 'Studio']
-    };
+    if (!item.variants) return {};
+    const groups = {};
+    item.variants.forEach(v => {
+      if (v.attributes) {
+        Object.entries(v.attributes).forEach(([key, value]) => {
+          if (!groups[key]) groups[key] = new Set();
+          groups[key].add(value);
+        });
+      }
+    });
+    const result = {};
+    Object.keys(groups).forEach(key => {
+      result[key] = Array.from(groups[key]);
+    });
+    return result;
   };
 
   const getVariantLabel = (key) => ({
@@ -400,22 +260,6 @@ export default function Cart() {
 
   return (
     <div className="min-h-screen bg-background text-on-surface font-sans">
-      {/* Modals */}
-      {momoModal && (
-        <MomoModal
-          orderId={momoModal.orderId}
-          amount={momoModal.amount}
-          onSuccess={() => { setMomoModal(null); setSuccessOrderId(momoModal.orderId); }}
-          onClose={() => setMomoModal(null)}
-        />
-      )}
-      {vietqrModal && (
-        <VietQRModal
-          orderId={vietqrModal.orderId}
-          amount={vietqrModal.amount}
-          onClose={() => { setVietqrModal(null); navigate('/profile'); }}
-        />
-      )}
 
       {/* Nav */}
       <nav className="sticky top-0 z-40 bg-surface/80 backdrop-blur-md border-b border-outline-variant/30 py-4 px-4 md:px-12">
@@ -465,25 +309,27 @@ export default function Cart() {
                         <h4 className="font-semibold text-on-surface text-sm line-clamp-1">{item.name}</h4>
                         <p className="text-primary font-bold text-sm mt-0.5">{item.price.toLocaleString()}đ</p>
                       </div>
-                      <div className="rounded-2xl bg-surface-container-low border border-outline-variant/20 p-3 space-y-2">
-                        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                          <SlidersHorizontal size={12} className="text-primary" /> Tùy chọn sản phẩm
+                      {Object.keys(variantOptions).length > 0 && (
+                        <div className="rounded-2xl bg-surface-container-low border border-outline-variant/20 p-3 space-y-2">
+                          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                            <SlidersHorizontal size={12} className="text-primary" /> Tùy chọn sản phẩm
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            {Object.entries(variantOptions).map(([key, options]) => (
+                              <label key={key} className="space-y-1">
+                                <span className="text-[10px] font-semibold text-on-surface-variant">{getVariantLabel(key)}</span>
+                                <select
+                                  value={item.variantAttributes?.[key] || options[0]}
+                                  onChange={(e) => handleVariantChange(cartItemKey, key, e.target.value)}
+                                  className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-2.5 py-2 text-xs text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                                >
+                                  {options.map(option => <option key={option} value={option}>{option}</option>)}
+                                </select>
+                              </label>
+                            ))}
+                          </div>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                          {Object.entries(variantOptions).map(([key, options]) => (
-                            <label key={key} className="space-y-1">
-                              <span className="text-[10px] font-semibold text-on-surface-variant">{getVariantLabel(key)}</span>
-                              <select
-                                value={item.variant?.[key] || options[0]}
-                                onChange={(e) => handleVariantChange(cartItemKey, key, e.target.value)}
-                                className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-2.5 py-2 text-xs text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-                              >
-                                {options.map(option => <option key={option} value={option}>{option}</option>)}
-                              </select>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0 sm:self-start">
                       <div className="flex items-center gap-1 bg-surface-container rounded-full">
@@ -575,6 +421,43 @@ export default function Cart() {
                 </div>
               </div>
 
+              {/* Voucher Input */}
+              <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-5 space-y-4">
+                <h3 className="font-bold text-on-surface text-sm flex items-center gap-2"><Tag size={16} className="text-primary"/> Mã giảm giá</h3>
+                {!appliedVoucher ? (
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={voucherCode}
+                        onChange={e => { setVoucherCode(e.target.value.toUpperCase()); setVoucherError(''); }}
+                        placeholder="Nhập mã giảm giá"
+                        className="flex-1 bg-surface-container-low border border-outline-variant/30 text-on-surface rounded-xl px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all uppercase"
+                      />
+                      <button onClick={handleApplyVoucher} className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-container transition-colors">
+                        Áp dụng
+                      </button>
+                    </div>
+                    {voucherError && <p className="text-xs text-rose-500 font-medium">{voucherError}</p>}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                        <CheckCircle2 size={16} className="text-emerald-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-emerald-700">{appliedVoucher.code}</p>
+                        <p className="text-[10px] text-emerald-600">Đã giảm {appliedVoucher.discountAmount.toLocaleString()}đ</p>
+                      </div>
+                    </div>
+                    <button onClick={removeVoucher} className="text-on-surface-variant hover:text-rose-500 p-1 transition-colors">
+                      <X size={16} />
+                    </button>
+                  </div>
+                )}
+              </div>
+
               {/* Order Summary */}
               <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-5 space-y-4">
                 <h3 className="font-bold text-on-surface text-sm">Tóm tắt đơn hàng</h3>
@@ -587,9 +470,15 @@ export default function Cart() {
                     <span>Phí vận chuyển</span>
                     <span className="text-emerald-600 font-semibold">Miễn phí</span>
                   </div>
+                  {appliedVoucher && (
+                    <div className="flex justify-between text-emerald-600">
+                      <span>Giảm giá Voucher</span>
+                      <span className="font-semibold">-{appliedVoucher.discountAmount.toLocaleString()}đ</span>
+                    </div>
+                  )}
                   <div className="border-t border-outline-variant/30 pt-3 flex justify-between items-baseline">
                     <span className="font-bold text-on-surface">Tổng cộng</span>
-                    <span className="text-xl font-extrabold text-primary">{totalAmount.toLocaleString()}đ</span>
+                    <span className="text-xl font-extrabold text-primary">{(appliedVoucher ? appliedVoucher.newTotal : totalAmount).toLocaleString()}đ</span>
                   </div>
                 </div>
 

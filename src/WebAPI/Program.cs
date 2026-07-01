@@ -23,8 +23,13 @@ builder.Services.AddScoped<IJobService, JobService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IPaymentGatewayService, PaymentGatewayService>();
+builder.Services.AddScoped<IVoucherService, VoucherService>();
+builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddHttpClient<IChatService, ChatService>();
+builder.Services.AddHttpClient<IMomoPaymentProvider, Infrastructure.Services.MomoPaymentProvider>();
+builder.Services.AddHttpClient<IPayOsPaymentProvider, Infrastructure.Services.PayOsPaymentProvider>();
 
 // 2. Đăng ký các dịch vụ Controller để hỗ trợ Web API 
 builder.Services.AddControllers()

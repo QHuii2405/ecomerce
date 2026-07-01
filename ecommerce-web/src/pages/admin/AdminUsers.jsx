@@ -54,21 +54,21 @@ function UserRow({ user, onRoleChange }) {
       {/* User info */}
       <div className="col-span-5 flex items-center gap-3 min-w-0">
         <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
-          user.role === 'Admin' ? 'bg-purple-500/20 text-purple-400' :
-          user.role === 'Staff' ? 'bg-blue-500/20 text-blue-400' :
-          'bg-emerald-500/20 text-emerald-400'
+          user.role === 'Admin' ? 'bg-purple-50 text-purple-600' :
+          user.role === 'Staff' ? 'bg-blue-50 text-blue-600' :
+          'bg-emerald-50 text-emerald-600'
         }`}>
           {avatarLetter}
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-white truncate">{user.fullName}</p>
-          <p className="text-[10px] text-slate-500 truncate">{user.email}</p>
+          <p className="text-sm font-semibold text-on-surface truncate">{user.fullName}</p>
+          <p className="text-[10px] text-on-surface-variant truncate">{user.email}</p>
         </div>
       </div>
 
       {/* Phone */}
       <div className="col-span-2">
-        <p className="text-xs text-slate-400">{user.phoneNumber || '—'}</p>
+        <p className="text-xs text-on-surface-variant">{user.phoneNumber || '—'}</p>
       </div>
 
       {/* Role */}
@@ -78,7 +78,7 @@ function UserRow({ user, onRoleChange }) {
 
       {/* Joined */}
       <div className="col-span-2">
-        <p className="text-xs text-slate-500">{formattedDate}</p>
+        <p className="text-xs text-on-surface-variant">{formattedDate}</p>
       </div>
 
       {/* Change Role */}
@@ -86,23 +86,23 @@ function UserRow({ user, onRoleChange }) {
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
           disabled={updating}
-          className="flex items-center gap-1 px-2.5 py-1.5 bg-white/5 border border-white/5 text-slate-400 rounded-xl text-xs hover:bg-white/10 hover:text-white transition-all disabled:opacity-50"
+          className="flex items-center gap-1 px-2.5 py-1.5 bg-surface-container-lowest border border-outline-variant/30 text-on-surface-variant rounded-xl text-xs hover:bg-surface-container-low hover:text-on-surface transition-all disabled:opacity-50"
         >
           {updating ? (
-            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-slate-400" />
+            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-on-surface-variant" />
           ) : (
             <>Phân quyền <ChevronDown size={10} /></>
           )}
         </button>
 
         {dropdownOpen && (
-          <div className="absolute right-0 top-8 z-20 bg-slate-800 border border-white/10 rounded-xl shadow-xl overflow-hidden w-32">
+          <div className="absolute right-0 top-8 z-20 bg-surface border border-outline-variant/30 rounded-xl shadow-xl overflow-hidden w-32">
             {ROLES.map(role => (
               <button
                 key={role}
                 onClick={() => handleRoleChange(role)}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-white/10 transition-colors ${
-                  user.role === role ? 'text-indigo-400 bg-indigo-500/10' : 'text-slate-300'
+                className={`w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-surface-container-low transition-colors ${
+                  user.role === role ? 'text-primary bg-primary/10' : 'text-on-surface'
                 }`}
               >
                 {React.createElement(ROLE_CONFIG[role].icon, { size: 12 })}
@@ -160,10 +160,10 @@ export default function AdminUsers() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Quản Lý Nhân Sự</h1>
-          <p className="text-slate-400 mt-1">Xem danh sách người dùng và phân quyền hệ thống (chỉ Admin).</p>
+          <h1 className="text-3xl font-bold text-on-surface tracking-tight">Quản Lý Nhân Sự</h1>
+          <p className="text-on-surface-variant mt-1">Xem danh sách người dùng và phân quyền hệ thống (chỉ Admin).</p>
         </div>
-        <button onClick={fetchUsers} className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 text-slate-300 rounded-xl text-sm hover:bg-white/10 transition-all self-start">
+        <button onClick={fetchUsers} className="flex items-center gap-2 px-4 py-2.5 bg-surface border border-outline-variant/30 text-on-surface-variant rounded-xl text-sm hover:bg-surface-container-low transition-all self-start">
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           Làm mới
         </button>
@@ -180,15 +180,15 @@ export default function AdminUsers() {
               onClick={() => setRoleFilter(role)}
               className={`p-4 rounded-2xl border text-left transition-all ${
                 roleFilter === role
-                  ? 'bg-indigo-600/20 border-indigo-500/30'
-                  : 'bg-white/5 border-white/5 hover:border-white/10'
+                  ? 'bg-primary/10 border-primary/30'
+                  : 'bg-surface border-outline-variant/30 hover:border-primary/20'
               }`}
             >
               <div className="flex items-center justify-between mb-2">
-                <Icon size={16} className={roleFilter === role ? 'text-indigo-400' : 'text-slate-500'} />
-                <span className="text-xl font-extrabold text-white">{countByRole(role)}</span>
+                <Icon size={16} className={roleFilter === role ? 'text-primary' : 'text-outline'} />
+                <span className="text-xl font-extrabold text-on-surface">{countByRole(role)}</span>
               </div>
-              <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">{role === 'All' ? 'Tổng cộng' : role}</p>
+              <p className="text-[10px] text-outline font-semibold uppercase tracking-wider">{role === 'All' ? 'Tổng cộng' : role}</p>
             </button>
           );
         })}
@@ -196,9 +196,9 @@ export default function AdminUsers() {
 
       {/* Search */}
       <div className="relative max-w-sm">
-        <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+        <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-outline" />
         <input
-          className="w-full bg-white/5 border border-white/5 text-white text-sm rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-indigo-500 transition-all placeholder:text-slate-600"
+          className="w-full bg-surface border border-outline-variant/30 text-on-surface text-sm rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-primary transition-all placeholder:text-outline"
           placeholder="Tìm theo tên hoặc email..."
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -216,41 +216,41 @@ export default function AdminUsers() {
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="backdrop-blur-md bg-white/5 border border-white/5 rounded-2xl p-4 animate-pulse">
+            <div key={i} className="backdrop-blur-md bg-surface border border-outline-variant/30 rounded-2xl p-4 animate-pulse">
               <div className="flex items-center gap-4">
-                <div className="w-9 h-9 bg-white/10 rounded-full flex-shrink-0" />
+                <div className="w-9 h-9 bg-surface-container rounded-full flex-shrink-0" />
                 <div className="flex-1 space-y-1.5">
-                  <div className="h-3 bg-white/10 rounded w-36" />
-                  <div className="h-2 bg-white/10 rounded w-48" />
+                  <div className="h-3 bg-surface-container rounded w-36" />
+                  <div className="h-2 bg-surface-container rounded w-48" />
                 </div>
               </div>
             </div>
           ))}
         </div>
       ) : filteredUsers.length === 0 ? (
-        <div className="backdrop-blur-md bg-white/5 border border-white/5 p-12 rounded-3xl text-center space-y-4">
-          <div className="h-16 w-16 bg-white/5 border border-white/5 text-slate-400 rounded-3xl flex items-center justify-center mx-auto">
+        <div className="backdrop-blur-md bg-surface border border-outline-variant/30 p-12 rounded-3xl text-center space-y-4 shadow-sm">
+          <div className="h-16 w-16 bg-surface-container border border-outline-variant/20 text-outline rounded-3xl flex items-center justify-center mx-auto">
             <Users size={28} />
           </div>
-          <h3 className="text-lg font-bold text-white">Không tìm thấy người dùng</h3>
+          <h3 className="text-lg font-bold text-on-surface">Không tìm thấy người dùng</h3>
         </div>
       ) : (
-        <div className="backdrop-blur-md bg-white/5 border border-white/5 rounded-2xl overflow-hidden">
+        <div className="backdrop-blur-md bg-surface border border-outline-variant/30 rounded-2xl overflow-hidden shadow-sm">
           {/* Table Header */}
-          <div className="grid grid-cols-12 gap-4 px-5 py-3 border-b border-white/5 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+          <div className="grid grid-cols-12 gap-4 px-5 py-3 border-b border-outline-variant/30 text-[10px] font-bold uppercase tracking-widest text-outline bg-surface-container-lowest">
             <div className="col-span-5">Người dùng</div>
             <div className="col-span-2">Điện thoại</div>
             <div className="col-span-2">Vai trò</div>
             <div className="col-span-2">Ngày tạo</div>
             <div className="col-span-1 text-center">Hành động</div>
           </div>
-          <div className="divide-y divide-white/5">
+          <div className="divide-y divide-outline-variant/30">
             {filteredUsers.map(user => (
               <UserRow key={user.id} user={user} onRoleChange={handleRoleChange} />
             ))}
           </div>
-          <div className="px-5 py-3 border-t border-white/5 text-center">
-            <span className="text-xs text-slate-500">Hiển thị {filteredUsers.length} / {users.length} người dùng</span>
+          <div className="px-5 py-3 border-t border-outline-variant/30 text-center bg-surface-container-lowest">
+            <span className="text-xs text-outline">Hiển thị {filteredUsers.length} / {users.length} người dùng</span>
           </div>
         </div>
       )}

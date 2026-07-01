@@ -16,6 +16,7 @@ public class UnitOfWork : IUnitOfWork
     public IProductRepository Products { get; }
     public IInventoryRepository Inventories { get; }
     public IOrderRepository Orders { get; }
+    public IGoodsReceiptRepository GoodsReceipts { get; }
     public IGenericRepository<Category> Categories { get; }
     public IGenericRepository<User> Users { get; }
 
@@ -27,6 +28,7 @@ public class UnitOfWork : IUnitOfWork
         Products = new ProductRepository(_context);
         Inventories = new InventoryRepository(_context);
         Orders = new OrderRepository(_context);
+        GoodsReceipts = new GoodsReceiptRepository(_context);
         Categories = new GenericRepository<Category>(_context);
         Users = new GenericRepository<User>(_context);
     }

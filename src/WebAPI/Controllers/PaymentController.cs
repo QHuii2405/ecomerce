@@ -12,11 +12,15 @@ public class PaymentsController : ControllerBase
 {
     private readonly IOrderService _orderService;
     private readonly IPaymentGatewayService _paymentGatewayService;
+    private readonly IMomoPaymentProvider _momoProvider;
+    private readonly IPayOsPaymentProvider _payOsProvider;
 
-    public PaymentsController(IOrderService orderService, IPaymentGatewayService paymentGatewayService)
+    public PaymentsController(IOrderService orderService, IPaymentGatewayService paymentGatewayService, IMomoPaymentProvider momoProvider, IPayOsPaymentProvider payOsProvider)
     {
         _orderService = orderService;
         _paymentGatewayService = paymentGatewayService;
+        _momoProvider = momoProvider;
+        _payOsProvider = payOsProvider;
     }
 
     /// <summary>
@@ -64,13 +68,38 @@ public class PaymentsController : ControllerBase
         }
     }
 
+    [HttpGet("{orderId}/status")]
+    public async Task<IActionResult> GetPaymentStatus(Guid orderId)
+    {
+        var order = await _orderService.GetOrderByIdAsync(orderId);
+        if (order == null) return NotFound("Không tìm thấy đơn hàng.");
+        
+        return Ok(new {
+            OrderId = order.Id,
+            Status = order.Status,
+            PaymentStatus = order.PaymentStatus
+        });
+    }
+
     [AllowAnonymous]
-    [HttpPost("webhook/{provider}")]
-    public async Task<IActionResult> PaymentWebhook(string provider, [FromQuery] Guid orderId, [FromQuery] string transactionCode)
+    [HttpPost("momo/webhook")]
+    public async Task<IActionResult> MomoWebhook([FromBody] MomoWebhookRequest request)
     {
         try
         {
-            await _paymentGatewayService.ConfirmPaymentAsync(orderId, provider, transactionCode);
+            var isValid = _momoProvider.VerifySignature(
+                request.partnerCode, request.orderId, request.requestId, request.amount,
+                request.orderInfo, request.orderType, request.transId, request.resultCode,
+                request.message, request.payType, request.responseTime, request.extraData, request.signature);
+
+            if (!isValid) return BadRequest(new { Message = "Invalid signature" });
+
+            if (request.resultCode == "0") // Success
+            {
+                // MoMo returns our transactionCode in the orderId field
+                await _paymentGatewayService.ConfirmPaymentByTransactionCodeAsync("MoMo", request.orderId);
+            }
+
             return Ok(new { Message = "Webhook processed" });
         }
         catch (Exception ex)
@@ -79,131 +108,49 @@ public class PaymentsController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Tạo QR thanh toán MoMo (giả lập)
-    /// </summary>
-    [HttpPost("momo/create")]
-    public async Task<IActionResult> CreateMomoQr([FromBody] CreateQrPaymentRequest request)
+    [AllowAnonymous]
+    [HttpPost("payos/webhook")]
+    public async Task<IActionResult> PayOsWebhook([FromBody] System.Text.Json.JsonElement requestBody, [FromHeader(Name = "x-payos-signature")] string signature)
     {
         try
         {
-            // Tạo mã QR giả lập — trong production sẽ gọi MoMo API thật
-            var qrToken = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).TrimEnd('=');
-            var deeplink = $"momo://payment?orderId={request.OrderId}&amount={request.Amount}&token={qrToken}";
-
-            return Ok(new
+            // Note: In a real app, verify PayOS signature here using checksum key
+            // The requestBody has a "data" object containing "orderCode" and "code"
+            if (requestBody.TryGetProperty("data", out var dataObj) && dataObj.ValueKind != System.Text.Json.JsonValueKind.Null)
             {
-                OrderId = request.OrderId,
-                Amount = request.Amount,
-                QrToken = qrToken,
-                DeepLink = deeplink,
-                // QR image sử dụng QR generator public API
-                QrImageUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={Uri.EscapeDataString(deeplink)}",
-                ExpiresInSeconds = 300, // 5 phút
-                PaymentMethod = "MoMo"
-            });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { Message = ex.Message });
-        }
-    }
-
-    /// <summary>
-    /// Giả lập callback từ MoMo sau khi thanh toán thành công
-    /// </summary>
-    [HttpPost("momo/confirm")]
-    public async Task<IActionResult> ConfirmMomoPayment([FromBody] ProcessPaymentRequest request)
-    {
-        try
-        {
-            var success = await _orderService.ProcessPaymentAsync(request.OrderId, request.SimulateSuccess);
-            if (success)
-            {
-                return Ok(new
+                if (dataObj.TryGetProperty("orderCode", out var orderCodeElement))
                 {
-                    Message = "Thanh toán MoMo thành công! Đơn hàng đã được xác nhận.",
-                    PaymentMethod = "MoMo",
-                    Status = "Confirmed"
-                });
+                    var orderCode = orderCodeElement.GetInt64().ToString();
+                    
+                    if (requestBody.TryGetProperty("code", out var codeElement) && codeElement.GetString() == "00")
+                    {
+                        await _paymentGatewayService.ConfirmPaymentByTransactionCodeAsync("PayOS", orderCode);
+                    }
+                }
             }
-            return BadRequest(new { Message = "Thanh toán thất bại. Vui lòng thử lại." });
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { Message = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { Message = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { Message = "Lỗi xử lý thanh toán: " + ex.Message });
-        }
-    }
 
-    /// <summary>
-    /// Tạo VietQR (Bank Transfer QR)
-    /// </summary>
-    [HttpPost("vietqr/create")]
-    public async Task<IActionResult> CreateVietQr([FromBody] CreateQrPaymentRequest request)
-    {
-        try
-        {
-            // VietQR chuẩn Napas — bank: MB Bank, account tĩnh cho demo
-            const string bankId = "MB";
-            const string accountNo = "0123456789";
-            const string accountName = "LUMINA TECH STORE";
-            var transferContent = $"LUMINA{request.OrderId.ToString().Replace("-", "")[..8].ToUpper()}";
-
-            var qrData = $"https://img.vietqr.io/image/{bankId}-{accountNo}-compact.png?amount={request.Amount}&addInfo={Uri.EscapeDataString(transferContent)}&accountName={Uri.EscapeDataString(accountName)}";
-
-            return Ok(new
-            {
-                OrderId = request.OrderId,
-                Amount = request.Amount,
-                BankId = bankId,
-                AccountNo = accountNo,
-                AccountName = accountName,
-                TransferContent = transferContent,
-                QrImageUrl = qrData,
-                PaymentMethod = "VietQR",
-                Note = "Vui lòng chuyển khoản đúng nội dung để đơn hàng được xử lý tự động."
-            });
+            return Ok(new { Message = "Webhook processed" });
         }
         catch (Exception ex)
         {
             return BadRequest(new { Message = ex.Message });
         }
     }
+}
 
-    /// <summary>
-    /// Legacy: xử lý thanh toán đơn giản (giữ tương thích)
-    /// </summary>
-    [HttpPost("process")]
-    public async Task<IActionResult> ProcessPayment(ProcessPaymentRequest request)
-    {
-        try
-        {
-            var success = await _orderService.ProcessPaymentAsync(request.OrderId, request.SimulateSuccess);
-            if (success)
-            {
-                return Ok(new { Message = "Thanh toán thành công. Đơn hàng đã được xác nhận!" });
-            }
-            return BadRequest(new { Message = "Thanh toán thất bại. Vui lòng thử lại." });
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { Message = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { Message = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { Message = "Lỗi xử lý thanh toán: " + ex.Message });
-        }
-    }
+public class MomoWebhookRequest
+{
+    public string partnerCode { get; set; }
+    public string orderId { get; set; }
+    public string requestId { get; set; }
+    public string amount { get; set; }
+    public string orderInfo { get; set; }
+    public string orderType { get; set; }
+    public string transId { get; set; }
+    public string resultCode { get; set; }
+    public string message { get; set; }
+    public string payType { get; set; }
+    public string responseTime { get; set; }
+    public string extraData { get; set; }
+    public string signature { get; set; }
 }

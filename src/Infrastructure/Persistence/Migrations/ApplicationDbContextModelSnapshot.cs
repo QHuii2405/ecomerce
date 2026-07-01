@@ -87,6 +87,90 @@ namespace Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Domain.Entities.GoodsReceipt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ApprovedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReceiptNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApprovedByUserId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.ToTable("GoodsReceipts");
+                });
+
+            modelBuilder.Entity("Domain.Entities.GoodsReceiptDetail", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("GoodsReceiptId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("ImportPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ProductVariantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GoodsReceiptId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("ProductVariantId");
+
+                    b.ToTable("GoodsReceiptDetails");
+                });
+
             modelBuilder.Entity("Domain.Entities.Inventory", b =>
                 {
                     b.Property<Guid>("Id")
@@ -614,6 +698,9 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -621,6 +708,10 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PaymentMethod")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PaymentStatus")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RecipientName")
@@ -645,7 +736,12 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("VoucherId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("VoucherId");
 
                     b.ToTable("Orders");
 
@@ -654,8 +750,10 @@ namespace Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("f0000000-0000-0000-0000-000000000001"),
                             CreatedAt = new DateTime(2026, 6, 15, 8, 0, 0, 0, DateTimeKind.Utc),
+                            DiscountAmount = 0m,
                             IsDeleted = false,
                             PaymentMethod = "COD",
+                            PaymentStatus = "Unpaid",
                             RecipientName = "Trần Thị Bình",
                             RecipientPhone = "0900000001",
                             ShippingAddress = "Số 10 Nguyễn Huệ, Quận 1, TP.HCM",
@@ -667,8 +765,10 @@ namespace Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("f0000000-0000-0000-0000-000000000002"),
                             CreatedAt = new DateTime(2026, 6, 16, 8, 0, 0, 0, DateTimeKind.Utc),
+                            DiscountAmount = 0m,
                             IsDeleted = false,
                             PaymentMethod = "VietQR",
+                            PaymentStatus = "Unpaid",
                             RecipientName = "Nguyễn Văn An",
                             RecipientPhone = "0900000002",
                             ShippingAddress = "Số 20 Nguyễn Huệ, Quận 1, TP.HCM",
@@ -680,8 +780,10 @@ namespace Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("f0000000-0000-0000-0000-000000000003"),
                             CreatedAt = new DateTime(2026, 6, 17, 8, 0, 0, 0, DateTimeKind.Utc),
+                            DiscountAmount = 0m,
                             IsDeleted = false,
                             PaymentMethod = "MoMo",
+                            PaymentStatus = "Unpaid",
                             RecipientName = "Trần Thị Bình",
                             RecipientPhone = "0900000003",
                             ShippingAddress = "Số 30 Nguyễn Huệ, Quận 1, TP.HCM",
@@ -693,8 +795,10 @@ namespace Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("f0000000-0000-0000-0000-000000000004"),
                             CreatedAt = new DateTime(2026, 6, 18, 8, 0, 0, 0, DateTimeKind.Utc),
+                            DiscountAmount = 0m,
                             IsDeleted = false,
                             PaymentMethod = "COD",
+                            PaymentStatus = "Unpaid",
                             RecipientName = "Nguyễn Văn An",
                             RecipientPhone = "0900000004",
                             ShippingAddress = "Số 40 Nguyễn Huệ, Quận 1, TP.HCM",
@@ -706,8 +810,10 @@ namespace Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("f0000000-0000-0000-0000-000000000005"),
                             CreatedAt = new DateTime(2026, 6, 19, 8, 0, 0, 0, DateTimeKind.Utc),
+                            DiscountAmount = 0m,
                             IsDeleted = false,
                             PaymentMethod = "VietQR",
+                            PaymentStatus = "Unpaid",
                             RecipientName = "Trần Thị Bình",
                             RecipientPhone = "0900000005",
                             ShippingAddress = "Số 50 Nguyễn Huệ, Quận 1, TP.HCM",
@@ -719,8 +825,10 @@ namespace Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("f0000000-0000-0000-0000-000000000006"),
                             CreatedAt = new DateTime(2026, 6, 20, 8, 0, 0, 0, DateTimeKind.Utc),
+                            DiscountAmount = 0m,
                             IsDeleted = false,
                             PaymentMethod = "MoMo",
+                            PaymentStatus = "Unpaid",
                             RecipientName = "Nguyễn Văn An",
                             RecipientPhone = "0900000006",
                             ShippingAddress = "Số 60 Nguyễn Huệ, Quận 1, TP.HCM",
@@ -732,8 +840,10 @@ namespace Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("f0000000-0000-0000-0000-000000000007"),
                             CreatedAt = new DateTime(2026, 6, 21, 8, 0, 0, 0, DateTimeKind.Utc),
+                            DiscountAmount = 0m,
                             IsDeleted = false,
                             PaymentMethod = "COD",
+                            PaymentStatus = "Unpaid",
                             RecipientName = "Trần Thị Bình",
                             RecipientPhone = "0900000007",
                             ShippingAddress = "Số 70 Nguyễn Huệ, Quận 1, TP.HCM",
@@ -745,8 +855,10 @@ namespace Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("f0000000-0000-0000-0000-000000000008"),
                             CreatedAt = new DateTime(2026, 6, 22, 8, 0, 0, 0, DateTimeKind.Utc),
+                            DiscountAmount = 0m,
                             IsDeleted = false,
                             PaymentMethod = "VietQR",
+                            PaymentStatus = "Unpaid",
                             RecipientName = "Nguyễn Văn An",
                             RecipientPhone = "0900000008",
                             ShippingAddress = "Số 80 Nguyễn Huệ, Quận 1, TP.HCM",
@@ -758,8 +870,10 @@ namespace Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("f0000000-0000-0000-0000-000000000009"),
                             CreatedAt = new DateTime(2026, 6, 23, 8, 0, 0, 0, DateTimeKind.Utc),
+                            DiscountAmount = 0m,
                             IsDeleted = false,
                             PaymentMethod = "MoMo",
+                            PaymentStatus = "Unpaid",
                             RecipientName = "Trần Thị Bình",
                             RecipientPhone = "0900000009",
                             ShippingAddress = "Số 90 Nguyễn Huệ, Quận 1, TP.HCM",
@@ -771,9 +885,11 @@ namespace Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("f0000000-0000-0000-0000-000000000010"),
                             CreatedAt = new DateTime(2026, 6, 24, 8, 0, 0, 0, DateTimeKind.Utc),
+                            DiscountAmount = 0m,
                             IsDeleted = false,
                             Note = "Hủy do thay đổi kế hoạch",
                             PaymentMethod = "COD",
+                            PaymentStatus = "Unpaid",
                             RecipientName = "Nguyễn Văn An",
                             RecipientPhone = "0900000010",
                             ShippingAddress = "Số 100 Nguyễn Huệ, Quận 1, TP.HCM",
@@ -801,6 +917,9 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("ProductVariantId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -810,11 +929,17 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("VariantSnapshotJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
 
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("ProductVariantId");
 
                     b.ToTable("OrderItems");
 
@@ -827,7 +952,8 @@ namespace Infrastructure.Persistence.Migrations
                             OrderId = new Guid("f0000000-0000-0000-0000-000000000001"),
                             ProductId = new Guid("d0000000-0000-0000-0000-000000000001"),
                             Quantity = 1,
-                            UnitPrice = 52490000m
+                            UnitPrice = 52490000m,
+                            VariantSnapshotJson = "{}"
                         },
                         new
                         {
@@ -837,7 +963,8 @@ namespace Infrastructure.Persistence.Migrations
                             OrderId = new Guid("f0000000-0000-0000-0000-000000000002"),
                             ProductId = new Guid("d0000000-0000-0000-0000-000000000001"),
                             Quantity = 1,
-                            UnitPrice = 52490000m
+                            UnitPrice = 52490000m,
+                            VariantSnapshotJson = "{}"
                         },
                         new
                         {
@@ -847,7 +974,8 @@ namespace Infrastructure.Persistence.Migrations
                             OrderId = new Guid("f0000000-0000-0000-0000-000000000003"),
                             ProductId = new Guid("d0000000-0000-0000-0000-000000000011"),
                             Quantity = 2,
-                            UnitPrice = 4725000m
+                            UnitPrice = 4725000m,
+                            VariantSnapshotJson = "{}"
                         },
                         new
                         {
@@ -857,7 +985,8 @@ namespace Infrastructure.Persistence.Migrations
                             OrderId = new Guid("f0000000-0000-0000-0000-000000000004"),
                             ProductId = new Guid("d0000000-0000-0000-0000-000000000011"),
                             Quantity = 1,
-                            UnitPrice = 4725000m
+                            UnitPrice = 4725000m,
+                            VariantSnapshotJson = "{}"
                         },
                         new
                         {
@@ -867,7 +996,8 @@ namespace Infrastructure.Persistence.Migrations
                             OrderId = new Guid("f0000000-0000-0000-0000-000000000005"),
                             ProductId = new Guid("d0000000-0000-0000-0000-000000000021"),
                             Quantity = 1,
-                            UnitPrice = 6225000m
+                            UnitPrice = 6225000m,
+                            VariantSnapshotJson = "{}"
                         },
                         new
                         {
@@ -877,7 +1007,8 @@ namespace Infrastructure.Persistence.Migrations
                             OrderId = new Guid("f0000000-0000-0000-0000-000000000006"),
                             ProductId = new Guid("d0000000-0000-0000-0000-000000000021"),
                             Quantity = 2,
-                            UnitPrice = 6225000m
+                            UnitPrice = 6225000m,
+                            VariantSnapshotJson = "{}"
                         },
                         new
                         {
@@ -887,7 +1018,8 @@ namespace Infrastructure.Persistence.Migrations
                             OrderId = new Guid("f0000000-0000-0000-0000-000000000007"),
                             ProductId = new Guid("d0000000-0000-0000-0000-000000000032"),
                             Quantity = 1,
-                            UnitPrice = 28990000m
+                            UnitPrice = 28990000m,
+                            VariantSnapshotJson = "{}"
                         },
                         new
                         {
@@ -897,7 +1029,8 @@ namespace Infrastructure.Persistence.Migrations
                             OrderId = new Guid("f0000000-0000-0000-0000-000000000008"),
                             ProductId = new Guid("d0000000-0000-0000-0000-000000000032"),
                             Quantity = 1,
-                            UnitPrice = 28990000m
+                            UnitPrice = 28990000m,
+                            VariantSnapshotJson = "{}"
                         },
                         new
                         {
@@ -907,7 +1040,8 @@ namespace Infrastructure.Persistence.Migrations
                             OrderId = new Guid("f0000000-0000-0000-0000-000000000009"),
                             ProductId = new Guid("d0000000-0000-0000-0000-000000000035"),
                             Quantity = 2,
-                            UnitPrice = 9490000m
+                            UnitPrice = 9490000m,
+                            VariantSnapshotJson = "{}"
                         },
                         new
                         {
@@ -917,8 +1051,64 @@ namespace Infrastructure.Persistence.Migrations
                             OrderId = new Guid("f0000000-0000-0000-0000-000000000010"),
                             ProductId = new Guid("d0000000-0000-0000-0000-000000000035"),
                             Quantity = 1,
-                            UnitPrice = 9490000m
+                            UnitPrice = 9490000m,
+                            VariantSnapshotJson = "{}"
                         });
+                });
+
+            modelBuilder.Entity("Domain.Entities.PaymentTransaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("PaidAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PaymentUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("QrCodeUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RawResponse")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TransactionCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("PaymentTransactions");
                 });
 
             modelBuilder.Entity("Domain.Entities.Product", b =>
@@ -926,6 +1116,14 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AttributesJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Brand")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("uniqueidentifier");
@@ -960,402 +1158,733 @@ namespace Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000001"),
+                            AttributesJson = "{}",
+                            Brand = "Dell",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c61"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Flagship laptop với Intel Core Ultra 9, RAM 32GB, màn OLED 4K, siêu mỏng 14mm.",
                             IsDeleted = false,
-                            Name = "iLuminaty Pro X1",
+                            Name = "Dell XPS 15",
                             Price = 52490000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000002"),
+                            AttributesJson = "{}",
+                            Brand = "Apple",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c61"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Laptop văn phòng 15 inch nhẹ 1.2kg, pin 20 giờ, AMD Ryzen 7 8845HS.",
+                            Description = "Laptop văn phòng 15 inch nhẹ 1.2kg, pin 20 giờ, M3 chip.",
                             IsDeleted = false,
-                            Name = "iLuminaty Air 15",
+                            Name = "MacBook Air 15",
                             Price = 28990000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000003"),
+                            AttributesJson = "{}",
+                            Brand = "Asus",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c61"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Workstation sáng tạo với RTX 4090, RAM 64GB ECC, thiết kế CNC aluminium.",
                             IsDeleted = false,
-                            Name = "Phantom Studio Pro",
+                            Name = "Asus ROG Zephyrus G14",
                             Price = 89900000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000004"),
+                            AttributesJson = "{}",
+                            Brand = "Lenovo",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c61"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Ultrabook 13 inch gọn nhẹ, màn hình 2.8K AMOLED 120Hz, Intel Arc GPU.",
                             IsDeleted = false,
-                            Name = "Nexus Book S13",
+                            Name = "Lenovo ThinkPad X1",
                             Price = 22590000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000005"),
+                            AttributesJson = "{}",
+                            Brand = "HP",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c61"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Business laptop bảo mật cấp cao, TPM 2.0, khuôn mặt IR, RAM 16GB LPDDR5X.",
                             IsDeleted = false,
-                            Name = "Lumina Elite X Pro",
+                            Name = "HP Spectre x360",
                             Price = 35990000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000006"),
+                            AttributesJson = "{}",
+                            Brand = "MSI",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c61"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Laptop đồ họa chuyên dụng 16 inch, RTX 4070, bàn phím cơ Cherry MX.",
                             IsDeleted = false,
-                            Name = "ProVision 16 Max",
+                            Name = "MSI Stealth 16",
                             Price = 45990000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000007"),
+                            AttributesJson = "{}",
+                            Brand = "Dell",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c61"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Creator laptop màn 4K OLED touch, Ryzen 9 8945HX, card đồ họa Radeon 890M.",
                             IsDeleted = false,
-                            Name = "Swift Creator X",
+                            Name = "Dell Alienware m16",
                             Price = 38500000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000008"),
+                            AttributesJson = "{}",
+                            Brand = "Apple",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c61"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Mỏng nhẹ nhất phân khúc, chỉ 0.9kg, màn 14 inch QHD+, pin 18 giờ.",
                             IsDeleted = false,
-                            Name = "Nova Slim 14",
+                            Name = "MacBook Pro 14",
                             Price = 19990000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000009"),
+                            AttributesJson = "{}",
+                            Brand = "Asus",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c61"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Gaming laptop 17 inch, RTX 4080 12GB, màn 240Hz QHD, tản nhiệt vapor chamber.",
                             IsDeleted = false,
-                            Name = "Titan Gamer Pro",
+                            Name = "Asus Zenbook 14",
                             Price = 58990000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000010"),
+                            AttributesJson = "{}",
+                            Brand = "Lenovo",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c61"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Laptop cho lập trình viên, Linux ready, 32GB RAM, SSD 2TB NVMe PCIe 5.0.",
                             IsDeleted = false,
-                            Name = "CodeBook Developer Ed.",
+                            Name = "Lenovo Legion Pro 5",
                             Price = 31990000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000011"),
+                            AttributesJson = "{}",
+                            Brand = "Logitech",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c62"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Bàn phím cơ không dây đỉnh cao, switch êm ái, đèn nền RGB per-key.",
                             IsDeleted = false,
-                            Name = "Ghost Mechanical Keyboard",
+                            Name = "Logitech G Pro X",
                             Price = 4725000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000012"),
+                            AttributesJson = "{}",
+                            Brand = "Razer",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c62"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Chuột gaming 26000 DPI, sensor quang học, trọng lượng 58g siêu nhẹ.",
                             IsDeleted = false,
-                            Name = "Phantom Mouse Pro X",
+                            Name = "Razer DeathAdder V3 Pro",
                             Price = 2990000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000013"),
+                            AttributesJson = "{}",
+                            Brand = "Asus",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c62"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Mousepad gaming khổng lồ 900×400mm, bề mặt tốc độ cao, viền LED RGB.",
                             IsDeleted = false,
-                            Name = "HyperPad XL RGB",
+                            Name = "Asus ROG Falchion",
                             Price = 890000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000014"),
+                            AttributesJson = "{}",
+                            Brand = "MSI",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c62"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Ghế gaming ergonomic, đệm memory foam, tựa đầu 4D, chịu tải 150kg.",
                             IsDeleted = false,
-                            Name = "Storm Gaming Chair",
+                            Name = "MSI Vigor GK71",
                             Price = 8990000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000015"),
+                            AttributesJson = "{}",
+                            Brand = "Logitech",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c62"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Màn hình gaming 27 inch QHD 165Hz, 1ms GTG, FreeSync Premium, HDR400.",
                             IsDeleted = false,
-                            Name = "NitroView 27\" 165Hz",
+                            Name = "Logitech G915 TKL",
                             Price = 9990000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000016"),
+                            AttributesJson = "{}",
+                            Brand = "Razer",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c62"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Bảng điều khiển stream 32 phím LCD, tích hợp OBS, Twitch, Discord.",
                             IsDeleted = false,
-                            Name = "StreamDeck Pro",
+                            Name = "Razer Huntsman V2",
                             Price = 3490000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000017"),
+                            AttributesJson = "{}",
+                            Brand = "Asus",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c62"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Bàn phím compact 60%, hot-swap socket, keycap PBT double-shot.",
                             IsDeleted = false,
-                            Name = "VortexKeys 60%",
+                            Name = "Asus ROG Gladius III",
                             Price = 2190000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000018"),
+                            AttributesJson = "{}",
+                            Brand = "MSI",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c62"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Tay cầm chơi game PC/Mobile, kết nối USB-C + Bluetooth, trigger haptic.",
                             IsDeleted = false,
-                            Name = "CoreController Pro",
+                            Name = "MSI Clutch GM41",
                             Price = 1990000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000019"),
+                            AttributesJson = "{}",
+                            Brand = "Logitech",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c62"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Webcam gaming 4K 30fps, AI background removal, ring light LED tích hợp.",
                             IsDeleted = false,
-                            Name = "UltraCapture 4K Cam",
+                            Name = "Logitech G733",
                             Price = 3290000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000020"),
+                            AttributesJson = "{}",
+                            Brand = "Razer",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c62"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Headset gaming 7.1 surround, mic khử ồn AI, đệm tai foam ngủ ngon.",
                             IsDeleted = false,
-                            Name = "Aurora Gaming Headset",
+                            Name = "Razer BlackShark V2",
                             Price = 2490000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000021"),
+                            AttributesJson = "{}",
+                            Brand = "Sony",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c63"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Tai nghe chống ồn ANC thế hệ 3, driver 11mm, pin 36 giờ kèm case.",
                             IsDeleted = false,
-                            Name = "Sonic Buds Pro",
+                            Name = "Sony WH-1000XM5",
                             Price = 6225000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000022"),
+                            AttributesJson = "{}",
+                            Brand = "Apple",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c63"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Micro condenser USB-C cho studio, cardioid/omnidirectional, 192kHz.",
                             IsDeleted = false,
-                            Name = "CrystalAir Studio Mic",
+                            Name = "AirPods Pro 2",
                             Price = 4590000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000023"),
+                            AttributesJson = "{}",
+                            Brand = "Samsung",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c63"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Loa Bluetooth 360 độ IPX7, bass mạnh, pin 24 giờ, kết nối đa điểm.",
                             IsDeleted = false,
-                            Name = "BassBoom Speaker 360",
+                            Name = "Samsung Galaxy Buds 2",
                             Price = 3190000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000024"),
+                            AttributesJson = "{}",
+                            Brand = "Sony",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c63"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Tai nghe over-ear cao cấp, driver planar 50mm, DAC tích hợp 32-bit.",
                             IsDeleted = false,
-                            Name = "Lumina Over-Ear H1",
+                            Name = "Sony WF-1000XM5",
                             Price = 12990000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000025"),
+                            AttributesJson = "{}",
+                            Brand = "Apple",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c63"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Thanh loa soundbar 2.1 kèm subwoofer, Dolby Atmos, HDMI ARC.",
                             IsDeleted = false,
-                            Name = "AudioBar Pro 2.1",
+                            Name = "AirPods Max",
                             Price = 8490000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000026"),
+                            AttributesJson = "{}",
+                            Brand = "iLuminaty",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c63"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "TWS earbuds cho công việc, mic MEMS 4 array, ENC khử ồn, pin 28 giờ.",
                             IsDeleted = false,
-                            Name = "VoiceLink Pro Earbuds",
+                            Name = "iLuminaty SoundCore",
                             Price = 3990000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000027"),
+                            AttributesJson = "{}",
+                            Brand = "Sony",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c63"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "DAC/Amp di động, ES9038Q2M chip, power 300mW vào 32Ω, USB-C.",
                             IsDeleted = false,
-                            Name = "PocketDAC Ultra",
+                            Name = "Sony SRS-XG300",
                             Price = 5290000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000028"),
+                            AttributesJson = "{}",
+                            Brand = "Samsung",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c63"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "In-ear monitor 5 driver hybrid, cáp bạc 8 lõi, dải tần 8Hz-45kHz.",
                             IsDeleted = false,
-                            Name = "SonicWave IEM S5",
+                            Name = "Samsung Soundbar Q990C",
                             Price = 9990000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000029"),
+                            AttributesJson = "{}",
+                            Brand = "iLuminaty",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c63"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Bộ podcast: mic arm + mic + pop filter + audio interface USB.",
                             IsDeleted = false,
-                            Name = "ClearCast Podcast Kit",
+                            Name = "iLuminaty Boom 360",
                             Price = 4290000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000030"),
+                            AttributesJson = "{}",
+                            Brand = "Apple",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c63"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Amplifier hi-fi cho loa passive, 2×100W class AB, Bluetooth 5.3.",
                             IsDeleted = false,
-                            Name = "HomeAudio Amp X3",
+                            Name = "Apple HomePod",
                             Price = 6990000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000031"),
+                            AttributesJson = "{}",
+                            Brand = "Apple",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c64"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Đồng hồ thông minh AMOLED 1.8\", đo SpO2/ECG/BP, GPS độc lập.",
                             IsDeleted = false,
-                            Name = "Nexus Watch S",
-                            Price = 9975000m
+                            Name = "iPhone 15 Pro Max",
+                            Price = 29990000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000032"),
+                            AttributesJson = "{}",
+                            Brand = "Samsung",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c64"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Flagship phone Snapdragon 8 Elite, camera 200MP, sạc 100W, IP68.",
                             IsDeleted = false,
-                            Name = "iLuminaty Phone Pro",
+                            Name = "Samsung Galaxy S24 Ultra",
                             Price = 28990000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000033"),
+                            AttributesJson = "{}",
+                            Brand = "Xiaomi",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c64"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Tablet 12 inch 2.8K 144Hz, M2 chip, 5G, bút stylus thế hệ 2.",
                             IsDeleted = false,
-                            Name = "NovaPad Ultra 12",
+                            Name = "Xiaomi 14 Pro",
                             Price = 22490000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000034"),
+                            AttributesJson = "{}",
+                            Brand = "Oppo",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c64"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Smartphone màn hình gập 7.6 inch, chống nước IPX8, khung titan.",
                             IsDeleted = false,
-                            Name = "FoldX Premium",
-                            Price = 45990000m
+                            Name = "Oppo Find X7 Ultra",
+                            Price = 25990000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000035"),
+                            AttributesJson = "{}",
+                            Brand = "Apple",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c64"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Smartphone tầm trung tốt nhất, Dimensity 7300, camera 108MP, pin 6000mAh.",
                             IsDeleted = false,
-                            Name = "MidRange Hero A55",
-                            Price = 9490000m
+                            Name = "iPhone 14",
+                            Price = 19490000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000036"),
+                            AttributesJson = "{}",
+                            Brand = "Samsung",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c64"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Vòng tay thể thao đo 24 chỉ số sức khỏe, pin 21 ngày, chống nước 5ATM.",
                             IsDeleted = false,
-                            Name = "WristBand Fit Pro",
-                            Price = 2490000m
+                            Name = "Samsung Galaxy Z Fold 5",
+                            Price = 32490000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000037"),
+                            AttributesJson = "{}",
+                            Brand = "Xiaomi",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c64"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Tablet trẻ em 8 inch, bảo vệ mắt EyeShield+, khóa ứng dụng theo độ tuổi.",
                             IsDeleted = false,
-                            Name = "AirTab Kids 8",
+                            Name = "Xiaomi Redmi Note 13",
                             Price = 4990000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000038"),
+                            AttributesJson = "{}",
+                            Brand = "Oppo",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c64"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Pin dự phòng 25000mAh, sạc 140W, 3 cổng ra, hiển thị số dung lượng.",
                             IsDeleted = false,
-                            Name = "PowerBank Turbo 25K",
-                            Price = 1990000m
+                            Name = "Oppo Reno 11",
+                            Price = 11990000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000039"),
+                            AttributesJson = "{}",
+                            Brand = "Samsung",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c64"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Kính AR thế hệ đầu, hiển thị thông tin ngay trên kính, kết nối BT 5.3.",
                             IsDeleted = false,
-                            Name = "SmartGlasses AR-1",
-                            Price = 15990000m
+                            Name = "Samsung Galaxy A55",
+                            Price = 9990000m
                         },
                         new
                         {
                             Id = new Guid("d0000000-0000-0000-0000-000000000040"),
+                            AttributesJson = "{}",
+                            Brand = "Apple",
                             CategoryId = new Guid("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c64"),
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Trạm sạc không dây 8 thiết bị cùng lúc, 100W tổng, chân đế sang trọng.",
                             IsDeleted = false,
-                            Name = "ChargeStation 8-in-1",
-                            Price = 3490000m
+                            Name = "iPhone 13",
+                            Price = 13490000m
+                        });
+                });
+
+            modelBuilder.Entity("Domain.Entities.ProductReview", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ImageUrls")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("ProductId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("ProductReviews");
+                });
+
+            modelBuilder.Entity("Domain.Entities.ProductVariant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AttributesJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ReservedQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Sku")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StockQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductVariants");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("a0000000-0000-0000-0000-000000000001"),
+                            AttributesJson = "{\"ram\":\"16GB\",\"storage\":\"512GB\",\"color\":\"Black\"}",
+                            CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsDeleted = false,
+                            Name = "16GB / 512GB / Black",
+                            Price = 52490000m,
+                            ProductId = new Guid("d0000000-0000-0000-0000-000000000001"),
+                            ReservedQuantity = 0,
+                            Sku = "DELL-XPS15-16-512-BLK",
+                            StockQuantity = 10
+                        },
+                        new
+                        {
+                            Id = new Guid("a0000000-0000-0000-0000-000000000002"),
+                            AttributesJson = "{\"ram\":\"32GB\",\"storage\":\"1TB\",\"color\":\"Silver\"}",
+                            CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsDeleted = false,
+                            Name = "32GB / 1TB / Silver",
+                            Price = 59990000m,
+                            ProductId = new Guid("d0000000-0000-0000-0000-000000000001"),
+                            ReservedQuantity = 0,
+                            Sku = "DELL-XPS15-32-1TB-SLV",
+                            StockQuantity = 5
+                        },
+                        new
+                        {
+                            Id = new Guid("a0000000-0000-0000-0000-000000000003"),
+                            AttributesJson = "{\"ram\":\"16GB\",\"storage\":\"512GB\",\"color\":\"Silver\"}",
+                            CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsDeleted = false,
+                            Name = "16GB / 512GB / Silver",
+                            Price = 28990000m,
+                            ProductId = new Guid("d0000000-0000-0000-0000-000000000002"),
+                            ReservedQuantity = 0,
+                            Sku = "MAC-AIR15-16-512-SLV",
+                            StockQuantity = 15
+                        },
+                        new
+                        {
+                            Id = new Guid("a0000000-0000-0000-0000-000000000004"),
+                            AttributesJson = "{\"ram\":\"32GB\",\"storage\":\"1TB\",\"color\":\"Midnight\"}",
+                            CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsDeleted = false,
+                            Name = "32GB / 1TB / Midnight",
+                            Price = 34990000m,
+                            ProductId = new Guid("d0000000-0000-0000-0000-000000000002"),
+                            ReservedQuantity = 0,
+                            Sku = "MAC-AIR15-32-1TB-BLK",
+                            StockQuantity = 8
+                        },
+                        new
+                        {
+                            Id = new Guid("a0000000-0000-0000-0000-000000000005"),
+                            AttributesJson = "{\"storage\":\"256GB\",\"color\":\"Natural Titanium\"}",
+                            CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsDeleted = false,
+                            Name = "256GB / Natural Titanium",
+                            Price = 29990000m,
+                            ProductId = new Guid("d0000000-0000-0000-0000-000000000031"),
+                            ReservedQuantity = 0,
+                            Sku = "IP15PM-256-BLK",
+                            StockQuantity = 20
+                        },
+                        new
+                        {
+                            Id = new Guid("a0000000-0000-0000-0000-000000000006"),
+                            AttributesJson = "{\"storage\":\"512GB\",\"color\":\"Blue Titanium\"}",
+                            CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsDeleted = false,
+                            Name = "512GB / Blue Titanium",
+                            Price = 34990000m,
+                            ProductId = new Guid("d0000000-0000-0000-0000-000000000031"),
+                            ReservedQuantity = 0,
+                            Sku = "IP15PM-512-BLU",
+                            StockQuantity = 10
+                        },
+                        new
+                        {
+                            Id = new Guid("a0000000-0000-0000-0000-000000000007"),
+                            AttributesJson = "{\"storage\":\"256GB\",\"color\":\"Titanium Black\"}",
+                            CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsDeleted = false,
+                            Name = "256GB / Titanium Black",
+                            Price = 28990000m,
+                            ProductId = new Guid("d0000000-0000-0000-0000-000000000032"),
+                            ReservedQuantity = 0,
+                            Sku = "S24U-256-BLK",
+                            StockQuantity = 25
+                        },
+                        new
+                        {
+                            Id = new Guid("a0000000-0000-0000-0000-000000000008"),
+                            AttributesJson = "{\"storage\":\"512GB\",\"color\":\"Titanium Yellow\"}",
+                            CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsDeleted = false,
+                            Name = "512GB / Titanium Yellow",
+                            Price = 32990000m,
+                            ProductId = new Guid("d0000000-0000-0000-0000-000000000032"),
+                            ReservedQuantity = 0,
+                            Sku = "S24U-512-YLW",
+                            StockQuantity = 12
+                        },
+                        new
+                        {
+                            Id = new Guid("a0000000-0000-0000-0000-000000000009"),
+                            AttributesJson = "{\"switch\":\"Red\",\"color\":\"Black\"}",
+                            CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsDeleted = false,
+                            Name = "Red Switch / Black",
+                            Price = 4725000m,
+                            ProductId = new Guid("d0000000-0000-0000-0000-000000000011"),
+                            ReservedQuantity = 0,
+                            Sku = "LOGI-GPX-RED-BLK",
+                            StockQuantity = 30
+                        },
+                        new
+                        {
+                            Id = new Guid("a0000000-0000-0000-0000-000000000010"),
+                            AttributesJson = "{\"switch\":\"Blue\",\"color\":\"White\"}",
+                            CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsDeleted = false,
+                            Name = "Blue Switch / White",
+                            Price = 4725000m,
+                            ProductId = new Guid("d0000000-0000-0000-0000-000000000011"),
+                            ReservedQuantity = 0,
+                            Sku = "LOGI-GPX-BLU-WHT",
+                            StockQuantity = 15
+                        },
+                        new
+                        {
+                            Id = new Guid("a0000000-0000-0000-0000-000000000011"),
+                            AttributesJson = "{\"switch\":\"Brown\",\"color\":\"Black\"}",
+                            CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            IsDeleted = false,
+                            Name = "Brown Switch / Black",
+                            Price = 890000m,
+                            ProductId = new Guid("d0000000-0000-0000-0000-000000000013"),
+                            ReservedQuantity = 0,
+                            Sku = "ASUS-FAL-BRN-BLK",
+                            StockQuantity = 20
                         });
                 });
 
@@ -1418,10 +1947,10 @@ namespace Infrastructure.Persistence.Migrations
                             Id = new Guid("a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d"),
                             Address = "123 iLuminaty HQ, TP.HCM",
                             CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Email = "admin@iluminaty.com",
+                            Email = "admin@ecommerce.com",
                             FullName = "System Administrator",
                             IsDeleted = false,
-                            PasswordHash = "$2a$11$Le3WZPxhWsgyNrsgQ5oEEOQ6uCYXNMpEWZ14rRqQAkZejS75R/zJK",
+                            PasswordHash = "$2a$11$y2CddBh0H5CK9EmBsbo1EOj8pN26ACgU/Eme8ITQEqi3syLHxEFRG",
                             PhoneNumber = "0901234567",
                             Role = "Admin"
                         },
@@ -1438,6 +1967,132 @@ namespace Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Domain.Entities.Voucher", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DiscountType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("DiscountValue")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal?>("MaxDiscountValue")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("MinOrderValue")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UsageLimit")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UsedCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("Vouchers");
+                });
+
+            modelBuilder.Entity("Domain.Entities.WishlistItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId", "ProductId")
+                        .IsUnique();
+
+                    b.ToTable("WishlistItems");
+                });
+
+            modelBuilder.Entity("Domain.Entities.GoodsReceipt", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "ApprovedByUser")
+                        .WithMany()
+                        .HasForeignKey("ApprovedByUserId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Domain.Entities.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("ApprovedByUser");
+
+                    b.Navigation("CreatedByUser");
+                });
+
+            modelBuilder.Entity("Domain.Entities.GoodsReceiptDetail", b =>
+                {
+                    b.HasOne("Domain.Entities.GoodsReceipt", "GoodsReceipt")
+                        .WithMany("Details")
+                        .HasForeignKey("GoodsReceiptId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.ProductVariant", "ProductVariant")
+                        .WithMany()
+                        .HasForeignKey("ProductVariantId");
+
+                    b.Navigation("GoodsReceipt");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("ProductVariant");
+                });
+
             modelBuilder.Entity("Domain.Entities.Inventory", b =>
                 {
                     b.HasOne("Domain.Entities.Product", "Product")
@@ -1447,6 +2102,16 @@ namespace Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Order", b =>
+                {
+                    b.HasOne("Domain.Entities.Voucher", "Voucher")
+                        .WithMany()
+                        .HasForeignKey("VoucherId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Voucher");
                 });
 
             modelBuilder.Entity("Domain.Entities.OrderItem", b =>
@@ -1463,9 +2128,27 @@ namespace Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Domain.Entities.ProductVariant", "ProductVariant")
+                        .WithMany()
+                        .HasForeignKey("ProductVariantId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.Navigation("Order");
 
                     b.Navigation("Product");
+
+                    b.Navigation("ProductVariant");
+                });
+
+            modelBuilder.Entity("Domain.Entities.PaymentTransaction", b =>
+                {
+                    b.HasOne("Domain.Entities.Order", "Order")
+                        .WithMany("PaymentTransactions")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("Domain.Entities.Product", b =>
@@ -1479,19 +2162,89 @@ namespace Infrastructure.Persistence.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("Domain.Entities.ProductReview", b =>
+                {
+                    b.HasOne("Domain.Entities.Order", "Order")
+                        .WithMany("Reviews")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Product", "Product")
+                        .WithMany("Reviews")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.ProductVariant", b =>
+                {
+                    b.HasOne("Domain.Entities.Product", "Product")
+                        .WithMany("Variants")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("Domain.Entities.WishlistItem", b =>
+                {
+                    b.HasOne("Domain.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Domain.Entities.Category", b =>
                 {
                     b.Navigation("Products");
                 });
 
+            modelBuilder.Entity("Domain.Entities.GoodsReceipt", b =>
+                {
+                    b.Navigation("Details");
+                });
+
             modelBuilder.Entity("Domain.Entities.Order", b =>
                 {
                     b.Navigation("OrderItems");
+
+                    b.Navigation("PaymentTransactions");
+
+                    b.Navigation("Reviews");
                 });
 
             modelBuilder.Entity("Domain.Entities.Product", b =>
                 {
                     b.Navigation("Inventory");
+
+                    b.Navigation("Reviews");
+
+                    b.Navigation("Variants");
                 });
 #pragma warning restore 612, 618
         }

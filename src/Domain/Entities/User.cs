@@ -12,6 +12,11 @@ public class User : BaseEntity
     public string Role { get; set; } = "Customer";
     public string? AvatarUrl { get; set; }
     public string? SavedAddresses { get; set; } // JSON: ["Địa chỉ 1","Địa chỉ 2"]
+    
+    // Khách hàng thân thiết (Loyalty Program)
+    public decimal TotalSpent { get; set; } = 0;
+    public string MembershipTier { get; set; } = "Bronze";
+    public int LoyaltyPoints { get; set; } = 0;
 
     // Hỗ trợ Refresh Token chuẩn Production
     public string? RefreshToken { get; set; }

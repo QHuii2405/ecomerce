@@ -14,6 +14,11 @@ public class OrderService : IOrderService
         _unitOfWork = unitOfWork;
     }
 
+    public async Task<Order?> GetOrderByIdAsync(Guid orderId)
+    {
+        return await _unitOfWork.Orders.GetByIdAsync(orderId);
+    }
+
     public async Task<Guid> CreateOrderAsync(CreateOrderRequest request, Guid userId)
     {
         await _unitOfWork.BeginTransactionAsync();
@@ -78,6 +83,30 @@ public class OrderService : IOrderService
                 order.OrderItems.Add(orderItem);
                 order.TotalAmount += orderItem.UnitPrice * orderItem.Quantity;
             }
+            // Apply Voucher if provided
+            if (request.VoucherId.HasValue)
+            {
+                var voucher = await _unitOfWork.Repository<Voucher>().GetByIdAsync(request.VoucherId.Value);
+                if (voucher != null && voucher.IsActive && voucher.ExpiryDate >= DateTime.UtcNow && voucher.UsedCount < voucher.UsageLimit && order.TotalAmount >= voucher.MinOrderValue)
+                {
+                    decimal discount = voucher.DiscountType == "Percentage" 
+                        ? order.TotalAmount * (voucher.DiscountValue / 100) 
+                        : voucher.DiscountValue;
+                        
+                    if (voucher.MaxDiscountValue.HasValue && discount > voucher.MaxDiscountValue.Value)
+                    {
+                        discount = voucher.MaxDiscountValue.Value;
+                    }
+
+                    if (discount > order.TotalAmount) discount = order.TotalAmount;
+
+                    order.DiscountAmount = discount;
+                    order.VoucherId = voucher.Id;
+                    
+                    voucher.UsedCount += 1;
+                    _unitOfWork.Repository<Voucher>().Update(voucher);
+                }
+            }
 
             await _unitOfWork.Orders.AddAsync(order);
             await _unitOfWork.SaveChangesAsync();
@@ -130,6 +159,21 @@ public class OrderService : IOrderService
             order.Status = "Delivered";
             order.UpdatedAt = DateTime.UtcNow;
             _unitOfWork.Orders.Update(order);
+
+            // Tích điểm & Cập nhật hạng thành viên
+            var user = await _unitOfWork.Users.GetByIdAsync(order.UserId);
+            if (user != null)
+            {
+                user.TotalSpent += order.TotalAmount;
+                user.LoyaltyPoints += (int)(order.TotalAmount / 10000); // 10,000đ = 1 điểm
+
+                if (user.TotalSpent >= 50000000) user.MembershipTier = "Gold";
+                else if (user.TotalSpent >= 10000000) user.MembershipTier = "Silver";
+                else user.MembershipTier = "Bronze";
+
+                _unitOfWork.Users.Update(user);
+            }
+
             await _unitOfWork.CommitTransactionAsync();
             return true;
         }
@@ -234,12 +278,26 @@ public class OrderService : IOrderService
             {
                 foreach (var item in order.OrderItems)
                 {
-                    var inventory = await _unitOfWork.Inventories.GetByProductIdAsync(item.ProductId);
-                    if (inventory != null)
+                    if (item.ProductVariantId.HasValue)
                     {
-                        inventory.StockQuantity -= item.Quantity;
-                        inventory.ReservedQuantity -= item.Quantity;
-                        _unitOfWork.Inventories.Update(inventory);
+                        var variant = await _unitOfWork.Repository<ProductVariant>().GetByIdAsync(item.ProductVariantId.Value);
+                        if (variant != null)
+                        {
+                            variant.StockQuantity -= item.Quantity;
+                            variant.ReservedQuantity -= item.Quantity;
+                            variant.UpdatedAt = DateTime.UtcNow;
+                            _unitOfWork.Repository<ProductVariant>().Update(variant);
+                        }
+                    }
+                    else
+                    {
+                        var inventory = await _unitOfWork.Inventories.GetByProductIdAsync(item.ProductId);
+                        if (inventory != null)
+                        {
+                            inventory.StockQuantity -= item.Quantity;
+                            inventory.ReservedQuantity -= item.Quantity;
+                            _unitOfWork.Inventories.Update(inventory);
+                        }
                     }
                 }
             }
@@ -249,11 +307,24 @@ public class OrderService : IOrderService
             {
                 foreach (var item in order.OrderItems)
                 {
-                    var inventory = await _unitOfWork.Inventories.GetByProductIdAsync(item.ProductId);
-                    if (inventory != null)
+                    if (item.ProductVariantId.HasValue)
                     {
-                        inventory.ReservedQuantity -= item.Quantity;
-                        _unitOfWork.Inventories.Update(inventory);
+                        var variant = await _unitOfWork.Repository<ProductVariant>().GetByIdAsync(item.ProductVariantId.Value);
+                        if (variant != null)
+                        {
+                            variant.ReservedQuantity = Math.Max(0, variant.ReservedQuantity - item.Quantity);
+                            variant.UpdatedAt = DateTime.UtcNow;
+                            _unitOfWork.Repository<ProductVariant>().Update(variant);
+                        }
+                    }
+                    else
+                    {
+                        var inventory = await _unitOfWork.Inventories.GetByProductIdAsync(item.ProductId);
+                        if (inventory != null)
+                        {
+                            inventory.ReservedQuantity = Math.Max(0, inventory.ReservedQuantity - item.Quantity);
+                            _unitOfWork.Inventories.Update(inventory);
+                        }
                     }
                 }
             }

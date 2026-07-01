@@ -7,6 +7,8 @@ public class Order : BaseEntity
     public Guid UserId { get; set; }
     public string Status { get; set; } = "Pending"; // Pending, Confirmed, Shipping, Delivered, Cancelled
     public decimal TotalAmount { get; set; }
+    public decimal DiscountAmount { get; set; } = 0;
+    public Guid? VoucherId { get; set; }
     public string? Note { get; set; }
 
     // Thông tin giao hàng
@@ -19,4 +21,5 @@ public class Order : BaseEntity
     public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     public virtual ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
     public virtual ICollection<ProductReview> Reviews { get; set; } = new List<ProductReview>();
+    public virtual Voucher? Voucher { get; set; }
 }

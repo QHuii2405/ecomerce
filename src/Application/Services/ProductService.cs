@@ -19,28 +19,56 @@ public class ProductService : IProductService
         _cache = cache;
     }
 
-    public async Task<(IEnumerable<ProductResponse> Products, string Source)> GetAllProductsAsync()
+    public async Task<(IEnumerable<ProductResponse> Products, string Source)> GetAllProductsAsync(
+        string? category = null,
+        string? brand = null,
+        string? search = null,
+        decimal? minPrice = null,
+        decimal? maxPrice = null)
     {
-        var cachedProducts = await _cache.GetStringAsync(CacheKey);
-        if (!string.IsNullOrEmpty(cachedProducts))
+        var hasFilters = HasProductFilters(category, brand, search, minPrice, maxPrice);
+        if (!hasFilters)
         {
-            var productsFromCache = JsonSerializer.Deserialize<List<ProductResponse>>(cachedProducts);
-            if (productsFromCache != null)
+            var cachedProducts = await _cache.GetStringAsync(CacheKey);
+            if (!string.IsNullOrEmpty(cachedProducts))
             {
-                return (productsFromCache, "Redis Cache");
+                var productsFromCache = JsonSerializer.Deserialize<List<ProductResponse>>(cachedProducts);
+                if (productsFromCache != null)
+                {
+                    return (productsFromCache, "Redis Cache");
+                }
             }
         }
 
         var products = await _unitOfWork.Products.GetProductsWithInventoryAsync();
-        var productResponses = products.Select(MapToProductResponse).ToList();
+        var productResponses = products
+            .Select(MapToProductResponse)
+            .Where(p => MatchesFilters(p, category, brand, search, minPrice, maxPrice))
+            .ToList();
 
-        var cacheOptions = new DistributedCacheEntryOptions()
-            .SetAbsoluteExpiration(TimeSpan.FromMinutes(5));
+        if (!hasFilters)
+        {
+            var cacheOptions = new DistributedCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromMinutes(5));
 
-        var serializedProducts = JsonSerializer.Serialize(productResponses);
-        await _cache.SetStringAsync(CacheKey, serializedProducts, cacheOptions);
+            var serializedProducts = JsonSerializer.Serialize(productResponses);
+            await _cache.SetStringAsync(CacheKey, serializedProducts, cacheOptions);
+        }
 
-        return (productResponses, "SQL Server Database");
+        return (productResponses, hasFilters ? "SQL Server Database (Filtered)" : "SQL Server Database");
+    }
+
+    public async Task<IEnumerable<string>> GetProductBrandsAsync(string? category = null)
+    {
+        var products = await _unitOfWork.Products.GetProductsWithInventoryAsync();
+        return products
+            .Select(MapToProductResponse)
+            .Where(p => MatchesCategory(p, category))
+            .Select(p => p.Brand)
+            .Where(b => !string.IsNullOrWhiteSpace(b))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(b => b)
+            .ToList();
     }
 
     public async Task<ProductResponse?> GetProductByIdAsync(Guid id)
@@ -242,6 +270,113 @@ public class ProductService : IProductService
                 AverageRating = reviews.Count == 0 ? 0 : Math.Round(reviews.Average(r => r.Rating), 1)
             }
         };
+    }
+
+    private static bool HasProductFilters(string? category, string? brand, string? search, decimal? minPrice, decimal? maxPrice)
+    {
+        return !string.IsNullOrWhiteSpace(category)
+            || !string.IsNullOrWhiteSpace(brand)
+            || !string.IsNullOrWhiteSpace(search)
+            || minPrice.HasValue
+            || maxPrice.HasValue;
+    }
+
+    private static bool MatchesFilters(ProductResponse product, string? category, string? brand, string? search, decimal? minPrice, decimal? maxPrice)
+    {
+        return MatchesCategory(product, category)
+            && MatchesBrand(product, brand)
+            && MatchesSearch(product, search)
+            && (!minPrice.HasValue || product.Price >= minPrice.Value)
+            && (!maxPrice.HasValue || product.Price <= maxPrice.Value);
+    }
+
+    private static bool MatchesCategory(ProductResponse product, string? category)
+    {
+        if (string.IsNullOrWhiteSpace(category) || category.Equals("All", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return product.Category?.Name.Equals(category, StringComparison.OrdinalIgnoreCase) == true
+            || product.Category?.Name.Contains(category, StringComparison.OrdinalIgnoreCase) == true;
+    }
+
+    private static bool MatchesBrand(ProductResponse product, string? brand)
+    {
+        return string.IsNullOrWhiteSpace(brand)
+            || brand.Equals("All", StringComparison.OrdinalIgnoreCase)
+            || product.Brand.Equals(brand, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool MatchesSearch(ProductResponse product, string? search)
+    {
+        if (string.IsNullOrWhiteSpace(search))
+        {
+            return true;
+        }
+
+        return product.Name.Contains(search, StringComparison.OrdinalIgnoreCase)
+            || product.Description.Contains(search, StringComparison.OrdinalIgnoreCase)
+            || product.Brand.Contains(search, StringComparison.OrdinalIgnoreCase)
+            || product.Category?.Name.Contains(search, StringComparison.OrdinalIgnoreCase) == true;
+    }
+
+    public async Task<Guid> AddVariantAsync(Guid productId, CreateProductVariantRequest request)
+    {
+        var product = await _unitOfWork.Products.GetByIdAsync(productId);
+        if (product == null || product.IsDeleted)
+            throw new Exception("Sản phẩm không tồn tại.");
+
+        var variant = new ProductVariant
+        {
+            ProductId = productId,
+            Sku = request.Sku,
+            Name = request.Name,
+            AttributesJson = SerializeDictionary(request.Attributes),
+            Price = request.Price,
+            StockQuantity = request.StockQuantity,
+            ReservedQuantity = 0,
+            IsActive = true
+        };
+
+        await _unitOfWork.Repository<ProductVariant>().AddAsync(variant);
+        await _unitOfWork.SaveChangesAsync();
+        await _cache.RemoveAsync(CacheKey);
+
+        return variant.Id;
+    }
+
+    public async Task UpdateVariantAsync(Guid productId, Guid variantId, UpdateProductVariantRequest request)
+    {
+        var variant = await _unitOfWork.Repository<ProductVariant>().GetByIdAsync(variantId);
+        if (variant == null || variant.ProductId != productId)
+            throw new Exception("Biến thể không tồn tại.");
+
+        variant.Sku = request.Sku;
+        variant.Name = request.Name;
+        variant.AttributesJson = SerializeDictionary(request.Attributes);
+        variant.Price = request.Price;
+        variant.StockQuantity = request.StockQuantity;
+        variant.UpdatedAt = DateTime.UtcNow;
+
+        _unitOfWork.Repository<ProductVariant>().Update(variant);
+        await _unitOfWork.SaveChangesAsync();
+        await _cache.RemoveAsync(CacheKey);
+    }
+
+    public async Task RemoveVariantAsync(Guid productId, Guid variantId)
+    {
+        var variant = await _unitOfWork.Repository<ProductVariant>().GetByIdAsync(variantId);
+        if (variant == null || variant.ProductId != productId)
+            throw new Exception("Biến thể không tồn tại.");
+
+        // Soft delete variant
+        variant.IsActive = false;
+        variant.UpdatedAt = DateTime.UtcNow;
+
+        _unitOfWork.Repository<ProductVariant>().Update(variant);
+        await _unitOfWork.SaveChangesAsync();
+        await _cache.RemoveAsync(CacheKey);
     }
 
     private static string SerializeDictionary(Dictionary<string, string> attributes)

@@ -10,6 +10,7 @@ import Cart from './pages/Cart'
 import ProductDetail from './pages/ProductDetail'
 import Recruitment from './pages/Recruitment'
 import Unauthorized from './pages/Unauthorized'
+import PaymentResult from './pages/PaymentResult'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminLayout from './components/AdminLayout'
 import AdminDashboard from './pages/admin/AdminDashboard'
@@ -17,6 +18,8 @@ import AdminProducts from './pages/admin/AdminProducts'
 import AdminOrders from './pages/admin/AdminOrders'
 import AdminCategories from './pages/admin/AdminCategories'
 import AdminUsers from './pages/admin/AdminUsers'
+import AdminInventory from './pages/admin/AdminInventory'
+import AdminVouchers from './pages/admin/AdminVouchers'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -32,6 +35,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/recruitment" element={<Recruitment />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
+        <Route path="/payment-result" element={<PaymentResult />} />
 
         {/* Nhánh Route được bảo vệ dành cho khách hàng đã đăng nhập */}
         <Route element={<ProtectedRoute allowedRoles={['Customer', 'Staff', 'Admin']} />}>
@@ -45,6 +49,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <Route path="products" element={<AdminProducts />} />
             <Route path="orders" element={<AdminOrders />} />
             <Route path="categories" element={<AdminCategories />} />
+            <Route path="vouchers" element={<AdminVouchers />} />
+            <Route path="inventory" element={<AdminInventory />} />
             
             {/* Route con chỉ dành riêng cho Admin (Staff truy cập sẽ vào trang Unauthorized) */}
             <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>

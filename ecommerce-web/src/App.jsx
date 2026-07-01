@@ -203,10 +203,9 @@ export default function App() {
                     <Link to="/" className="flex items-center gap-3">
                         <img 
                             alt="iLuminaty Shop Logo" 
-                            className="h-8 w-8 object-contain rounded-md" 
-                            src="https://lh3.googleusercontent.com/aida/AP1WRLt8R8qnJRl8MJ87JVsCo4oWwIQihTtnOO6tqxLHg9B88FAlGazKoHhw0meBOUHUMSjcUi_jImPJD4V4a97ziZK1g8-i0xn03MPBmuwl7_5ppv_slq3vxE-RQg59JwOndUAYZOyWNEe2hNm71Muzya549heQQyDtqAafi2N-mipd9JK3BoufOd1PIqe7tizT46EvOwfa3LnCSKar-FDpDC9_eysvaaxMWyqS9Eeyu5S7d_l3Xwk9lz7JmiA"
+                            className="h-[50px] lg:h-[60px] w-auto object-contain transition-all duration-300" 
+                            src="/Favicon.png"
                         />
-                        <span className="font-bold text-xl tracking-tighter text-primary">iLuminaty Shop</span>
                     </Link>
 
                     {/* Navigation Links */}
@@ -843,10 +842,9 @@ export default function App() {
                             <div className="flex items-center gap-3">
                                 <img 
                                     alt="iLuminaty Shop Logo" 
-                                    className="h-8 w-8 object-contain rounded-md" 
-                                    src="https://lh3.googleusercontent.com/aida/AP1WRLt8R8qnJRl8MJ87JVsCo4oWwIQihTtnOO6tqxLHg9B88FAlGazKoHhw0meBOUHUMSjcUi_jImPJD4V4a97ziZK1g8-i0xn03MPBmuwl7_5ppv_slq3vxE-RQg59JwOndUAYZOyWNEe2hNm71Muzya549heQQyDtqAafi2N-mipd9JK3BoufOd1PIqe7tizT46EvOwfa3LnCSKar-FDpDC9_eysvaaxMWyqS9Eeyu5S7d_l3Xwk9lz7JmiA"
+                                    className="h-[60px] w-auto object-contain" 
+                                    src="/Favicon.png"
                                 />
-                                <span className="font-bold text-xl text-on-surface">iLuminaty Shop</span>
                             </div>
                             <p className="text-sm text-on-surface-variant leading-relaxed">
                                 Đăng ký nhận tin tức để không bỏ lỡ các công nghệ phần cứng đột phá và sự kiện khuyến mãi mới nhất.

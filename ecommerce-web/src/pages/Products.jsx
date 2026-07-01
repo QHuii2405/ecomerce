@@ -3,7 +3,7 @@ import api from '../api/axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { addToCart, getCartCount } from '../api/cartStore';
 import {
-    Search, ShoppingCart, Tag, Star, ArrowLeft, Filter, AlertCircle, ShoppingBag, X, CheckCircle2
+    Search, ShoppingCart, Tag, Star, ArrowLeft, Filter, AlertCircle, ShoppingBag, X, CheckCircle2, Heart
 } from 'lucide-react';
 
 export default function Products() {
@@ -11,11 +11,13 @@ export default function Products() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [wishlist, setWishlist] = useState([]);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [selectedBrand, setSelectedBrand] = useState('All');
     const [selectedPrice, setSelectedPrice] = useState('All');
+    const [brandOptions, setBrandOptions] = useState([]);
     const [cartCount, setCartCount] = useState(getCartCount());
     const [toast, setToast] = useState(null);
 
@@ -29,20 +31,82 @@ export default function Products() {
     useEffect(() => {
         const updateCount = () => setCartCount(getCartCount());
         window.addEventListener('cart-updated', updateCount);
-        fetchProducts();
         window.scrollTo(0, 0);
         return () => window.removeEventListener('cart-updated', updateCount);
     }, []);
 
+    useEffect(() => {
+        fetchProducts();
+    }, [selectedCategory, selectedBrand, selectedPrice, searchTerm]);
+
+    useEffect(() => {
+        fetchBrands();
+        setSelectedBrand('All');
+        if (token) fetchWishlist();
+    }, [selectedCategory, token]);
+
+    const fetchWishlist = async () => {
+        try {
+            const response = await api.get('/Wishlist');
+            setWishlist((response.data.data || []).map(p => p.id));
+        } catch (err) {}
+    };
+
+    const handleToggleWishlist = async (e, productId) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!token) {
+            alert("Vui lòng đăng nhập để sử dụng tính năng yêu thích!");
+            navigate('/login');
+            return;
+        }
+        try {
+            await api.post(`/Wishlist/${productId}/toggle`);
+            if (wishlist.includes(productId)) {
+                setWishlist(wishlist.filter(id => id !== productId));
+                showToast("Đã bỏ khỏi danh sách yêu thích");
+            } else {
+                setWishlist([...wishlist, productId]);
+                showToast("Đã thêm vào danh sách yêu thích");
+            }
+        } catch (err) {
+            showToast("Có lỗi xảy ra");
+        }
+    };
+
+    const getPriceRange = () => {
+        if (selectedPrice === '<5M') return { maxPrice: 4999999 };
+        if (selectedPrice === '5M-20M') return { minPrice: 5000000, maxPrice: 20000000 };
+        if (selectedPrice === '>20M') return { minPrice: 20000001 };
+        return {};
+    };
+
     const fetchProducts = async () => {
         try {
             setLoading(true);
-            const response = await api.get('/Products');
-            setProducts(response.data.data);
+            const params = {
+                ...(selectedCategory !== 'All' ? { category: selectedCategory } : {}),
+                ...(selectedBrand !== 'All' ? { brand: selectedBrand } : {}),
+                ...(searchTerm.trim() ? { search: searchTerm.trim() } : {}),
+                ...getPriceRange()
+            };
+            const response = await api.get('/Products', { params });
+            setProducts(response.data.data || []);
+            setError(null);
         } catch (err) {
             setError("Không thể tải danh sách sản phẩm.");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchBrands = async () => {
+        try {
+            const params = selectedCategory !== 'All' ? { category: selectedCategory } : {};
+            const response = await api.get('/Products/brands', { params });
+            setBrandOptions(response.data.data || []);
+        } catch {
+            setBrandOptions([]);
         }
     };
 
@@ -77,42 +141,7 @@ export default function Products() {
         return 'https://lh3.googleusercontent.com/aida-public/AB6AXuAltOeyhWUN8d_OI3RZgPhmFTnEFiE8btibjVA1UyeS4BMmMyjSKaTmgBimNagFrcF5ixaI_tKAShIux-GWN1Ed-N4cXrCROBioCaBreSt4h4NtC8LD-0H3MX6jv_fs4XT3pt7d0fecPOmOrn9wrTrKkLcAH0eYV75rcouQVMTlc39VoiWaFpa2STxaIe2OkNzeota4rS1mkkwmLFdG16EQo8bXdMVcpc2tss9oN1UsRXklpzD_rStA';
     };
 
-    const inferBrand = (product) => {
-        const text = `${product.name || ''} ${product.description || ''} ${product.category?.name || ''}`.toLowerCase();
-        const brands = ['iphone', 'samsung', 'xiaomi', 'oppo', 'dell', 'hp', 'asus', 'lenovo', 'acer', 'msi', 'apple', 'sony', 'logitech', 'razer'];
-        return brands.find(brand => text.includes(brand)) || 'iluminaty';
-    };
-
-    const getBrandOptions = () => {
-        const brandGroups = {
-            All: ['iphone', 'samsung', 'xiaomi', 'oppo', 'dell', 'hp', 'asus', 'lenovo', 'acer', 'msi', 'apple', 'sony', 'logitech', 'razer', 'iluminaty'],
-            Smartphones: ['iphone', 'samsung', 'xiaomi', 'oppo'],
-            Laptops: ['dell', 'hp', 'asus', 'lenovo', 'acer', 'msi', 'apple'],
-            Gaming: ['asus', 'msi', 'logitech', 'razer'],
-            Audio: ['sony', 'apple', 'samsung', 'iluminaty']
-        };
-        return brandGroups[selectedCategory] || brandGroups.All;
-    };
-
-    const filteredProducts = products.filter(product => {
-        const searchMatch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                            product.category?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-        
-        const catMatch = selectedCategory === 'All' || product.category?.name?.includes(selectedCategory) ||
-                         (selectedCategory === 'Laptops' && product.name?.toLowerCase().includes('laptop')) ||
-                         (selectedCategory === 'Gaming' && product.category?.name?.toLowerCase().includes('gaming')) ||
-                         (selectedCategory === 'Audio' && product.category?.name?.toLowerCase().includes('audio')) ||
-                         (selectedCategory === 'Smartphones' && product.category?.name?.toLowerCase().includes('smartphone'));
-
-        const brandMatch = selectedBrand === 'All' || inferBrand(product) === selectedBrand;
-
-        let priceMatch = true;
-        if (selectedPrice === '<5M') priceMatch = product.price < 5000000;
-        if (selectedPrice === '5M-20M') priceMatch = product.price >= 5000000 && product.price <= 20000000;
-        if (selectedPrice === '>20M') priceMatch = product.price > 20000000;
-
-        return searchMatch && catMatch && brandMatch && priceMatch;
-    });
+    const filteredProducts = products;
 
     return (
         <div className="min-h-screen bg-background text-on-surface flex flex-col font-sans">
@@ -185,6 +214,24 @@ export default function Products() {
                                 </div>
                             </div>
                             <div className="border-t border-outline-variant/20 pt-4">
+                                <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-3">Hãng</p>
+                                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                                    {['All', ...brandOptions].map(brand => (
+                                        <label key={brand} className="flex items-center gap-2 text-sm cursor-pointer hover:text-primary transition-colors">
+                                            <input
+                                                type="radio"
+                                                name="brand"
+                                                checked={selectedBrand === brand}
+                                                onChange={() => setSelectedBrand(brand)}
+                                                className="accent-primary"
+                                            />
+                                            {brand === 'All' ? 'Tất cả hãng' : brand}
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="border-t border-outline-variant/20 pt-4">
                                 <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-3">Mức Giá</p>
                                 <div className="space-y-2">
                                     {[
@@ -207,9 +254,9 @@ export default function Products() {
                                 </div>
                             </div>
                             
-                            {(selectedCategory !== 'All' || selectedPrice !== 'All' || searchTerm) && (
+                            {(selectedCategory !== 'All' || selectedBrand !== 'All' || selectedPrice !== 'All' || searchTerm) && (
                                 <button 
-                                    onClick={() => { setSelectedCategory('All'); setSelectedPrice('All'); setSearchTerm(''); }}
+                                    onClick={() => { setSelectedCategory('All'); setSelectedBrand('All'); setSelectedPrice('All'); setSearchTerm(''); }}
                                     className="w-full flex items-center justify-center gap-2 py-2 mt-4 text-xs font-bold text-rose-500 bg-rose-500/10 rounded-xl hover:bg-rose-500/20 transition-colors"
                                 >
                                     <X size={14} /> Xóa bộ lọc
@@ -261,8 +308,14 @@ export default function Products() {
                                                 {isNew && <span className="bg-primary text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">Mới</span>}
                                                 {isSale && <span className="bg-error text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">Sale</span>}
                                             </div>
-                                            <div className="absolute top-4 right-4">
-                                                <span className={`text-[10px] px-2.5 py-1 rounded-full font-bold uppercase ${isAvailable ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-600 border border-rose-500/20'}`}>
+                                            <div className="absolute top-4 right-4 flex flex-col gap-2">
+                                                <button 
+                                                    onClick={(e) => handleToggleWishlist(e, product.id)}
+                                                    className={`p-2 rounded-full backdrop-blur-md border shadow-sm transition-all ${wishlist.includes(product.id) ? 'bg-rose-500/10 border-rose-500/20 text-rose-500' : 'bg-white/80 border-outline-variant/30 text-on-surface-variant hover:text-rose-500'}`}
+                                                >
+                                                    <Heart size={16} className={wishlist.includes(product.id) ? "fill-rose-500" : ""} />
+                                                </button>
+                                                <span className={`text-[10px] px-2.5 py-1 rounded-full font-bold uppercase text-center ${isAvailable ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-600 border border-rose-500/20'}`}>
                                                     {isAvailable ? `Còn ${product.inventory.availableQuantity}` : 'Hết hàng'}
                                                 </span>
                                             </div>
@@ -273,7 +326,7 @@ export default function Products() {
                                                 <div className="flex justify-between items-start">
                                                     <div className="flex items-center gap-1 text-on-surface-variant text-[10px] font-bold uppercase tracking-wider">
                                                         <Tag size={10} /> 
-                                                        <span>{product.category?.name || 'Điện Tử'}</span>
+                                                        <span>{product.brand || product.category?.name || 'Điện Tử'}</span>
                                                     </div>
                                                     <div className="flex items-center text-tertiary">
                                                         <Star size={12} className="fill-amber-500 text-amber-500" />

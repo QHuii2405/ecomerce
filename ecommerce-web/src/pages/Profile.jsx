@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   User, Package, MapPin, Phone, Mail, ArrowLeft,
   ChevronDown, ChevronUp, Truck, CheckCircle2, Clock,
-  XCircle, ShoppingBag, AlertCircle, RefreshCw, Save, Plus, Trash2, Edit, Camera
+  XCircle, ShoppingBag, AlertCircle, RefreshCw, Save, Plus, Trash2, Edit, Camera, Heart, ShoppingCart
 } from 'lucide-react';
 
 // Delivery tracking timeline config
@@ -196,7 +196,10 @@ export default function Profile() {
   const [orders, setOrders] = useState([]);
   const [loadingUser, setLoadingUser] = useState(true);
   const [loadingOrders, setLoadingOrders] = useState(true);
-  const [activeTab, setActiveTab] = useState('info'); // 'info', 'addresses', 'orders'
+  const [activeTab, setActiveTab] = useState('info'); // 'info', 'addresses', 'orders', 'wishlist'
+  
+  const [wishlistItems, setWishlistItems] = useState([]);
+  const [loadingWishlist, setLoadingWishlist] = useState(true);
 
   // Edit Profile States
   const [isEditing, setIsEditing] = useState(false);
@@ -211,6 +214,7 @@ export default function Profile() {
   useEffect(() => {
     fetchUser();
     fetchOrders();
+    fetchWishlist();
   }, []);
 
   const fetchUser = async () => {
@@ -243,6 +247,24 @@ export default function Profile() {
     } finally {
       setLoadingOrders(false);
     }
+  };
+
+  const fetchWishlist = async () => {
+    try {
+      const res = await api.get('/Wishlist');
+      setWishlistItems(res.data.data || []);
+    } catch {
+      setWishlistItems([]);
+    } finally {
+      setLoadingWishlist(false);
+    }
+  };
+
+  const handleRemoveWishlist = async (productId) => {
+    try {
+      await api.post(`/Wishlist/${productId}/toggle`);
+      setWishlistItems(prev => prev.filter(item => item.id !== productId));
+    } catch (err) {}
   };
 
   const handleCancelOrder = (cancelledId) => {
@@ -381,6 +403,12 @@ export default function Profile() {
                 className={`w-full flex items-center gap-3 px-5 py-4 text-sm font-semibold transition-colors ${activeTab === 'orders' ? 'bg-primary/10 text-primary border-l-2 border-primary' : 'text-on-surface hover:bg-surface-container-low'}`}
               >
                 <ShoppingBag size={18} /> Lịch sử đơn hàng
+              </button>
+              <button 
+                onClick={() => setActiveTab('wishlist')}
+                className={`w-full flex items-center gap-3 px-5 py-4 text-sm font-semibold transition-colors ${activeTab === 'wishlist' ? 'bg-rose-500/10 text-rose-500 border-l-2 border-rose-500' : 'text-on-surface hover:bg-surface-container-low'}`}
+              >
+                <Heart size={18} /> Sản phẩm yêu thích
               </button>
             </div>
           </div>
@@ -591,6 +619,61 @@ export default function Profile() {
                   <div className="space-y-4">
                     {orders.map(order => (
                       <OrderCard key={order.id} order={order} onCancel={handleCancelOrder} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB: WISHLIST */}
+            {activeTab === 'wishlist' && (
+              <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-8 space-y-6 animate-in fade-in duration-300">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-on-surface text-rose-500">Sản phẩm yêu thích</h2>
+                    <p className="text-sm text-on-surface-variant">Những sản phẩm bạn đã lưu</p>
+                  </div>
+                </div>
+
+                {loadingWishlist ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="h-20 bg-surface-container-low rounded-2xl animate-pulse" />
+                    ))}
+                  </div>
+                ) : wishlistItems.length === 0 ? (
+                  <div className="text-center py-12 border border-dashed border-outline-variant/30 rounded-2xl space-y-4">
+                    <Heart size={36} className="mx-auto text-on-surface-variant opacity-30" />
+                    <div>
+                      <h3 className="font-bold text-on-surface">Danh sách trống</h3>
+                      <p className="text-sm text-on-surface-variant">Bạn chưa có sản phẩm yêu thích nào.</p>
+                    </div>
+                    <Link to="/" className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary-container transition-all shadow-lg shadow-primary/20">
+                      Khám phá ngay
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {wishlistItems.map(product => (
+                      <div key={product.id} className="flex items-center gap-4 bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-4 hover:border-rose-500/30 transition-all">
+                        <div className="w-16 h-16 bg-surface-container rounded-xl overflow-hidden p-2">
+                           {/* Using a placeholder since getProductImage is in Products.jsx. 
+                               Ideally this should be a global helper, but we use a default image for now. */}
+                           <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzzkgw3qdK2qx_eejr9Oee4qzRfJoNIb-smYiUqNBNBZ4_KNAbm4HxoqNIyfUqk9pV0qWkdyFf7t7SYsjbbwCkkEN06FQNQBCseQPzXacixmLlO0YB5GVfxd7AR42kwnUufnptDgHCXnHlGXhg3x4QzV7sXZkMAYLQHcoPSLjWbTIWG3W_hrzh4eWEuFkuhEuk_62jmY9dMbWUMr11EIDivHK_RMuJDGpKxGyfr8JRcfcL8i0qv6Ve" alt={product.name} className="w-full h-full object-contain" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                           <Link to={`/product/${product.id}`} className="text-sm font-bold text-on-surface hover:text-primary transition-colors line-clamp-1">{product.name}</Link>
+                           <p className="text-sm font-extrabold text-primary">{product.price.toLocaleString()}đ</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                           <Link to={`/product/${product.id}`} className="p-2 text-primary bg-primary/10 hover:bg-primary hover:text-white rounded-xl transition-colors">
+                              <ShoppingCart size={16} />
+                           </Link>
+                           <button onClick={() => handleRemoveWishlist(product.id)} className="p-2 text-rose-500 bg-rose-500/10 hover:bg-rose-500 hover:text-white rounded-xl transition-colors">
+                              <Trash2 size={16} />
+                           </button>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 )}

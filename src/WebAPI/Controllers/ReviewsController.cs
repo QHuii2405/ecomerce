@@ -24,6 +24,15 @@ public class ReviewsController : ControllerBase
         return Ok(reviews);
     }
 
+    [HttpGet("eligibility")]
+    [Authorize]
+    public async Task<IActionResult> GetReviewEligibility(Guid productId)
+    {
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var eligibility = await _reviewService.GetReviewEligibilityAsync(productId, userId);
+        return Ok(eligibility);
+    }
+
     [HttpPost]
     [Authorize]
     public async Task<IActionResult> CreateReview(Guid productId, CreateProductReviewRequest request)

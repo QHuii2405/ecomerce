@@ -8,8 +8,9 @@ public class CreateOrderRequest
     // Thông tin giao hàng
     public string ShippingAddress { get; set; } = string.Empty;
     public string RecipientName { get; set; } = string.Empty;
-    public string RecipientPhone { get; set; } = string.Empty;
-    public string PaymentMethod { get; set; } = "COD"; // COD, MoMo, VietQR
+    public string? RecipientPhone { get; set; }
+    public string? PaymentMethod { get; set; }
+    public Guid? VoucherId { get; set; }
 }
 
 public class OrderItemRequest
