@@ -23,6 +23,18 @@ public class ProductsController : ControllerBase
         return Ok(new { Data = products, Source = source });
     }
 
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(Guid id)
+    {
+        var product = await _productService.GetProductByIdAsync(id);
+        if (product == null)
+        {
+            return NotFound(new { Message = "Khong tim thay san pham." });
+        }
+
+        return Ok(product);
+    }
+
     [HttpPost]
     [Authorize(Roles = "Staff,Admin")]
     public async Task<IActionResult> Create(CreateProductRequest request)

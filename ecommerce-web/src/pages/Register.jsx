@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import api from '../api/axios';
-import { UserPlus, Mail, Lock, Phone, MapPin, User, ArrowRight, AlertCircle } from 'lucide-react';
+import { UserPlus, Mail, Lock, Phone, MapPin, User, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 
 function Register() {
@@ -12,6 +12,8 @@ function Register() {
         phoneNumber: '',
         address: ''
     });
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -86,11 +88,43 @@ function Register() {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="relative">
                             <Lock className="absolute left-4 top-3.5 text-on-surface-variant" size={18} />
-                            <input name="password" type="password" placeholder="Mật khẩu" required className="w-full pl-11 pr-4 py-3 bg-surface-container-low border border-outline-variant/30 rounded-2xl text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" onChange={handleChange} />
+                            <input
+                                name="password"
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder="Mật khẩu"
+                                required
+                                className="w-full pl-11 pr-12 py-3 bg-surface-container-low border border-outline-variant/30 rounded-2xl text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                                onChange={handleChange}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword((prev) => !prev)}
+                                className="absolute inset-y-0 right-0 px-4 flex items-center text-on-surface-variant hover:text-primary transition-colors"
+                                aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                                title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                            >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
                         </div>
                         <div className="relative">
                             <Lock className="absolute left-4 top-3.5 text-on-surface-variant" size={18} />
-                            <input name="confirmPassword" type="password" placeholder="Xác nhận" required className="w-full pl-11 pr-4 py-3 bg-surface-container-low border border-outline-variant/30 rounded-2xl text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" onChange={handleChange} />
+                            <input
+                                name="confirmPassword"
+                                type={showConfirmPassword ? 'text' : 'password'}
+                                placeholder="Xác nhận"
+                                required
+                                className="w-full pl-11 pr-12 py-3 bg-surface-container-low border border-outline-variant/30 rounded-2xl text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                                onChange={handleChange}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                                className="absolute inset-y-0 right-0 px-4 flex items-center text-on-surface-variant hover:text-primary transition-colors"
+                                aria-label={showConfirmPassword ? 'Ẩn mật khẩu xác nhận' : 'Hiện mật khẩu xác nhận'}
+                                title={showConfirmPassword ? 'Ẩn mật khẩu xác nhận' : 'Hiện mật khẩu xác nhận'}
+                            >
+                                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
                         </div>
                     </div>
 

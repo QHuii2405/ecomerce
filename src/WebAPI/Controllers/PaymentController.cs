@@ -11,10 +11,12 @@ using Microsoft.AspNetCore.Mvc;
 public class PaymentsController : ControllerBase
 {
     private readonly IOrderService _orderService;
+    private readonly IPaymentGatewayService _paymentGatewayService;
 
-    public PaymentsController(IOrderService orderService)
+    public PaymentsController(IOrderService orderService, IPaymentGatewayService paymentGatewayService)
     {
         _orderService = orderService;
+        _paymentGatewayService = paymentGatewayService;
     }
 
     /// <summary>
@@ -33,6 +35,43 @@ public class PaymentsController : ControllerBase
                 PaymentMethod = "COD",
                 Status = "Pending"
             });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
+    }
+
+    [HttpPost("create")]
+    public async Task<IActionResult> CreatePayment([FromBody] CreatePaymentRequest request)
+    {
+        try
+        {
+            var response = await _paymentGatewayService.CreatePaymentAsync(request);
+            return Ok(response);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { Message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = "Lỗi tạo giao dịch thanh toán: " + ex.Message });
+        }
+    }
+
+    [AllowAnonymous]
+    [HttpPost("webhook/{provider}")]
+    public async Task<IActionResult> PaymentWebhook(string provider, [FromQuery] Guid orderId, [FromQuery] string transactionCode)
+    {
+        try
+        {
+            await _paymentGatewayService.ConfirmPaymentAsync(orderId, provider, transactionCode);
+            return Ok(new { Message = "Webhook processed" });
         }
         catch (Exception ex)
         {

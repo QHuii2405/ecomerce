@@ -481,6 +481,130 @@ namespace Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Domain.Entities.JobPosting", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Benefits")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Department")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmploymentType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("PostedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Requirements")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SalaryRange")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("JobPostings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("b1000000-0000-0000-0000-000000000001"),
+                            Benefits = "• Lương cứng + hoa hồng hấp dẫn\n• Bảo hiểm đầy đủ theo luật\n• Giảm giá 30% sản phẩm nội bộ\n• Đào tạo sản phẩm hàng tháng",
+                            CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Department = "Kinh Doanh",
+                            Description = "Tư vấn và bán các sản phẩm công nghệ cao cấp tại showroom iLuminaty Shop. Hỗ trợ khách hàng chọn sản phẩm phù hợp, xử lý đơn hàng và chăm sóc sau bán.",
+                            EmploymentType = "Toàn thời gian",
+                            IsActive = true,
+                            IsDeleted = false,
+                            Location = "TP. Hồ Chí Minh",
+                            PostedAt = new DateTime(2026, 6, 15, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Requirements = "• Tốt nghiệp CĐ/ĐH các ngành liên quan\n• Yêu thích công nghệ, am hiểu sản phẩm điện tử\n• Kỹ năng giao tiếp và thuyết trình tốt\n• Ưu tiên có kinh nghiệm bán lẻ công nghệ",
+                            SalaryRange = "12 - 18 triệu VNĐ + Hoa hồng",
+                            Title = "Nhân Viên Bán Hàng Công Nghệ"
+                        },
+                        new
+                        {
+                            Id = new Guid("b1000000-0000-0000-0000-000000000002"),
+                            Benefits = "• Môi trường startup năng động\n• Làm việc linh hoạt (hybrid/remote)\n• MacBook Pro + màn hình 4K\n• Thưởng dự án theo quý",
+                            CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Department = "Công Nghệ",
+                            Description = "Phát triển và bảo trì nền tảng thương mại điện tử iLuminaty Shop. Xây dựng API .NET, giao diện React, tích hợp thanh toán và quản lý kho.",
+                            EmploymentType = "Toàn thời gian",
+                            IsActive = true,
+                            IsDeleted = false,
+                            Location = "TP. Hồ Chí Minh / Remote",
+                            PostedAt = new DateTime(2026, 6, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Requirements = "• 2+ năm kinh nghiệm .NET Core / ASP.NET\n• Thành thạo React, TypeScript/JavaScript\n• Hiểu biết SQL Server, Redis, REST API\n• Có kinh nghiệm Clean Architecture là lợi thế",
+                            SalaryRange = "25 - 45 triệu VNĐ",
+                            Title = "Lập Trình Viên Full-Stack (.NET + React)"
+                        },
+                        new
+                        {
+                            Id = new Guid("b1000000-0000-0000-0000-000000000003"),
+                            Benefits = "• Ngân sách marketing thử nghiệm\n• Tham gia sự kiện công nghệ lớn\n• Team trẻ, sáng tạo\n• Review lương 2 lần/năm",
+                            CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Department = "Marketing",
+                            Description = "Lên kế hoạch và triển khai chiến dịch marketing online cho iLuminaty Shop. Quản lý social media, chạy quảng cáo Facebook/Google, phân tích hiệu quả.",
+                            EmploymentType = "Toàn thời gian",
+                            IsActive = true,
+                            IsDeleted = false,
+                            Location = "TP. Hồ Chí Minh",
+                            PostedAt = new DateTime(2026, 6, 25, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Requirements = "• 1+ năm kinh nghiệm marketing digital\n• Thành thạo Facebook Ads, Google Ads\n• Kỹ năng viết content và thiết kế cơ bản\n• Hiểu biết về ngành công nghệ/điện tử",
+                            SalaryRange = "15 - 22 triệu VNĐ",
+                            Title = "Chuyên Viên Marketing Digital"
+                        },
+                        new
+                        {
+                            Id = new Guid("b1000000-0000-0000-0000-000000000004"),
+                            Benefits = "• Cơ hội chính thức hóa sau thực tập\n• Được đào tạo hệ thống quản lý kho\n• Môi trường chuyên nghiệp\n• Phụ cấp ăn trưa",
+                            CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Department = "Vận Hành",
+                            Description = "Hỗ trợ quản lý kho hàng, nhập xuất sản phẩm, đóng gói và theo dõi vận chuyển. Cơ hội học hỏi quy trình logistics thương mại điện tử.",
+                            EmploymentType = "Thực tập",
+                            IsActive = true,
+                            IsDeleted = false,
+                            Location = "TP. Hồ Chí Minh",
+                            PostedAt = new DateTime(2026, 6, 28, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Requirements = "• Sinh viên năm 3-4 các ngành QTKD, Logistics\n• Cẩn thận, trách nhiệm cao\n• Biết sử dụng Excel cơ bản\n• Có thể làm việc ít nhất 4 tháng",
+                            SalaryRange = "5 - 7 triệu VNĐ + Phụ cấp",
+                            Title = "Thực Tập Sinh Kho & Logistics"
+                        });
+                });
+
             modelBuilder.Entity("Domain.Entities.Order", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1346,11 +1470,13 @@ namespace Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Domain.Entities.Product", b =>
                 {
-                    b.HasOne("Domain.Entities.Category", null)
+                    b.HasOne("Domain.Entities.Category", "Category")
                         .WithMany("Products")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("Domain.Entities.Category", b =>

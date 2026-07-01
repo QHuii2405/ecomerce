@@ -14,6 +14,7 @@ export default function Products() {
 
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
+    const [selectedBrand, setSelectedBrand] = useState('All');
     const [selectedPrice, setSelectedPrice] = useState('All');
     const [cartCount, setCartCount] = useState(getCartCount());
     const [toast, setToast] = useState(null);
@@ -76,6 +77,23 @@ export default function Products() {
         return 'https://lh3.googleusercontent.com/aida-public/AB6AXuAltOeyhWUN8d_OI3RZgPhmFTnEFiE8btibjVA1UyeS4BMmMyjSKaTmgBimNagFrcF5ixaI_tKAShIux-GWN1Ed-N4cXrCROBioCaBreSt4h4NtC8LD-0H3MX6jv_fs4XT3pt7d0fecPOmOrn9wrTrKkLcAH0eYV75rcouQVMTlc39VoiWaFpa2STxaIe2OkNzeota4rS1mkkwmLFdG16EQo8bXdMVcpc2tss9oN1UsRXklpzD_rStA';
     };
 
+    const inferBrand = (product) => {
+        const text = `${product.name || ''} ${product.description || ''} ${product.category?.name || ''}`.toLowerCase();
+        const brands = ['iphone', 'samsung', 'xiaomi', 'oppo', 'dell', 'hp', 'asus', 'lenovo', 'acer', 'msi', 'apple', 'sony', 'logitech', 'razer'];
+        return brands.find(brand => text.includes(brand)) || 'iluminaty';
+    };
+
+    const getBrandOptions = () => {
+        const brandGroups = {
+            All: ['iphone', 'samsung', 'xiaomi', 'oppo', 'dell', 'hp', 'asus', 'lenovo', 'acer', 'msi', 'apple', 'sony', 'logitech', 'razer', 'iluminaty'],
+            Smartphones: ['iphone', 'samsung', 'xiaomi', 'oppo'],
+            Laptops: ['dell', 'hp', 'asus', 'lenovo', 'acer', 'msi', 'apple'],
+            Gaming: ['asus', 'msi', 'logitech', 'razer'],
+            Audio: ['sony', 'apple', 'samsung', 'iluminaty']
+        };
+        return brandGroups[selectedCategory] || brandGroups.All;
+    };
+
     const filteredProducts = products.filter(product => {
         const searchMatch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
                             product.category?.name?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -86,12 +104,14 @@ export default function Products() {
                          (selectedCategory === 'Audio' && product.category?.name?.toLowerCase().includes('audio')) ||
                          (selectedCategory === 'Smartphones' && product.category?.name?.toLowerCase().includes('smartphone'));
 
+        const brandMatch = selectedBrand === 'All' || inferBrand(product) === selectedBrand;
+
         let priceMatch = true;
         if (selectedPrice === '<5M') priceMatch = product.price < 5000000;
         if (selectedPrice === '5M-20M') priceMatch = product.price >= 5000000 && product.price <= 20000000;
         if (selectedPrice === '>20M') priceMatch = product.price > 20000000;
 
-        return searchMatch && catMatch && priceMatch;
+        return searchMatch && catMatch && brandMatch && priceMatch;
     });
 
     return (

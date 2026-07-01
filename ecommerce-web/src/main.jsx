@@ -8,6 +8,7 @@ import Register from './pages/Register'
 import Profile from './pages/Profile'
 import Cart from './pages/Cart'
 import ProductDetail from './pages/ProductDetail'
+import Recruitment from './pages/Recruitment'
 import Unauthorized from './pages/Unauthorized'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminLayout from './components/AdminLayout'
@@ -29,6 +30,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/register" element={<Register />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/recruitment" element={<Recruitment />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
 
         {/* Nhánh Route được bảo vệ dành cho khách hàng đã đăng nhập */}

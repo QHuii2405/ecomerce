@@ -13,7 +13,10 @@ public class Order : BaseEntity
     public string? ShippingAddress { get; set; }
     public string? RecipientName { get; set; }
     public string? RecipientPhone { get; set; }
-    public string? PaymentMethod { get; set; } // COD, MoMo, VietQR
+    public string? PaymentMethod { get; set; } // COD, MoMo, PayOS
+    public string PaymentStatus { get; set; } = "Unpaid";
 
     public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+    public virtual ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
+    public virtual ICollection<ProductReview> Reviews { get; set; } = new List<ProductReview>();
 }

@@ -33,24 +33,47 @@ public class OrderService : IOrderService
 
             foreach (var item in request.Items)
             {
-                var isReserved = await _unitOfWork.Inventories.ReserveStockAsync(item.ProductId, item.Quantity);
-                if (!isReserved)
-                {
-                    throw new InvalidOperationException($"Sản phẩm {item.ProductId} không đủ hàng hoặc đã bị đặt bởi người khác!");
-                }
-
-                var product = await _unitOfWork.Products.GetByIdAsync(item.ProductId);
+                var product = await _unitOfWork.Products.GetProductWithDetailsAsync(item.ProductId);
                 if (product == null)
                 {
                     throw new InvalidOperationException($"Sản phẩm {item.ProductId} không tồn tại trong hệ thống!");
+                }
+
+                ProductVariant? variant = null;
+                if (item.ProductVariantId.HasValue)
+                {
+                    variant = product.Variants.FirstOrDefault(v => v.Id == item.ProductVariantId.Value && !v.IsDeleted && v.IsActive);
+                    if (variant == null)
+                    {
+                        throw new InvalidOperationException("Biến thể sản phẩm không tồn tại hoặc đã ngừng bán.");
+                    }
+
+                    if (variant.AvailableQuantity < item.Quantity)
+                    {
+                        throw new InvalidOperationException($"Biến thể {variant.Name} không đủ hàng!");
+                    }
+
+                    variant.ReservedQuantity += item.Quantity;
+                    variant.UpdatedAt = DateTime.UtcNow;
+                    _unitOfWork.Repository<ProductVariant>().Update(variant);
+                }
+                else
+                {
+                    var isReserved = await _unitOfWork.Inventories.ReserveStockAsync(item.ProductId, item.Quantity);
+                    if (!isReserved)
+                    {
+                        throw new InvalidOperationException($"Sản phẩm {item.ProductId} không đủ hàng hoặc đã bị đặt bởi người khác!");
+                    }
                 }
 
                 var orderItem = new OrderItem
                 {
                     OrderId = order.Id,
                     ProductId = item.ProductId,
+                    ProductVariantId = item.ProductVariantId,
                     Quantity = item.Quantity,
-                    UnitPrice = product.Price
+                    UnitPrice = variant?.Price ?? product.Price,
+                    VariantSnapshotJson = variant?.AttributesJson ?? "{}"
                 };
                 order.OrderItems.Add(orderItem);
                 order.TotalAmount += orderItem.UnitPrice * orderItem.Quantity;
@@ -81,12 +104,26 @@ public class OrderService : IOrderService
 
             foreach (var item in order.OrderItems)
             {
-                var inventory = await _unitOfWork.Inventories.GetByProductIdAsync(item.ProductId);
-                if (inventory != null)
+                if (item.ProductVariantId.HasValue)
                 {
-                    inventory.StockQuantity -= item.Quantity;
-                    inventory.ReservedQuantity -= item.Quantity;
-                    _unitOfWork.Inventories.Update(inventory);
+                    var variant = await _unitOfWork.Repository<ProductVariant>().GetByIdAsync(item.ProductVariantId.Value);
+                    if (variant != null)
+                    {
+                        variant.StockQuantity -= item.Quantity;
+                        variant.ReservedQuantity -= item.Quantity;
+                        variant.UpdatedAt = DateTime.UtcNow;
+                        _unitOfWork.Repository<ProductVariant>().Update(variant);
+                    }
+                }
+                else
+                {
+                    var inventory = await _unitOfWork.Inventories.GetByProductIdAsync(item.ProductId);
+                    if (inventory != null)
+                    {
+                        inventory.StockQuantity -= item.Quantity;
+                        inventory.ReservedQuantity -= item.Quantity;
+                        _unitOfWork.Inventories.Update(inventory);
+                    }
                 }
             }
 
@@ -121,11 +158,24 @@ public class OrderService : IOrderService
 
             foreach (var item in order.OrderItems)
             {
-                var inventory = await _unitOfWork.Inventories.GetByProductIdAsync(item.ProductId);
-                if (inventory != null)
+                if (item.ProductVariantId.HasValue)
                 {
-                    inventory.ReservedQuantity -= item.Quantity;
-                    _unitOfWork.Inventories.Update(inventory);
+                    var variant = await _unitOfWork.Repository<ProductVariant>().GetByIdAsync(item.ProductVariantId.Value);
+                    if (variant != null)
+                    {
+                        variant.ReservedQuantity = Math.Max(0, variant.ReservedQuantity - item.Quantity);
+                        variant.UpdatedAt = DateTime.UtcNow;
+                        _unitOfWork.Repository<ProductVariant>().Update(variant);
+                    }
+                }
+                else
+                {
+                    var inventory = await _unitOfWork.Inventories.GetByProductIdAsync(item.ProductId);
+                    if (inventory != null)
+                    {
+                        inventory.ReservedQuantity -= item.Quantity;
+                        _unitOfWork.Inventories.Update(inventory);
+                    }
                 }
             }
 

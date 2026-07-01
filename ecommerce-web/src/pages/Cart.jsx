@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getCart, clearCart, removeFromCart, updateQuantity } from '../api/cartStore';
+import { getCart, clearCart, removeFromCart, updateQuantity, updateCartItemVariant, getCartItemKey } from '../api/cartStore';
 import api from '../api/axios';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ShoppingBag, Trash2, CreditCard, ArrowLeft, X, CheckCircle2,
-  Truck, Banknote, QrCode, Clock, ChevronRight, Package, AlertCircle
+  Truck, Banknote, QrCode, Clock, ChevronRight, Package, AlertCircle, SlidersHorizontal
 } from 'lucide-react';
 
 // Helper: payment method config
@@ -261,17 +261,22 @@ export default function Cart() {
 
   const totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-  const handleRemove = (id) => {
-    removeFromCart(id);
+  const handleRemove = (cartItemKey) => {
+    removeFromCart(cartItemKey);
     setCartItems(getCart());
   };
 
-  const handleQtyChange = (id, delta) => {
-    const item = cartItems.find(i => i.id === id);
+  const handleQtyChange = (cartItemKey, delta) => {
+    const item = cartItems.find(i => getCartItemKey(i) === cartItemKey);
     if (!item) return;
     const newQty = item.quantity + delta;
     if (newQty < 1) return;
-    updateQuantity(id, newQty);
+    updateQuantity(cartItemKey, newQty);
+    setCartItems(getCart());
+  };
+
+  const handleVariantChange = (cartItemKey, key, value) => {
+    updateCartItemVariant(cartItemKey, { [key]: value });
     setCartItems(getCart());
   };
 
@@ -323,6 +328,49 @@ export default function Cart() {
     if (n.includes('bud') || n.includes('headphone') || n.includes('tai nghe')) return 'https://lh3.googleusercontent.com/aida-public/AB6AXujCnwa9YYlaySQHciXXGs5ENqNsPlYyM48pBFebzeWQc7dPKrvdRI9-hr5S5mxpSSR3ZK689MtFW5CFO2yl2XF3_1RCn3iwdnmtwXFQeVUo_FXR0vOQ7FYE_qzsTZb4Q8_zaMowCCLDFa84jAXRV-XqKV2AZPbY2fWUotHuBFbc9Jv95ESTZuet5JJdQVxXrmhm4ItvrDA3BDDkW6wfXdjWtO5ynIppnxJllrxffafcwXaW4XKodrR';
     return 'https://lh3.googleusercontent.com/aida-public/AB6AXuDzzkgw3qdK2qx_eejr9Oee4qzRfJoNIb-smYiUqNBNBZ4_KNAbm4HxoqNIyfUqk9pV0qWkdyFf7t7SYsjbbwCkkEN06FQNQBCseQPzXacixmLlO0YB5GVfxd7AR42kwnUufnptDgHCXnHlGXhg3x4QzV7sXZkMAYLQHcoPSLjWbTIWG3W_hrzh4eWEuFkuhEuk_62jmY9dMbWUMr11EIDivHK_RMuJDGpKxGyfr8JRcfcL8i0qv6Ve';
   };
+
+  const getVariantOptions = (item) => {
+    const name = item.name?.toLowerCase() || '';
+    const category = item.category?.name?.toLowerCase() || '';
+    const isLaptop = category.includes('laptop') || name.includes('laptop') || name.includes('book');
+    const isPhone = category.includes('smart') || name.includes('phone');
+    const isGaming = category.includes('gaming') || name.includes('keyboard') || name.includes('mouse');
+
+    if (isLaptop) {
+      return {
+        color: ['Đen Midnight', 'Bạc Titan', 'Trắng Ngọc', 'Xanh Aurora'],
+        ram: ['16GB', '32GB', '64GB'],
+        ssd: ['512GB SSD', '1TB SSD', '2TB SSD']
+      };
+    }
+    if (isPhone) {
+      return {
+        color: ['Đen Midnight', 'Bạc Titan', 'Trắng Ngọc', 'Xanh Aurora'],
+        storage: ['128GB', '256GB', '512GB', '1TB']
+      };
+    }
+    if (isGaming) {
+      return {
+        color: ['Đen Matte', 'Trắng Snow', 'Hồng Sakura', 'RGB Limited'],
+        switch: ['Red Linear', 'Brown Tactile', 'Blue Clicky']
+      };
+    }
+    return {
+      color: ['Đen Obsidian', 'Bạc Platinum', 'Vàng Champagne'],
+      edition: ['Standard', 'Pro', 'Studio']
+    };
+  };
+
+  const getVariantLabel = (key) => ({
+    color: 'Màu',
+    ram: 'RAM',
+    ssd: 'Ổ cứng',
+    storage: 'Bộ nhớ',
+    switch: 'Switch',
+    edition: 'Phiên bản',
+    config: 'Cấu hình',
+    weight: 'Trọng lượng'
+  }[key] || key);
 
   // Success screen
   if (successOrderId) {
@@ -404,34 +452,59 @@ export default function Cart() {
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-3">
               <h2 className="text-xl font-bold text-on-surface mb-5">Sản phẩm đã chọn</h2>
-              {cartItems.map(item => (
-                <div key={item.id} className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-4 flex gap-4 hover:border-primary/20 transition-all group">
-                  <div className="w-16 h-16 rounded-xl overflow-hidden bg-surface-container-low flex-shrink-0 flex items-center justify-center">
-                    <img src={getProductImage(item.name)} alt={item.name} className="w-full h-full object-contain p-1" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-on-surface text-sm line-clamp-1">{item.name}</h4>
-                    <p className="text-primary font-bold text-sm mt-0.5">{item.price.toLocaleString()}đ</p>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <div className="flex items-center gap-1 bg-surface-container rounded-full">
-                      <button
-                        onClick={() => handleQtyChange(item.id, -1)}
-                        className="w-7 h-7 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-all font-bold text-lg"
-                      >−</button>
-                      <span className="text-sm font-bold text-on-surface w-6 text-center">{item.quantity}</span>
-                      <button
-                        onClick={() => handleQtyChange(item.id, 1)}
-                        className="w-7 h-7 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-all font-bold text-lg"
-                      >+</button>
+              {cartItems.map(item => {
+                const cartItemKey = getCartItemKey(item);
+                const variantOptions = getVariantOptions(item);
+                return (
+                  <div key={cartItemKey} className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-4 flex flex-col sm:flex-row gap-4 hover:border-primary/20 transition-all group">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-surface-container-low flex-shrink-0 flex items-center justify-center">
+                      <img src={getProductImage(item.name)} alt={item.name} className="w-full h-full object-contain p-1" />
                     </div>
-                    <span className="font-bold text-on-surface text-sm w-20 text-right">{(item.price * item.quantity).toLocaleString()}đ</span>
-                    <button onClick={() => handleRemove(item.id)} className="text-rose-400 hover:text-rose-600 transition-colors p-1">
-                      <Trash2 size={15} />
-                    </button>
+                    <div className="flex-1 min-w-0 space-y-3">
+                      <div>
+                        <h4 className="font-semibold text-on-surface text-sm line-clamp-1">{item.name}</h4>
+                        <p className="text-primary font-bold text-sm mt-0.5">{item.price.toLocaleString()}đ</p>
+                      </div>
+                      <div className="rounded-2xl bg-surface-container-low border border-outline-variant/20 p-3 space-y-2">
+                        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                          <SlidersHorizontal size={12} className="text-primary" /> Tùy chọn sản phẩm
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          {Object.entries(variantOptions).map(([key, options]) => (
+                            <label key={key} className="space-y-1">
+                              <span className="text-[10px] font-semibold text-on-surface-variant">{getVariantLabel(key)}</span>
+                              <select
+                                value={item.variant?.[key] || options[0]}
+                                onChange={(e) => handleVariantChange(cartItemKey, key, e.target.value)}
+                                className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-2.5 py-2 text-xs text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                              >
+                                {options.map(option => <option key={option} value={option}>{option}</option>)}
+                              </select>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0 sm:self-start">
+                      <div className="flex items-center gap-1 bg-surface-container rounded-full">
+                        <button
+                          onClick={() => handleQtyChange(cartItemKey, -1)}
+                          className="w-7 h-7 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-all font-bold text-lg"
+                        >−</button>
+                        <span className="text-sm font-bold text-on-surface w-6 text-center">{item.quantity}</span>
+                        <button
+                          onClick={() => handleQtyChange(cartItemKey, 1)}
+                          className="w-7 h-7 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-all font-bold text-lg"
+                        >+</button>
+                      </div>
+                      <span className="font-bold text-on-surface text-sm w-20 text-right">{(item.price * item.quantity).toLocaleString()}đ</span>
+                      <button onClick={() => handleRemove(cartItemKey)} className="text-rose-400 hover:text-rose-600 transition-colors p-1">
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Checkout Panel */}

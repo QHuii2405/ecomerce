@@ -19,8 +19,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Đăng ký Unit of Work và Services
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IJobService, JobService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IPaymentGatewayService, PaymentGatewayService>();
+builder.Services.AddHttpClient<IChatService, ChatService>();
 
 // 2. Đăng ký các dịch vụ Controller để hỗ trợ Web API 
 builder.Services.AddControllers()

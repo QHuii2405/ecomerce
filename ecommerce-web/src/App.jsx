@@ -220,7 +220,7 @@ export default function App() {
                         </a>
                         <a href="#about" onClick={(e) => { e.preventDefault(); document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' }); }} className={`hover:text-primary transition-colors duration-200 ${activeSection === 'about' ? 'text-primary font-bold border-b-2 border-primary pb-1' : ''}`}>Giới Thiệu</a>
                         <a href="#contact" onClick={(e) => { e.preventDefault(); document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }); }} className={`hover:text-primary transition-colors duration-200 ${activeSection === 'contact' ? 'text-primary font-bold border-b-2 border-primary pb-1' : ''}`}>Liên Hệ</a>
-                        <a href="#support" onClick={(e) => { e.preventDefault(); document.getElementById('support')?.scrollIntoView({ behavior: 'smooth' }); }} className={`hover:text-primary transition-colors duration-200 ${activeSection === 'support' ? 'text-primary font-bold border-b-2 border-primary pb-1' : ''}`}>Hỗ Trợ</a>
+                        <Link to="/recruitment" className="hover:text-primary transition-colors duration-200 text-on-surface-variant hover:text-primary">Tuyển Dụng</Link>
                     </div>
 
                     {/* Search & Actions */}
@@ -335,7 +335,7 @@ export default function App() {
                             </a>
                             <a href="#about" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary py-1 border-b border-outline-variant/10">Giới Thiệu</a>
                             <a href="#contact" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary py-1 border-b border-outline-variant/10">Liên Hệ</a>
-                            <a href="#support" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary py-1">Hỗ Trợ</a>
+                            <Link to="/recruitment" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary py-1">Tuyển Dụng</Link>
                         </div>
 
                         {/* Dynamic Cache source inside mobile dropdown */}
@@ -614,6 +614,7 @@ export default function App() {
                             </button>
                         </div>
                     ) : (
+                        <>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
                             {filteredProducts.slice(0, 8).map((product, index) => {
                                 const isAvailable = product.inventory?.availableQuantity > 0;
@@ -697,6 +698,18 @@ export default function App() {
                                 );
                             })}
                         </div>
+                        {filteredProducts.length > 0 && (
+                            <div className="flex justify-center mt-12">
+                                <Link
+                                    to="/products"
+                                    className="inline-flex items-center gap-2 bg-primary text-white px-8 py-4 rounded-2xl text-sm font-bold hover:bg-primary-container transition-all shadow-lg shadow-primary/25 active:scale-95"
+                                >
+                                    Xem Tất Cả Sản Phẩm
+                                    <ArrowUpRight size={18} />
+                                </Link>
+                            </div>
+                        )}
+                        </>
                     )}
                 </section>
 
@@ -862,12 +875,12 @@ export default function App() {
                                 </ul>
                             </div>
                             <div className="space-y-4">
-                                <h4 className="font-bold text-sm text-on-surface">Hỗ Trợ</h4>
+                                <h4 className="font-bold text-sm text-on-surface">Tuyển Dụng</h4>
                                 <ul className="space-y-2 text-xs text-on-surface-variant">
-                                    <li><a className="hover:text-primary transition-colors" href="#support">Trung Tâm Trợ Giúp</a></li>
-                                    <li><a className="hover:text-primary transition-colors" href="#shipping">Chính Sách Vận Chuyển</a></li>
-                                    <li><a className="hover:text-primary transition-colors" href="#returns">Đổi Trả & Hoàn Tiền</a></li>
-                                    <li><a className="hover:text-primary transition-colors" href="#warranty">Chính Sách Bảo Hành</a></li>
+                                    <li><Link to="/recruitment" className="hover:text-primary transition-colors">Vị Trí Đang Tuyển</Link></li>
+                                    <li><a className="hover:text-primary transition-colors" href="mailto:hr@iluminaty.com">Gửi CV</a></li>
+                                    <li><Link to="/recruitment" className="hover:text-primary transition-colors">Về iLuminaty Shop</Link></li>
+                                    <li><a className="hover:text-primary transition-colors" href="#contact">Liên Hệ HR</a></li>
                                 </ul>
                             </div>
                             <div className="space-y-4">
