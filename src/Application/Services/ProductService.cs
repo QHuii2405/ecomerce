@@ -27,6 +27,7 @@ public class ProductService : IProductService
         decimal? maxPrice = null)
     {
         var hasFilters = HasProductFilters(category, brand, search, minPrice, maxPrice);
+
         if (!hasFilters)
         {
             var cachedProducts = await _cache.GetStringAsync(CacheKey);
@@ -89,6 +90,7 @@ public class ProductService : IProductService
                 Price = request.Price,
                 CategoryId = request.CategoryId,
                 Brand = request.Brand,
+                ImageUrls = request.ImageUrls,
                 AttributesJson = SerializeDictionary(request.Attributes)
             };
 
@@ -147,6 +149,7 @@ public class ProductService : IProductService
             product.Price = request.Price;
             product.CategoryId = request.CategoryId;
             product.Brand = request.Brand;
+            product.ImageUrls = request.ImageUrls;
             product.AttributesJson = SerializeDictionary(request.Attributes);
             product.UpdatedAt = DateTime.UtcNow;
             _unitOfWork.Products.Update(product);
@@ -233,6 +236,7 @@ public class ProductService : IProductService
             Price = product.Price,
             CategoryId = product.CategoryId,
             Brand = product.Brand,
+            ImageUrls = product.ImageUrls,
             Attributes = DeserializeDictionary(product.AttributesJson),
             Category = product.Category == null ? null : new CategoryResponse
             {

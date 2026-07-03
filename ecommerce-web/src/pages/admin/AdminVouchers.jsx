@@ -1,3 +1,4 @@
+import Swal from "sweetalert2";
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { Tag, Plus, CheckCircle2, XCircle, Search, RefreshCw, AlertCircle, Percent } from 'lucide-react';
@@ -29,7 +30,10 @@ export default function AdminVouchers() {
       setVouchers(res.data.data || []);
     } catch (err) {
       console.error(err);
-      alert('Không thể tải danh sách khuyến mãi.');
+      Swal.fire({
+        icon: "info",
+        text: 'Không thể tải danh sách khuyến mãi.'
+      });
     } finally {
       setLoading(false);
     }
@@ -40,7 +44,10 @@ export default function AdminVouchers() {
       await api.put(`/vouchers/${id}/toggle`);
       setVouchers(prev => prev.map(v => v.id === id ? { ...v, isActive: !v.isActive } : v));
     } catch (err) {
-      alert('Không thể thay đổi trạng thái mã giảm giá.');
+      Swal.fire({
+        icon: "info",
+        text: 'Không thể thay đổi trạng thái mã giảm giá.'
+      });
     }
   };
 
@@ -68,9 +75,15 @@ export default function AdminVouchers() {
         expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
         usageLimit: 100
       });
-      alert('Tạo mã giảm giá thành công!');
+      Swal.fire({
+        icon: "info",
+        text: 'Tạo mã giảm giá thành công!'
+      });
     } catch (err) {
-      alert(err.response?.data?.message || 'Có lỗi xảy ra khi tạo.');
+      Swal.fire({
+        icon: "info",
+        text: err.response?.data?.message || 'Có lỗi xảy ra khi tạo.'
+      });
     } finally {
       setSubmitting(false);
     }

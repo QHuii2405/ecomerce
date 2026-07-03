@@ -13,4 +13,7 @@ public interface IAuthService
     Task<User> GetCurrentUserAsync(Guid userId);
     Task<bool> UpdateProfileAsync(UpdateProfileRequest request, Guid userId);
     Task<IEnumerable<User>> GetAllUsersAsync();
+    Task<string> ForgotPasswordAsync(ForgotPasswordRequest request);
+    Task<string> ResetPasswordAsync(ResetPasswordRequest request);
+    Task<TokenResponse> GoogleLoginAsync(GoogleLoginRequest request);
 }

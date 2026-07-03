@@ -21,4 +21,8 @@ public class User : BaseEntity
     // Hỗ trợ Refresh Token chuẩn Production
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiryTime { get; set; }
+
+    // Quên mật khẩu
+    public string? OtpCode { get; set; }
+    public DateTime? OtpExpiryTime { get; set; }
 }

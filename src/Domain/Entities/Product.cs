@@ -10,6 +10,7 @@ public class Product : BaseEntity
     public Guid CategoryId { get; set; }
     public string Brand { get; set; } = "iLuminaty";
     public string AttributesJson { get; set; } = "{}";
+    public List<string> ImageUrls { get; set; } = new();
     
     public virtual Category? Category { get; set; }
     public virtual Inventory? Inventory { get; set; }

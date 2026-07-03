@@ -19,9 +19,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Đăng ký Unit of Work và Services
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICmsService, CmsService>();
 builder.Services.AddScoped<IJobService, JobService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IEmailService, Infrastructure.Services.EmailService>();
+builder.Services.AddScoped<IPdfService, Infrastructure.Services.PdfService>();
+builder.Services.AddScoped<INotificationService, WebAPI.Services.NotificationService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IPaymentGatewayService, PaymentGatewayService>();
@@ -38,6 +42,9 @@ builder.Services.AddControllers()
         // Lệnh này giúp trình Serializer bỏ qua các vòng lặp vô tận
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
+
+// Đăng ký SignalR
+builder.Services.AddSignalR();
 
 // 3. Cấu hình Swagger/Scalar để xem tài liệu API (thay cho AddOpenApi mặc định) [cite: 49]
 builder.Services.AddEndpointsApiExplorer();
@@ -107,7 +114,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:5173", "http://localhost:5174", "http://localhost:5175") // Hỗ trợ nhiều port phòng khi 5173 bị kẹt
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials(); // Yêu cầu cho SignalR WebSockets
     });
 });
 
@@ -127,8 +135,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 
 // 5. Quan trọng: Map các Controller vào hệ thống [cite: 129, 131]
 app.MapControllers();
+app.MapHub<WebAPI.Hubs.NotificationHub>("/hubs/notifications");
 
 app.Run();

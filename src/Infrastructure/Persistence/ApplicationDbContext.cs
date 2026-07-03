@@ -25,6 +25,14 @@ public class ApplicationDbContext : DbContext
     public DbSet<GoodsReceiptDetail> GoodsReceiptDetails => Set<GoodsReceiptDetail>();
     public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
     public DbSet<Voucher> Vouchers => Set<Voucher>();
+    
+    // CMS
+    public DbSet<Banner> Banners => Set<Banner>();
+    public DbSet<BlogPost> BlogPosts => Set<BlogPost>();
+    
+    // Return & Refund
+    public DbSet<ReturnRequest> ReturnRequests => Set<ReturnRequest>();
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -82,6 +90,13 @@ public class ApplicationDbContext : DbContext
             .HasOne(r => r.CreatedByUser)
             .WithMany()
             .HasForeignKey(r => r.CreatedByUserId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        // ReturnRequest Configuration
+        modelBuilder.Entity<ReturnRequest>()
+            .HasOne(r => r.Order)
+            .WithMany()
+            .HasForeignKey(r => r.OrderId)
             .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<GoodsReceipt>()

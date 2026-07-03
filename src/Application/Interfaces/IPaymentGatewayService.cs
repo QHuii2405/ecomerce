@@ -7,4 +7,5 @@ public interface IPaymentGatewayService
     Task<PaymentInitResponse> CreatePaymentAsync(CreatePaymentRequest request);
     Task ConfirmPaymentAsync(Guid orderId, string provider, string transactionCode);
     Task ConfirmPaymentByTransactionCodeAsync(string provider, string transactionCode);
+    Task<bool> RefundPaymentAsync(Guid orderId);
 }

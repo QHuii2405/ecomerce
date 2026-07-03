@@ -1,10 +1,11 @@
+import Swal from "sweetalert2";
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   User, Package, MapPin, Phone, Mail, ArrowLeft,
   ChevronDown, ChevronUp, Truck, CheckCircle2, Clock,
-  XCircle, ShoppingBag, AlertCircle, RefreshCw, Save, Plus, Trash2, Edit, Camera, Heart, ShoppingCart
+  XCircle, ShoppingBag, AlertCircle, RefreshCw, Save, Plus, Trash2, Edit, Camera, Heart, ShoppingCart, MessageSquare
 } from 'lucide-react';
 
 // Delivery tracking timeline config
@@ -101,6 +102,12 @@ function DeliveryTimeline({ status }) {
 function OrderCard({ order, onCancel }) {
   const [expanded, setExpanded] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  
+  // Return Modal states
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [returnReason, setReturnReason] = useState("");
+  const [returnFiles, setReturnFiles] = useState([]);
+  const [isReturning, setIsReturning] = useState(false);
 
   const canCancel = order.status === 'Pending' || order.status === 'Confirmed';
   const formattedDate = new Date(order.createdAt).toLocaleDateString('vi-VN', {
@@ -108,16 +115,77 @@ function OrderCard({ order, onCancel }) {
   });
 
   const handleCancel = async () => {
-    if (!window.confirm('Bạn có chắc muốn hủy đơn hàng này?')) return;
+    if (!(await Swal.fire({
+      title: "X�c nh?n",
+      text: 'Bạn có chắc muốn hủy đơn hàng này?',
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "�?ng �",
+      cancelButtonText: "Hủy"
+    })).isConfirmed) return;
     setCancelling(true);
     try {
       await api.post(`/orders/${order.id}/cancel`);
       onCancel(order.id);
     } catch (err) {
-      alert('Không thể hủy đơn: ' + (err.response?.data?.message || 'Thử lại sau'));
+      Swal.fire({
+        icon: "info",
+        text: 'Không thể hủy đơn: ' + (err.response?.data?.message || 'Thử lại sau')
+      });
     } finally {
       setCancelling(false);
     }
+  };
+
+  const handleReturnSubmit = async (e) => {
+    e.preventDefault();
+    if (!returnReason.trim()) {
+      Swal.fire("Lỗi", "Vui lòng nhập lý do hoàn trả!", "error");
+      return;
+    }
+
+    setIsReturning(true);
+    try {
+      let imageUrls = [];
+      // 1. Upload files first if any
+      if (returnFiles.length > 0) {
+        const formData = new FormData();
+        Array.from(returnFiles).forEach(file => {
+          formData.append("files", file);
+        });
+
+        const uploadRes = await api.post("/Upload/multiple", formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+        imageUrls = uploadRes.data.urls || [];
+      }
+
+      // 2. Submit return request
+      await api.post("/Return/request", {
+        orderId: order.id,
+        reason: returnReason,
+        imageUrls: imageUrls
+      });
+
+      Swal.fire("Thành công", "Đã gửi yêu cầu hoàn trả", "success");
+      setShowReturnModal(false);
+      setReturnReason("");
+      setReturnFiles([]);
+    } catch (err) {
+      Swal.fire("Lỗi", err.response?.data?.message || "Không thể gửi yêu cầu hoàn trả", "error");
+    } finally {
+      setIsReturning(false);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    // Validate size (< 10MB per file)
+    const validFiles = files.filter(f => f.size <= 10 * 1024 * 1024);
+    if (validFiles.length < files.length) {
+      Swal.fire("Lưu ý", "Một số file quá 10MB đã bị loại bỏ.", "info");
+    }
+    setReturnFiles(prev => [...prev, ...validFiles].slice(0, 5)); // Max 5 files
   };
 
   return (
@@ -184,6 +252,79 @@ function OrderCard({ order, onCancel }) {
               {cancelling ? <><div className="animate-spin rounded-full h-3 w-3 border-b-2 border-rose-500" /> Đang hủy...</> : <><XCircle size={14} /> Hủy đơn hàng</>}
             </button>
           )}
+
+          {/* Action buttons for Delivered order */}
+          {order.status === 'Delivered' && (
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => setShowReturnModal(true)}
+                className="flex-1 py-2.5 border border-amber-400/50 text-amber-600 rounded-xl text-xs font-semibold hover:bg-amber-500/5 transition-all active:scale-95 flex items-center justify-center gap-2"
+              >
+                <Package size={14} /> Yêu cầu hoàn trả
+              </button>
+              {order.orderItems && order.orderItems.length > 0 && (
+                <Link
+                  to={`/product/${order.orderItems[0].productId}?tab=reviews`}
+                  className="flex-1 py-2.5 border border-primary/50 text-primary rounded-xl text-xs font-semibold hover:bg-primary/5 transition-all active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <MessageSquare size={14} /> Đánh giá sản phẩm
+                </Link>
+              )}
+            </div>
+          )}
+
+          {/* Custom Return Modal */}
+          {order.status === 'Delivered' && showReturnModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+                  <div className="bg-surface border border-outline-variant/30 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                    <div className="px-6 py-4 border-b border-outline-variant/20 flex items-center justify-between bg-surface-container-lowest">
+                      <h3 className="font-bold text-lg text-on-surface">Yêu cầu hoàn trả</h3>
+                      <button onClick={() => setShowReturnModal(false)} className="text-on-surface-variant hover:text-rose-500 transition-colors">
+                        <XCircle size={24} />
+                      </button>
+                    </div>
+                    <form onSubmit={handleReturnSubmit} className="p-6 space-y-5 overflow-y-auto">
+                      <div>
+                        <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Lý do hoàn trả *</label>
+                        <textarea
+                          required
+                          value={returnReason}
+                          onChange={(e) => setReturnReason(e.target.value)}
+                          placeholder="Nhập lý do chi tiết (hàng lỗi, sai mẫu...)"
+                          className="w-full bg-surface-container-low border border-outline-variant/30 rounded-xl px-4 py-3 text-sm focus:border-primary outline-none min-h-[100px]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Video / Hình ảnh đính kèm (Tối đa 5 file, 10MB/file)</label>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*,video/mp4,video/quicktime"
+                          onChange={handleFileChange}
+                          className="w-full bg-surface-container-low border border-outline-variant/30 rounded-xl px-4 py-2 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                        />
+                        {returnFiles.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {returnFiles.map((f, i) => (
+                              <span key={i} className="text-xs bg-surface-container px-2 py-1 rounded-md border border-outline-variant/20 flex items-center gap-1 text-on-surface">
+                                <Camera size={12} className="text-primary" /> {f.name}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-3 pt-4 border-t border-outline-variant/20">
+                        <button type="submit" disabled={isReturning} className="flex-1 py-3 bg-amber-500 text-white rounded-xl text-sm font-bold hover:bg-amber-600 transition-all flex items-center justify-center gap-2">
+                          {isReturning ? <><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" /> Đang gửi...</> : 'Gửi yêu cầu'}
+                        </button>
+                        <button type="button" onClick={() => setShowReturnModal(false)} className="px-6 py-3 border border-outline-variant/30 text-on-surface rounded-xl text-sm font-bold hover:bg-surface-container transition-all">
+                          Hủy
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
         </div>
       )}
     </div>
@@ -278,9 +419,15 @@ export default function Profile() {
       await api.put('/auth/profile', editForm);
       setUser({ ...user, ...editForm });
       setIsEditing(false);
-      alert('Cập nhật thông tin thành công!');
+      Swal.fire({
+        icon: "info",
+        text: 'Cập nhật thông tin thành công!'
+      });
     } catch (err) {
-      alert('Lỗi: ' + (err.response?.data?.message || 'Không thể cập nhật'));
+      Swal.fire({
+        icon: "info",
+        text: 'Lỗi: ' + (err.response?.data?.message || 'Không thể cập nhật')
+      });
     } finally {
       setUpdating(false);
     }
@@ -290,7 +437,10 @@ export default function Profile() {
     const file = e.target.files[0];
     if (file) {
         if (file.size > 2 * 1024 * 1024) {
-            alert('Vui lòng chọn ảnh nhỏ hơn 2MB');
+            Swal.fire({
+              icon: "info",
+              text: 'Vui lòng chọn ảnh nhỏ hơn 2MB'
+            });
             return;
         }
         const reader = new FileReader();
@@ -304,7 +454,10 @@ export default function Profile() {
   const handleAddAddress = async () => {
     const { street, ward, district, city } = addressParts;
     if (!street.trim() || !ward.trim() || !district.trim() || !city.trim()) {
-        alert('Vui lòng điền đầy đủ các phần của địa chỉ!');
+        Swal.fire({
+          icon: "info",
+          text: 'Vui lòng điền đầy đủ các phần của địa chỉ!'
+        });
         return;
     }
     const fullAddress = `${street.trim()}, ${ward.trim()}, ${district.trim()}, ${city.trim()}`;
@@ -315,7 +468,10 @@ export default function Profile() {
       setAddressParts({ street: '', ward: '', district: '', city: '' });
       setShowAddAddress(false);
     } catch (err) {
-      alert('Không thể thêm địa chỉ');
+      Swal.fire({
+        icon: "info",
+        text: 'Không thể thêm địa chỉ'
+      });
     }
   };
 
@@ -325,7 +481,10 @@ export default function Profile() {
       await api.put('/auth/profile', { savedAddresses: JSON.stringify(updatedAddresses) });
       setAddresses(updatedAddresses);
     } catch (err) {
-      alert('Không thể xóa địa chỉ');
+      Swal.fire({
+        icon: "info",
+        text: 'Không thể xóa địa chỉ'
+      });
     }
   };
 

@@ -1,3 +1,4 @@
+import Swal from "sweetalert2";
 import React, { useEffect, useState } from 'react';
 import api from '../../api/axios';
 import {
@@ -29,14 +30,24 @@ function UserRow({ user, onRoleChange }) {
 
   const handleRoleChange = async (newRole) => {
     if (newRole === user.role) { setDropdownOpen(false); return; }
-    if (!window.confirm(`Đổi quyền của "${user.fullName}" thành ${newRole}?`)) return;
+    if (!(await Swal.fire({
+      title: "X�c nh?n",
+      text: `Đổi quyền của "${user.fullName}" thành ${newRole}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "�?ng �",
+      cancelButtonText: "H?y"
+    })).isConfirmed) return;
     setUpdating(true);
     setDropdownOpen(false);
     try {
       await api.post('/auth/update-role', { email: user.email, newRole });
       onRoleChange(user.id, newRole);
     } catch (err) {
-      alert('Lỗi: ' + (err.response?.data?.message || 'Không thể cập nhật quyền'));
+      Swal.fire({
+        icon: "info",
+        text: 'Lỗi: ' + (err.response?.data?.message || 'Không thể cập nhật quyền')
+      });
     } finally {
       setUpdating(false);
     }

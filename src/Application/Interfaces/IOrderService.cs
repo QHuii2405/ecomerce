@@ -15,4 +15,9 @@ public interface IOrderService
     // Admin methods
     Task<IEnumerable<Order>> GetAllOrdersAsync(string? statusFilter = null);
     Task<bool> UpdateOrderStatusAsync(Guid orderId, string newStatus);
+    
+    // Return & Refund
+    Task<ReturnRequestDto> RequestReturnAsync(Guid userId, CreateReturnRequest request);
+    Task<List<ReturnRequestDto>> GetReturnRequestsAsync();
+    Task<bool> ProcessReturnRequestAsync(Guid returnRequestId, ProcessReturnRequest request);
 }

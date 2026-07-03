@@ -1,3 +1,4 @@
+import Swal from "sweetalert2";
 import React, { useEffect, useState } from 'react';
 import api from '../../api/axios';
 import {
@@ -40,12 +41,22 @@ export default function AdminProducts() {
   const categoryNameById = Object.fromEntries(categories.map(c => [c.id, c.name]));
 
   const handleDelete = async (product) => {
-    if (!window.confirm(`Xoa san pham "${product.name}"?`)) return;
+    if (!(await Swal.fire({
+      title: "X�c nh?n",
+      text: `Xoa san pham "${product.name}"?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "�?ng �",
+      cancelButtonText: "H?y"
+    })).isConfirmed) return;
     try {
       await api.delete(`/products/${product.id}`);
       await fetchAll();
     } catch (err) {
-      alert('Loi xoa san pham: ' + (err.response?.data?.message || err.message));
+      Swal.fire({
+        icon: "info",
+        text: 'Loi xoa san pham: ' + (err.response?.data?.message || err.message)
+      });
     }
   };
 
@@ -150,8 +161,12 @@ export default function AdminProducts() {
               return (
                 <div key={product.id} className="grid grid-cols-12 gap-4 items-center px-5 py-4 hover:bg-surface-container-low transition-colors">
                   <div className="col-span-5 flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 bg-surface-container-lowest rounded-xl flex items-center justify-center flex-shrink-0 border border-outline-variant/20">
-                      <Package size={16} className="text-outline" />
+                    <div className="w-10 h-10 bg-surface-container-lowest rounded-xl flex items-center justify-center flex-shrink-0 border border-outline-variant/20 overflow-hidden">
+                      {product.imageUrls && product.imageUrls.length > 0 ? (
+                        <img src={`http://localhost:5092${product.imageUrls[0]}`} className="w-full h-full object-cover" alt="" />
+                      ) : (
+                        <Package size={16} className="text-outline" />
+                      )}
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-on-surface truncate">{product.name}</p>

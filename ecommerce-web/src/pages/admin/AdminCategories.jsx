@@ -1,3 +1,4 @@
+import Swal from "sweetalert2";
 import React, { useEffect, useState } from 'react';
 import api from '../../api/axios';
 import {
@@ -23,7 +24,10 @@ function AddCategoryModal({ open, onClose, onSuccess }) {
       onSuccess();
       onClose();
     } catch (err) {
-      alert('Lỗi: ' + (err.response?.data || err.message));
+      Swal.fire({
+        icon: "info",
+        text: 'Lỗi: ' + (err.response?.data || err.message)
+      });
     } finally {
       setLoading(false);
     }
@@ -100,12 +104,22 @@ export default function AdminCategories() {
   };
 
   const handleDelete = async (category) => {
-    if (!window.confirm(`Xoa danh muc "${category.name}"?`)) return;
+    if (!(await Swal.fire({
+      title: "X�c nh?n",
+      text: `Xoa danh muc "${category.name}"?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "�?ng �",
+      cancelButtonText: "H?y"
+    })).isConfirmed) return;
     try {
       await api.delete(`/categories/${category.id}`);
       await fetchCategories();
     } catch (err) {
-      alert('Loi xoa danh muc: ' + (err.response?.data?.message || err.message));
+      Swal.fire({
+        icon: "info",
+        text: 'Loi xoa danh muc: ' + (err.response?.data?.message || err.message)
+      });
     }
   };
 

@@ -1,12 +1,13 @@
+import Swal from "sweetalert2";
 import React, { useEffect, useState, useMemo } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import api from '../api/axios';
 import { addToCart } from '../api/cartStore';
 import { getSuggestedAccessories } from '../utils/productExtras';
 import {
   ArrowLeft, ShoppingCart, Zap, Package, Tag, Star,
   Check, AlertCircle, ChevronRight, Truck, ShieldCheck, RotateCcw,
-  Plus, Minus, Info, FileText, MessageSquare, Layers, Heart
+  Plus, Minus, Info, FileText, MessageSquare, Layers, Heart, CornerDownRight, Reply
 } from 'lucide-react';
 
 const PRODUCT_IMAGES = {
@@ -17,6 +18,9 @@ const PRODUCT_IMAGES = {
 };
 
 function getProductImage(product) {
+  if (product.imageUrls && product.imageUrls.length > 0) {
+    return product.imageUrls[0].startsWith('http') ? product.imageUrls[0] : `http://localhost:5092${product.imageUrls[0]}`;
+  }
   const name = (product.name || '').toLowerCase();
   const cat  = (product.category?.name || '').toLowerCase();
   if (cat.includes('laptop') || name.includes('laptop') || name.includes('book') || name.includes('studio') || name.includes('coder')) return PRODUCT_IMAGES.laptop;
@@ -82,6 +86,7 @@ const TABS = [
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [product, setProduct] = useState(null);
   const [allProducts, setAllProducts] = useState([]);
   const [quantity, setQuantity] = useState(1);
@@ -93,10 +98,30 @@ export default function ProductDetail() {
   const [reviewEligibility, setReviewEligibility] = useState(null);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   
   const [isFavorited, setIsFavorited] = useState(false);
 
   const token = localStorage.getItem('token');
+  let isAdmin = false;
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const role = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || payload.role;
+      isAdmin = role === 'Admin' || role === 'Staff';
+    } catch(e) {}
+  }
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    if (tab) {
+      setActiveTab(tab);
+      setTimeout(() => {
+        window.scrollBy({ top: 800, behavior: 'smooth' });
+      }, 500);
+    }
+  }, [location]);
 
   const optionGroups = useMemo(() => {
     if (!product || !product.variants) return {};
@@ -193,7 +218,10 @@ export default function ProductDetail() {
     e.preventDefault();
     if (!reviewEligibility?.canReview || !reviewEligibility?.eligibleOrderId) return;
     if (!reviewForm.comment.trim()) {
-      alert("Vui lòng nhập nội dung đánh giá!");
+      Swal.fire({
+        icon: "info",
+        text: "Vui lòng nhập nội dung đánh giá!"
+      });
       return;
     }
 
@@ -209,11 +237,48 @@ export default function ProductDetail() {
       const eligRes = await api.get(`/products/${id}/reviews/eligibility`);
       setReviewEligibility(eligRes.data);
       setReviewForm({ rating: 5, comment: '' });
-      alert("Cảm ơn bạn đã đánh giá sản phẩm!");
+      Swal.fire({
+        icon: "info",
+        text: "Cảm ơn bạn đã đánh giá sản phẩm!"
+      });
     } catch (err) {
-      alert(err.response?.data?.message || "Lỗi gửi đánh giá");
+      Swal.fire({
+        icon: "info",
+        text: err.response?.data?.message || "Lỗi gửi đánh giá"
+      });
     } finally {
       setSubmittingReview(false);
+    }
+  };
+
+  const handleAdminReply = async (review) => {
+    const { value: replyText } = await Swal.fire({
+      title: 'Trả lời đánh giá',
+      input: 'textarea',
+      inputLabel: `Khách hàng: ${review.userName}`,
+      inputPlaceholder: 'Nhập câu trả lời của bạn...',
+      inputValue: review.adminReply || '',
+      showCancelButton: true,
+      confirmButtonText: 'Gửi trả lời',
+      cancelButtonText: 'Hủy',
+      inputValidator: (value) => {
+        if (!value.trim()) {
+          return 'Bạn cần nhập nội dung trả lời!';
+        }
+      }
+    });
+
+    if (replyText) {
+      try {
+        await api.post(`/admin/reviews/${review.id}/reply`, { reply: replyText });
+        Swal.fire('Thành công!', 'Đã gửi câu trả lời.', 'success');
+        // Refresh reviews
+        const reviewsRes = await api.get(`/products/${id}/reviews`);
+        setReviews(reviewsRes.data || []);
+      } catch (err) {
+        console.error(err);
+        Swal.fire('Lỗi!', err.response?.data?.message || 'Không thể gửi câu trả lời.', 'error');
+      }
     }
   };
 
@@ -243,7 +308,10 @@ export default function ProductDetail() {
 
   const handleToggleWishlist = async () => {
     if (!token) {
-        alert("Vui lòng đăng nhập để lưu sản phẩm!");
+        Swal.fire({
+          icon: "info",
+          text: "Vui lòng đăng nhập để lưu sản phẩm!"
+        });
         navigate('/login');
         return;
     }
@@ -251,7 +319,10 @@ export default function ProductDetail() {
         await api.post(`/Wishlist/${id}/toggle`);
         setIsFavorited(!isFavorited);
     } catch (err) {
-        alert("Có lỗi xảy ra khi lưu sản phẩm");
+        Swal.fire({
+          icon: "info",
+          text: "Có lỗi xảy ra khi lưu sản phẩm"
+        });
     }
   };
 
@@ -322,7 +393,7 @@ export default function ProductDetail() {
           <div className="space-y-4">
             <div className="aspect-square bg-surface-container-low rounded-3xl overflow-hidden border border-outline-variant/20 flex items-center justify-center relative group">
               <img
-                src={imgSrc}
+                src={product.imageUrls && product.imageUrls.length > 0 ? `http://localhost:5092${product.imageUrls[activeImageIndex]}` : imgSrc}
                 alt={product.name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 onError={e => { e.target.src = PRODUCT_IMAGES.laptop; }}
@@ -344,6 +415,24 @@ export default function ProductDetail() {
                 </div>
               )}
             </div>
+
+            {/* Thumbnails */}
+            {product.imageUrls && product.imageUrls.length > 1 && (
+              <div className="flex gap-3 overflow-x-auto custom-scrollbar pb-2">
+                {product.imageUrls.map((url, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveImageIndex(idx)}
+                    className={`w-20 h-20 rounded-xl overflow-hidden border-2 flex-shrink-0 transition-all ${
+                      activeImageIndex === idx ? 'border-primary scale-105 ring-2 ring-primary/30' : 'border-outline-variant/30 opacity-70 hover:opacity-100 hover:border-primary/50'
+                    }`}
+                  >
+                    <img src={`http://localhost:5092${url}`} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+
             {/* Color thumbnails */}
             {optionGroups['color'] && (
               <div className="flex gap-3 justify-center">
@@ -490,8 +579,25 @@ export default function ProductDetail() {
           )}
 
           {activeTab === 'specs' && (
-            <div className="bg-surface-container-low border border-outline-variant/20 rounded-2xl overflow-hidden">
-              <div className="p-6 text-center text-sm text-on-surface-variant">Thông số kỹ thuật đang cập nhật.</div>
+            <div className="bg-surface-container-low border border-outline-variant/20 rounded-2xl overflow-hidden p-6">
+              <h3 className="font-bold text-on-surface flex items-center gap-2 mb-4"><Tag size={18} className="text-primary" /> Thông số kỹ thuật</h3>
+              
+              {!product.attributes || Object.keys(product.attributes).length === 0 ? (
+                <div className="text-center py-8 text-sm text-on-surface-variant">Thông số kỹ thuật đang cập nhật.</div>
+              ) : (
+                <div className="border border-outline-variant/30 rounded-xl overflow-hidden">
+                  <table className="w-full text-sm text-left">
+                    <tbody>
+                      {Object.entries(product.attributes).map(([key, val], idx) => (
+                        <tr key={key} className={idx % 2 === 0 ? 'bg-surface-container-lowest' : 'bg-transparent'}>
+                          <th className="py-3 px-4 font-bold text-on-surface-variant w-1/3 border-b border-outline-variant/20">{key}</th>
+                          <td className="py-3 px-4 text-on-surface border-b border-outline-variant/20">{val}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 
@@ -561,11 +667,27 @@ export default function ProductDetail() {
                             </div>
                           </div>
                         </div>
-                        <span className="text-[10px] font-semibold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded flex items-center gap-1">
-                          <ShieldCheck size={12}/> Đã mua hàng
-                        </span>
+                        <div className="flex items-center gap-2">
+                          {isAdmin && (
+                            <button onClick={() => handleAdminReply(review)} className="p-1.5 text-blue-500 bg-blue-500/10 hover:bg-blue-500 hover:text-white rounded transition-colors" title="Trả lời khách hàng">
+                              <Reply size={14} />
+                            </button>
+                          )}
+                          <span className="text-[10px] font-semibold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded flex items-center gap-1">
+                            <ShieldCheck size={12}/> Đã mua hàng
+                          </span>
+                        </div>
                       </div>
                       <p className="text-sm text-on-surface-variant leading-relaxed">{review.comment}</p>
+                      {review.adminReply && (
+                        <div className="mt-2 bg-primary/5 p-3 rounded-xl border border-primary/10 flex gap-2">
+                          <CornerDownRight size={16} className="text-primary shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-xs font-bold text-primary">Phản hồi từ Admin:</p>
+                            <p className="text-xs text-on-surface-variant mt-1">{review.adminReply}</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))
                 )}

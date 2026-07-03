@@ -144,6 +144,34 @@ public class PaymentGatewayService : IPaymentGatewayService
         await ConfirmPaymentAsync(transaction.OrderId, provider, transactionCode);
     }
 
+    public async Task<bool> RefundPaymentAsync(Guid orderId)
+    {
+        var order = await _unitOfWork.Orders.GetByIdAsync(orderId);
+        if (order == null) throw new KeyNotFoundException("Không tìm thấy đơn hàng.");
+
+        var transactions = await _unitOfWork.Repository<PaymentTransaction>().FindAsync(t => t.OrderId == orderId && t.Status == "Paid");
+        var transaction = transactions.FirstOrDefault();
+        
+        if (transaction != null)
+        {
+            // Trong môi trường thực tế, chúng ta sẽ gọi API của MoMo hoặc PayOS để thực hiện Refund:
+            // if (transaction.Provider == "MoMo") await _momoProvider.RefundAsync(transaction.TransactionCode, order.TotalAmount);
+            // else await _payOsProvider.RefundAsync(transaction.TransactionCode, order.TotalAmount);
+            
+            // Mock Refund Success
+            transaction.Status = "Refunded";
+            transaction.UpdatedAt = DateTime.UtcNow;
+            _unitOfWork.Repository<PaymentTransaction>().Update(transaction);
+        }
+
+        order.PaymentStatus = "Refunded";
+        order.UpdatedAt = DateTime.UtcNow;
+        _unitOfWork.Orders.Update(order);
+        
+        await _unitOfWork.SaveChangesAsync();
+        return true;
+    }
+
     private static string NormalizeProvider(string provider)
     {
         return provider.Trim().Equals("PayOS", StringComparison.OrdinalIgnoreCase) ? "PayOS" : "MoMo";

@@ -4,8 +4,9 @@ import api from '../api/axios';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ShoppingBag, Trash2, CreditCard, ArrowLeft, X, CheckCircle2,
-  Truck, Banknote, QrCode, Clock, ChevronRight, Package, AlertCircle, SlidersHorizontal, Tag
+  Truck, Banknote, QrCode, Clock, ChevronRight, Package, AlertCircle, SlidersHorizontal, Tag, MapPin
 } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 // Helper: payment method config
 const PAYMENT_METHODS = [
@@ -63,6 +64,8 @@ export default function Cart() {
   const [recipientName, setRecipientName] = useState('');
   const [recipientPhone, setRecipientPhone] = useState('');
   const [shippingAddress, setShippingAddress] = useState('');
+  const [savedAddressesList, setSavedAddressesList] = useState([]);
+  const [selectedAddressType, setSelectedAddressType] = useState('EXISTING'); // 'EXISTING' or 'NEW'
 
   const [voucherCode, setVoucherCode] = useState('');
   const [appliedVoucher, setAppliedVoucher] = useState(null);
@@ -80,13 +83,24 @@ export default function Cart() {
           setRecipientPhone(res.data.phoneNumber || '');
           
           let firstAddr = res.data.address || '';
+          let list = [];
           if (res.data.savedAddresses) {
             try {
                const parsed = JSON.parse(res.data.savedAddresses);
-               if (parsed && parsed.length > 0) firstAddr = parsed[0];
+               if (parsed && parsed.length > 0) {
+                   list = parsed;
+                   firstAddr = parsed[0];
+               }
             } catch(e){}
           }
-          setShippingAddress(firstAddr);
+          setSavedAddressesList(list);
+          if (list.length > 0) {
+              setShippingAddress(firstAddr);
+              setSelectedAddressType(firstAddr);
+          } else {
+              setShippingAddress('');
+              setSelectedAddressType('NEW');
+          }
         }
       } catch (err) {}
     }
@@ -154,7 +168,7 @@ export default function Cart() {
     if (!token) { navigate('/login'); return; }
 
     if (!recipientName.trim() || !recipientPhone.trim() || !shippingAddress.trim()) {
-      alert("Vui lòng điền đầy đủ thông tin giao hàng!");
+      Swal.fire({ icon: 'warning', title: 'Thiếu thông tin', text: 'Vui lòng điền đầy đủ thông tin giao hàng!' });
       return;
     }
 
@@ -189,13 +203,18 @@ export default function Cart() {
         }
       }
     } catch (error) {
-      alert('Lỗi đặt hàng: ' + (error.response?.data?.message || error.response?.data || 'Vui lòng thử lại'));
+      Swal.fire({ icon: 'error', title: 'Lỗi đặt hàng', text: error.response?.data?.message || error.response?.data || 'Vui lòng thử lại' });
     } finally {
       setLoading(false);
     }
   };
 
-  const getProductImage = (name = '') => {
+  const getProductImage = (item) => {
+    if (item?.imageUrls && item.imageUrls.length > 0) {
+      const url = item.imageUrls[0];
+      return url.startsWith('http') ? url : `http://localhost:5092${url}`;
+    }
+    const name = item?.name || '';
     const n = name.toLowerCase();
     if (n.includes('laptop') || n.includes('macbook') || n.includes('pro')) return 'https://lh3.googleusercontent.com/aida-public/AB6AXuDzzkgw3qdK2qx_eejr9Oee4qzRfJoNIb-smYiUqNBNBZ4_KNAbm4HxoqNIyfUqk9pV0qWkdyFf7t7SYsjbbwCkkEN06FQNQBCseQPzXacixmLlO0YB5GVfxd7AR42kwnUufnptDgHCXnHlGXhg3x4QzV7sXZkMAYLQHcoPSLjWbTIWG3W_hrzh4eWEuFkuhEuk_62jmY9dMbWUMr11EIDivHK_RMuJDGpKxGyfr8JRcfcL8i0qv6Ve';
     if (n.includes('keyboard') || n.includes('mouse') || n.includes('gaming')) return 'https://lh3.googleusercontent.com/aida-public/AB6AXuCtePE6a8azsOINxsGhPHJGa7pybuOEtEXGQUTmgTTPhKMBwOS-7FOpWVDKTgo17TVnuDYz0tGqUltaJ9vPZxqJCWCdknYb9x1VpLfsq9eC8Qlc1fG2cjNg5i2klZdqsM6d2QHuBDP_mHVRg-Ley5Dw6z3yNJURrfQ5bnPx_TyxzBc7EuP7b5boquCcOezT3SWcmEEoMElGb7VQSAkNtos5xtMcNxJFn8D0-Oq4x3zH0vgAz5bRpJdx';
@@ -302,7 +321,7 @@ export default function Cart() {
                 return (
                   <div key={cartItemKey} className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-4 flex flex-col sm:flex-row gap-4 hover:border-primary/20 transition-all group">
                     <div className="w-16 h-16 rounded-xl overflow-hidden bg-surface-container-low flex-shrink-0 flex items-center justify-center">
-                      <img src={getProductImage(item.name)} alt={item.name} className="w-full h-full object-contain p-1" />
+                      <img src={getProductImage(item)} alt={item.name} className="w-full h-full object-contain p-1" />
                     </div>
                     <div className="flex-1 min-w-0 space-y-3">
                       <div>
@@ -380,14 +399,51 @@ export default function Cart() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">Địa chỉ giao hàng</label>
-                    <textarea
-                      value={shippingAddress}
-                      onChange={e => setShippingAddress(e.target.value)}
-                      placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố"
-                      rows={2}
-                      className="w-full bg-surface-container-low border border-outline-variant/30 text-on-surface rounded-xl px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all resize-none"
-                    />
+                    <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-2">Địa chỉ giao hàng</label>
+                    
+                    {savedAddressesList.length > 0 && (
+                      <div className="space-y-2 mb-3">
+                        {savedAddressesList.map((addr, idx) => (
+                          <label key={idx} className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${selectedAddressType === addr ? 'bg-primary/5 border-primary/40' : 'border-outline-variant/30 hover:bg-surface-container-low'}`}>
+                            <input 
+                              type="radio" 
+                              name="addressSelection" 
+                              className="mt-1 accent-primary" 
+                              checked={selectedAddressType === addr}
+                              onChange={() => {
+                                setSelectedAddressType(addr);
+                                setShippingAddress(addr);
+                              }}
+                            />
+                            <span className="text-sm text-on-surface flex-1 leading-relaxed">{addr}</span>
+                          </label>
+                        ))}
+                        
+                        <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${selectedAddressType === 'NEW' ? 'bg-primary/5 border-primary/40' : 'border-outline-variant/30 hover:bg-surface-container-low'}`}>
+                          <input 
+                            type="radio" 
+                            name="addressSelection" 
+                            className="accent-primary" 
+                            checked={selectedAddressType === 'NEW'}
+                            onChange={() => {
+                              setSelectedAddressType('NEW');
+                              setShippingAddress('');
+                            }}
+                          />
+                          <span className="text-sm text-on-surface font-medium flex items-center gap-1.5"><MapPin size={16}/> Nhập địa chỉ khác...</span>
+                        </label>
+                      </div>
+                    )}
+
+                    {(selectedAddressType === 'NEW' || savedAddressesList.length === 0) && (
+                      <textarea
+                        value={shippingAddress}
+                        onChange={e => setShippingAddress(e.target.value)}
+                        placeholder="Nhập chi tiết: Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố..."
+                        rows={2}
+                        className="w-full bg-surface-container-lowest border border-outline-variant/40 text-on-surface rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-2 focus:ring-primary/50 outline-none transition-all resize-none placeholder:text-on-surface-variant/50 shadow-sm"
+                      />
+                    )}
                   </div>
                 </div>
               </div>

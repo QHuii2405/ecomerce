@@ -1,3 +1,4 @@
+import Swal from "sweetalert2";
 import React, { useEffect, useState } from 'react';
 import api from '../../api/axios';
 import { X, CheckCircle2, Plus, Trash2, Tag, Box, Layers } from 'lucide-react';
@@ -8,6 +9,7 @@ const INIT_FORM = {
   price: '',
   categoryId: '',
   brand: '',
+  imageUrls: [],
   initialStock: 10,
   attributes: {},
   variants: []
@@ -37,6 +39,7 @@ export default function ProductModal({ open, onClose, onSuccess, categories, edi
         price: editProduct.price || '',
         categoryId: editProduct.categoryId || '',
         brand: editProduct.brand || '',
+        imageUrls: editProduct.imageUrls || [],
         initialStock: editProduct.inventory?.stockQuantity ?? editProduct.inventory?.availableQuantity ?? 0,
         attributes: editProduct.attributes || {},
         variants: editProduct.variants || []
@@ -72,6 +75,7 @@ export default function ProductModal({ open, onClose, onSuccess, categories, edi
         price: Number(form.price),
         categoryId: form.categoryId,
         brand: form.brand.trim(),
+        imageUrls: form.imageUrls,
         initialStock: Number(form.initialStock) || 0,
         stockQuantity: Number(form.initialStock) || 0,
         attributes: form.attributes
@@ -86,10 +90,51 @@ export default function ProductModal({ open, onClose, onSuccess, categories, edi
       onSuccess();
       onClose();
     } catch (err) {
-      alert('Lỗi: ' + (err.response?.data?.message || err.response?.data || err.message));
+      Swal.fire({
+        icon: "info",
+        text: 'Lỗi: ' + (err.response?.data?.message || err.response?.data || err.message)
+      });
     } finally {
       setLoading(false);
     }
+  };
+
+  // --- File Upload ---
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    
+    // Check size < 5MB per file
+    if (files.some(f => f.size > 5 * 1024 * 1024)) {
+      Swal.fire({ icon: 'error', text: 'Kích thước mỗi file không được quá 5MB' });
+      return;
+    }
+
+    const formData = new FormData();
+    files.forEach(f => formData.append('files', f));
+
+    setLoading(true);
+    try {
+      const res = await api.post('/Upload/multiple', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      if (res.data.urls) {
+        setForm(p => ({ ...p, imageUrls: [...p.imageUrls, ...res.data.urls] }));
+        Swal.fire({ icon: 'success', text: 'Tải ảnh thành công', timer: 1500, showConfirmButton: false });
+      }
+    } catch (err) {
+      Swal.fire({ icon: 'error', text: 'Lỗi tải ảnh: ' + (err.response?.data || err.message) });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveImage = (index) => {
+    setForm(p => {
+      const newUrls = [...p.imageUrls];
+      newUrls.splice(index, 1);
+      return { ...p, imageUrls: newUrls };
+    });
   };
 
   // --- Variant Handlers ---
@@ -108,7 +153,14 @@ export default function ProductModal({ open, onClose, onSuccess, categories, edi
 
   const handleRemoveVariant = async (index, variant) => {
     if (variant.id && !variant.id.toString().startsWith('temp_') && editProduct) {
-      if (!window.confirm('Bạn có chắc muốn xóa biến thể này khỏi hệ thống?')) return;
+      if (!(await Swal.fire({
+        title: "X�c nh?n",
+        text: 'Bạn có chắc muốn xóa biến thể này khỏi hệ thống?',
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "�?ng �",
+        cancelButtonText: "H?y"
+      })).isConfirmed) return;
       try {
         await api.delete(`/products/${editProduct.id}/variants/${variant.id}`);
         // Remove from UI after successful delete
@@ -117,7 +169,10 @@ export default function ProductModal({ open, onClose, onSuccess, categories, edi
         setForm(p => ({ ...p, variants: newVariants }));
         return;
       } catch (err) {
-        alert('Lỗi xóa biến thể: ' + err.message);
+        Swal.fire({
+          icon: "info",
+          text: 'Lỗi xóa biến thể: ' + err.message
+        });
         return;
       }
     }
@@ -139,7 +194,10 @@ export default function ProductModal({ open, onClose, onSuccess, categories, edi
           stockQuantity: Number(variant.stockQuantity),
           attributes: variant.attributes
         });
-        alert('Cập nhật biến thể thành công!');
+        Swal.fire({
+          icon: "info",
+          text: 'Cập nhật biến thể thành công!'
+        });
       } else {
         await api.post(`/products/${editProduct.id}/variants`, {
           sku: variant.sku,
@@ -148,10 +206,16 @@ export default function ProductModal({ open, onClose, onSuccess, categories, edi
           stockQuantity: Number(variant.stockQuantity),
           attributes: variant.attributes
         });
-        alert('Thêm biến thể thành công! Vui lòng tải lại trang.');
+        Swal.fire({
+          icon: "info",
+          text: 'Thêm biến thể thành công! Vui lòng tải lại trang.'
+        });
       }
     } catch (err) {
-      alert('Lỗi lưu biến thể: ' + (err.response?.data?.message || err.message));
+      Swal.fire({
+        icon: "info",
+        text: 'Lỗi lưu biến thể: ' + (err.response?.data?.message || err.message)
+      });
     }
   };
 
@@ -190,11 +254,20 @@ export default function ProductModal({ open, onClose, onSuccess, categories, edi
             Biến thể (Variants)
             <span className="bg-surface-container text-on-surface text-[10px] px-2 py-0.5 rounded-full">{form.variants.length}</span>
           </button>
+          <button
+            onClick={() => setActiveTab('specs')}
+            className={`pb-3 font-semibold text-sm transition-colors border-b-2 flex items-center gap-2 ${
+              activeTab === 'specs' ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:text-on-surface'
+            }`}
+          >
+            Thông số kỹ thuật
+            <span className="bg-surface-container text-on-surface text-[10px] px-2 py-0.5 rounded-full">{Object.keys(form.attributes).length}</span>
+          </button>
         </div>
 
         {/* Body */}
         <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
-          {activeTab === 'basic' ? (
+          {activeTab === 'basic' && (
             <div className="space-y-5">
               <div className="grid grid-cols-2 gap-5">
                 <div>
@@ -216,6 +289,30 @@ export default function ProductModal({ open, onClose, onSuccess, categories, edi
                     onChange={e => setForm(p => ({ ...p, brand: e.target.value }))}
                   />
                   {errors.brand && <p className="text-rose-500 text-xs mt-1">{errors.brand}</p>}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5 block">Hình ảnh sản phẩm</label>
+                <div className="flex flex-wrap items-center gap-4">
+                  {form.imageUrls.map((url, idx) => (
+                    <div key={idx} className="relative w-24 h-24 rounded-xl border border-outline-variant/30 overflow-hidden group">
+                      <img src={`http://localhost:5092${url}`} alt={`Product ${idx}`} className="w-full h-full object-cover" />
+                      <button 
+                        type="button" 
+                        className="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center text-white"
+                        onClick={() => handleRemoveImage(idx)}
+                      >
+                        <Trash2 size={20} />
+                      </button>
+                    </div>
+                  ))}
+                  
+                  <label className="w-24 h-24 rounded-xl border-2 border-dashed border-outline-variant/50 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:text-primary transition-colors text-on-surface-variant">
+                    <Plus size={24} className="mb-1" />
+                    <span className="text-[10px] font-medium">Thêm ảnh</span>
+                    <input type="file" className="hidden" accept="image/*" multiple onChange={handleImageUpload} />
+                  </label>
                 </div>
               </div>
 
@@ -268,7 +365,73 @@ export default function ProductModal({ open, onClose, onSuccess, categories, edi
                 </div>
               </div>
             </div>
-          ) : (
+          )}
+
+          {activeTab === 'specs' && (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center bg-surface-container-low p-4 rounded-2xl border border-outline-variant/30">
+                <div>
+                  <h4 className="font-bold text-sm text-on-surface">Thông số kỹ thuật</h4>
+                  <p className="text-xs text-on-surface-variant mt-0.5">Các thông tin cấu hình, kích thước...</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const k = prompt('Nhập tên thông số (VD: Màn hình):');
+                    if (k && k.trim()) {
+                      if (form.attributes[k.trim()]) {
+                        alert('Thông số này đã tồn tại!');
+                        return;
+                      }
+                      setForm(p => ({ ...p, attributes: { ...p.attributes, [k.trim()]: '' } }));
+                    }
+                  }}
+                  className="px-4 py-2 bg-primary/10 text-primary font-semibold text-sm rounded-xl hover:bg-primary/20 transition-colors flex items-center gap-1.5"
+                >
+                  <Plus size={16} /> Thêm thông số
+                </button>
+              </div>
+
+              {Object.keys(form.attributes).length === 0 ? (
+                <div className="text-center py-10 border border-dashed border-outline-variant/40 rounded-2xl text-on-surface-variant">
+                  <Tag size={32} className="mx-auto mb-3 opacity-20" />
+                  <p className="text-sm">Chưa có thông số nào</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-4">
+                  {Object.entries(form.attributes).map(([key, val]) => (
+                    <div key={key} className="bg-surface-container-lowest border border-outline-variant/30 p-3 rounded-xl flex items-center gap-3">
+                      <div className="flex-1">
+                        <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 block">{key}</label>
+                        <input
+                          className="w-full bg-transparent border-b border-outline-variant/30 text-on-surface text-sm focus:outline-none focus:border-primary py-1"
+                          placeholder="Nhập giá trị..."
+                          value={val}
+                          onChange={e => setForm(p => ({
+                            ...p,
+                            attributes: { ...p.attributes, [key]: e.target.value }
+                          }))}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newAttrs = { ...form.attributes };
+                          delete newAttrs[key];
+                          setForm(p => ({ ...p, attributes: newAttrs }));
+                        }}
+                        className="w-8 h-8 flex items-center justify-center rounded-full text-rose-500 hover:bg-rose-500/10 transition-colors"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'variants' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <p className="text-sm text-on-surface-variant">

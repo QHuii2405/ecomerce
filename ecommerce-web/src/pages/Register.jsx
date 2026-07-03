@@ -1,3 +1,4 @@
+import Swal from "sweetalert2";
 import React, { useState } from 'react';
 import api from '../api/axios';
 import { UserPlus, Mail, Lock, Phone, MapPin, User, ArrowRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
@@ -41,7 +42,10 @@ function Register() {
                 address: formData.address
             });
 
-            alert("Đăng ký thành công! Hãy đăng nhập.");
+            Swal.fire({
+                icon: "info",
+                text: "Đăng ký thành công! Hãy đăng nhập."
+            });
             navigate('/login');
         } catch (err) {
             setError(err.response?.data?.message || err.response?.data || "Đăng ký thất bại, vui lòng thử lại.");

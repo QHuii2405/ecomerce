@@ -1,3 +1,4 @@
+import Swal from "sweetalert2";
 import React, { useState, useEffect } from 'react';
 import { Package, Plus, Search, Filter, AlertCircle, Edit, Trash2, CheckCircle, XCircle, Box, Receipt } from 'lucide-react';
 import api from '../../api/axios';
@@ -47,24 +48,44 @@ export default function AdminInventory() {
     };
 
     const handleApprove = async (id) => {
-        if (!window.confirm('Xác nhận duyệt phiếu nhập hàng này? Số lượng kho sẽ được cập nhật.')) return;
+        if (!(await Swal.fire({
+            title: "X�c nh?n",
+            text: 'Xác nhận duyệt phiếu nhập hàng này? Số lượng kho sẽ được cập nhật.',
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "�?ng �",
+            cancelButtonText: "H?y"
+        })).isConfirmed) return;
         try {
             await api.post(`/Inventory/receipts/${id}/approve`);
             fetchReceipts();
         } catch (err) {
             console.error(err);
-            alert('Lỗi khi duyệt phiếu');
+            Swal.fire({
+                icon: "info",
+                text: 'Lỗi khi duyệt phiếu'
+            });
         }
     };
 
     const handleReject = async (id) => {
-        if (!window.confirm('Xác nhận từ chối phiếu nhập hàng này?')) return;
+        if (!(await Swal.fire({
+            title: "X�c nh?n",
+            text: 'Xác nhận từ chối phiếu nhập hàng này?',
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "�?ng �",
+            cancelButtonText: "H?y"
+        })).isConfirmed) return;
         try {
             await api.post(`/Inventory/receipts/${id}/reject`);
             fetchReceipts();
         } catch (err) {
             console.error(err);
-            alert('Lỗi khi từ chối phiếu');
+            Swal.fire({
+                icon: "info",
+                text: 'Lỗi khi từ chối phiếu'
+            });
         }
     };
 

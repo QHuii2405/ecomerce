@@ -1,5 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using System.Security.Cryptography;
 using System.Text;
 using Application.DTOs;
@@ -15,11 +19,13 @@ public class AuthService : IAuthService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IConfiguration _configuration;
+    private readonly IEmailService _emailService;
 
-    public AuthService(IUnitOfWork unitOfWork, IConfiguration configuration)
+    public AuthService(IUnitOfWork unitOfWork, IConfiguration configuration, IEmailService emailService)
     {
         _unitOfWork = unitOfWork;
         _configuration = configuration;
+        _emailService = emailService;
     }
 
     public async Task<string> RegisterAsync(RegisterRequest request)
@@ -45,6 +51,12 @@ public class AuthService : IAuthService
 
         await _unitOfWork.Users.AddAsync(user);
         await _unitOfWork.SaveChangesAsync();
+
+        // Gửi email chào mừng
+        var subject = "Chào mừng bạn đến với iLuminaty Shop!";
+        var body = $"<h1>Xin chào {user.FullName},</h1><p>Cảm ơn bạn đã đăng ký tài khoản tại iLuminaty Shop. Chúc bạn có những trải nghiệm mua sắm tuyệt vời!</p>";
+        // Gửi không chặn luồng chính (Fire and Forget) để phản hồi API nhanh hơn
+        _ = _emailService.SendEmailAsync(user.Email, subject, body);
 
         return "Đăng ký thành công!";
     }
@@ -216,8 +228,128 @@ public class AuthService : IAuthService
 
     public async Task<IEnumerable<User>> GetAllUsersAsync()
     {
-        var users = await _unitOfWork.Users.FindAsync(_ => true);
-        return users.OrderByDescending(u => u.CreatedAt);
+        return await _unitOfWork.Users.GetAllAsync();
+    }
+
+    public async Task<string> ForgotPasswordAsync(ForgotPasswordRequest request)
+    {
+        var users = await _unitOfWork.Users.FindAsync(u => u.Email == request.Email);
+        var user = users.FirstOrDefault();
+        if (user == null)
+        {
+            throw new KeyNotFoundException("Email không tồn tại trong hệ thống.");
+        }
+
+        var otp = new Random().Next(100000, 999999).ToString();
+        user.OtpCode = otp;
+        user.OtpExpiryTime = DateTime.UtcNow.AddMinutes(15);
+        user.UpdatedAt = DateTime.UtcNow;
+
+        _unitOfWork.Users.Update(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        var subject = "Mã xác nhận khôi phục mật khẩu";
+        var body = $"<h2>Mã OTP của bạn là: {otp}</h2><p>Mã này sẽ hết hạn trong 15 phút. Vui lòng không chia sẻ mã này với bất kỳ ai.</p>";
+        await _emailService.SendEmailAsync(user.Email, subject, body);
+
+        return "Mã OTP đã được gửi đến email của bạn.";
+    }
+
+    public async Task<string> ResetPasswordAsync(ResetPasswordRequest request)
+    {
+        var users = await _unitOfWork.Users.FindAsync(u => u.Email == request.Email);
+        var user = users.FirstOrDefault();
+        if (user == null)
+        {
+            throw new KeyNotFoundException("Email không tồn tại trong hệ thống.");
+        }
+
+        if (user.OtpCode != request.OtpCode)
+        {
+            throw new ArgumentException("Mã OTP không chính xác.");
+        }
+
+        if (user.OtpExpiryTime < DateTime.UtcNow)
+        {
+            throw new ArgumentException("Mã OTP đã hết hạn.");
+        }
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+        user.OtpCode = null;
+        user.OtpExpiryTime = null;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        _unitOfWork.Users.Update(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        return "Mật khẩu đã được đặt lại thành công.";
+    }
+
+    public async Task<TokenResponse> GoogleLoginAsync(GoogleLoginRequest request)
+    {
+        using var httpClient = new HttpClient();
+        // useGoogleLogin returns access_token in implicit flow. 
+        // We can verify it or get user info via userinfo endpoint.
+        var response = await httpClient.GetAsync($"https://www.googleapis.com/oauth2/v3/userinfo?access_token={request.IdToken}");
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new UnauthorizedAccessException("Token Google không hợp lệ.");
+        }
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var document = JsonDocument.Parse(json);
+        var root = document.RootElement;
+
+        if (!root.TryGetProperty("email", out var emailProp))
+        {
+            throw new UnauthorizedAccessException("Không thể lấy email từ Google.");
+        }
+        var email = emailProp.GetString()!;
+        var name = root.TryGetProperty("name", out var nameProp) ? nameProp.GetString() : "Google User";
+        var picture = root.TryGetProperty("picture", out var picProp) ? picProp.GetString() : null;
+
+        var users = await _unitOfWork.Users.FindAsync(u => u.Email == email);
+        var user = users.FirstOrDefault();
+
+        if (user == null)
+        {
+            user = new User
+            {
+                Email = email,
+                FullName = name ?? "Google User",
+                AvatarUrl = picture,
+                Role = "Customer",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString())
+            };
+            await _unitOfWork.Users.AddAsync(user);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        var jwtSettings = _configuration.GetSection("JwtSettings");
+        var secret = jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret Key chưa được cấu hình.");
+        var issuer = jwtSettings["Issuer"] ?? "EcommerceAPI";
+        var audience = jwtSettings["Audience"] ?? "EcommerceUsers";
+        var accessTokenExpiryMinutes = double.TryParse(jwtSettings["AccessTokenExpiryMinutes"], out var accessMins) ? accessMins : 15;
+        var refreshTokenExpiryDays = double.TryParse(jwtSettings["RefreshTokenExpiryDays"], out var refreshDays) ? refreshDays : 7;
+
+        var accessToken = GenerateAccessToken(user, secret, issuer, audience, accessTokenExpiryMinutes);
+        var refreshToken = GenerateSecureToken();
+        
+        user.RefreshToken = refreshToken;
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(refreshTokenExpiryDays);
+        user.UpdatedAt = DateTime.UtcNow;
+
+        _unitOfWork.Users.Update(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        return new TokenResponse
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            FullName = user.FullName,
+            Email = user.Email,
+            Role = user.Role
+        };
     }
 
     // --- CÁC PHƯƠNG THỨC TRỢ GIÚP (HELPERS) ---

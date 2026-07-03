@@ -1,3 +1,4 @@
+import Swal from "sweetalert2";
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Trash2, PackageSearch } from 'lucide-react';
 import api from '../../api/axios';
@@ -41,11 +42,17 @@ export default function GoodsReceiptModal({ isOpen, onClose, onSuccess }) {
 
     const handleAddDetail = () => {
         if (!selectedProductId) {
-            alert('Vui lòng chọn sản phẩm');
+            Swal.fire({
+                icon: "info",
+                text: 'Vui lòng chọn sản phẩm'
+            });
             return;
         }
         if (quantity <= 0 || importPrice < 0) {
-            alert('Số lượng và giá nhập phải hợp lệ');
+            Swal.fire({
+                icon: "info",
+                text: 'Số lượng và giá nhập phải hợp lệ'
+            });
             return;
         }
 
@@ -55,7 +62,10 @@ export default function GoodsReceiptModal({ isOpen, onClose, onSuccess }) {
         // Check duplicates
         const exists = details.find(d => d.productId === selectedProductId && d.productVariantId === (selectedVariantId || null));
         if (exists) {
-            alert('Sản phẩm này đã có trong danh sách nhập. Vui lòng xóa và thêm lại nếu muốn đổi số lượng.');
+            Swal.fire({
+                icon: "info",
+                text: 'Sản phẩm này đã có trong danh sách nhập. Vui lòng xóa và thêm lại nếu muốn đổi số lượng.'
+            });
             return;
         }
 
@@ -79,7 +89,10 @@ export default function GoodsReceiptModal({ isOpen, onClose, onSuccess }) {
 
     const handleSubmit = async () => {
         if (details.length === 0) {
-            alert('Vui lòng thêm ít nhất một sản phẩm vào phiếu nhập');
+            Swal.fire({
+                icon: "info",
+                text: 'Vui lòng thêm ít nhất một sản phẩm vào phiếu nhập'
+            });
             return;
         }
 
@@ -100,7 +113,10 @@ export default function GoodsReceiptModal({ isOpen, onClose, onSuccess }) {
             onClose();
         } catch (error) {
             console.error('Lỗi tạo phiếu nhập:', error);
-            alert('Đã xảy ra lỗi khi tạo phiếu nhập');
+            Swal.fire({
+                icon: "info",
+                text: 'Đã xảy ra lỗi khi tạo phiếu nhập'
+            });
         } finally {
             setLoading(false);
         }

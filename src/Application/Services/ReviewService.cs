@@ -16,7 +16,7 @@ public class ReviewService : IReviewService
 
     public async Task<IEnumerable<ProductReviewResponse>> GetProductReviewsAsync(Guid productId)
     {
-        var reviews = await _unitOfWork.Repository<ProductReview>().FindAsync(r => r.ProductId == productId && !r.IsDeleted);
+        var reviews = await _unitOfWork.Repository<ProductReview>().FindAsync(r => r.ProductId == productId && !r.IsDeleted, includeProperties: "Product");
         var users = await _unitOfWork.Users.GetAllAsync();
         var userLookup = users.ToDictionary(u => u.Id, u => u.FullName);
 
@@ -64,6 +64,8 @@ public class ReviewService : IReviewService
         await _unitOfWork.SaveChangesAsync();
 
         var user = await _unitOfWork.Users.GetByIdAsync(userId);
+        var product = await _unitOfWork.Repository<Product>().GetByIdAsync(productId);
+        review.Product = product;
         return MapToResponse(review, user?.FullName ?? "Khách hàng");
     }
 
@@ -73,11 +75,13 @@ public class ReviewService : IReviewService
         {
             Id = review.Id,
             ProductId = review.ProductId,
+            ProductName = review.Product?.Name ?? "Sản phẩm không xác định",
             UserId = review.UserId,
             OrderId = review.OrderId,
             UserName = userName,
             Rating = review.Rating,
             Comment = review.Comment,
+            AdminReply = review.AdminReply,
             CreatedAt = review.CreatedAt
         };
     }
@@ -102,5 +106,57 @@ public class ReviewService : IReviewService
 
         var eligibleOrder = deliveredOrdersWithProduct.OrderByDescending(o => o.CreatedAt).First();
         return new ProductReviewEligibilityResponse { CanReview = true, EligibleOrderId = eligibleOrder.Id };
+    }
+
+    public async Task<IEnumerable<ProductReviewResponse>> GetAllReviewsAdminAsync()
+    {
+        var reviews = await _unitOfWork.Repository<ProductReview>().FindAsync(r => !r.IsDeleted, includeProperties: "Product");
+        var users = await _unitOfWork.Users.GetAllAsync();
+        var userLookup = users.ToDictionary(u => u.Id, u => u.FullName);
+
+        return reviews
+            .OrderByDescending(r => r.CreatedAt)
+            .Select(r => MapToResponse(r, userLookup.GetValueOrDefault(r.UserId, "Khách hàng")));
+    }
+
+    public async Task<bool> ReplyToReviewAsync(Guid reviewId, string reply)
+    {
+        var review = await _unitOfWork.Repository<ProductReview>().GetByIdAsync(reviewId);
+        if (review == null || review.IsDeleted)
+        {
+            throw new KeyNotFoundException("Đánh giá không tồn tại hoặc đã bị xóa.");
+        }
+
+        review.AdminReply = string.IsNullOrWhiteSpace(reply) ? null : reply.Trim();
+        review.UpdatedAt = DateTime.UtcNow;
+
+        _unitOfWork.Repository<ProductReview>().Update(review);
+        await _unitOfWork.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> DeleteReviewAsync(Guid reviewId)
+    {
+        await _unitOfWork.BeginTransactionAsync();
+        try
+        {
+            var review = await _unitOfWork.Repository<ProductReview>().GetByIdAsync(reviewId);
+            if (review == null || review.IsDeleted)
+            {
+                throw new KeyNotFoundException("Đánh giá không tồn tại hoặc đã bị xóa.");
+            }
+
+            review.IsDeleted = true;
+            review.UpdatedAt = DateTime.UtcNow;
+            _unitOfWork.Repository<ProductReview>().Update(review);
+            await _unitOfWork.CommitTransactionAsync();
+            
+            return true;
+        }
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
     }
 }

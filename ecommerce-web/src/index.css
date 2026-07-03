@@ -64,3 +64,58 @@
 body {
     font-family: 'Inter', sans-serif;
 }
+/* Hide default password reveal icon in Edge/Chrome */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+/* SweetAlert2 Custom Styling */
+.swal2-popup {
+  border-radius: 24px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  font-family: 'Inter', sans-serif !important;
+  padding: 2rem !important;
+  border: 1px solid var(--color-outline-variant) !important;
+  background-color: var(--color-surface-container-lowest) !important;
+}
+
+.swal2-title {
+  color: var(--color-on-surface) !important;
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+}
+
+.swal2-html-container {
+  color: var(--color-on-surface-variant) !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+}
+
+.swal2-confirm {
+  background-color: var(--color-primary) !important;
+  border-radius: 16px !important;
+  font-weight: 700 !important;
+  padding: 12px 24px !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 88, 190, 0.3) !important;
+  transition: all 0.2s ease !important;
+}
+
+.swal2-confirm:hover {
+  background-color: var(--color-primary-container) !important;
+  transform: translateY(-2px) !important;
+}
+
+.swal2-cancel {
+  background-color: var(--color-surface-container-high) !important;
+  color: var(--color-on-surface-variant) !important;
+  border-radius: 16px !important;
+  font-weight: 700 !important;
+  padding: 12px 24px !important;
+  transition: all 0.2s ease !important;
+}
+
+.swal2-cancel:hover {
+  background-color: var(--color-surface-container-highest) !important;
+  transform: translateY(-2px) !important;
+}

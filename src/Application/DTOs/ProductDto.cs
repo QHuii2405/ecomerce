@@ -8,6 +8,7 @@ public class ProductResponse
     public decimal Price { get; set; }
     public Guid CategoryId { get; set; }
     public string Brand { get; set; } = string.Empty;
+    public List<string> ImageUrls { get; set; } = new();
     public Dictionary<string, string> Attributes { get; set; } = new();
     public CategoryResponse? Category { get; set; }
     public InventoryResponse? Inventory { get; set; }
@@ -60,7 +61,9 @@ public class ProductReviewResponse
     public string UserName { get; set; } = string.Empty;
     public int Rating { get; set; }
     public string Comment { get; set; } = string.Empty;
+    public string? AdminReply { get; set; }
     public DateTime CreatedAt { get; set; }
+    public string ProductName { get; set; } = string.Empty;
 }
 
 public class ProductReviewEligibilityResponse
@@ -93,6 +96,7 @@ public class CreateProductRequest
     public decimal Price { get; set; }
     public Guid CategoryId { get; set; }
     public string Brand { get; set; } = "iLuminaty";
+    public List<string> ImageUrls { get; set; } = new();
     public Dictionary<string, string> Attributes { get; set; } = new();
     public int InitialStock { get; set; } // Số lượng nhập kho ban đầu
     public List<CreateProductVariantRequest> Variants { get; set; } = new();
@@ -105,6 +109,7 @@ public class UpdateProductRequest
     public decimal Price { get; set; }
     public Guid CategoryId { get; set; }
     public string Brand { get; set; } = "iLuminaty";
+    public List<string> ImageUrls { get; set; } = new();
     public Dictionary<string, string> Attributes { get; set; } = new();
     public int StockQuantity { get; set; }
 }

@@ -1,3 +1,4 @@
+import Swal from "sweetalert2";
 import React, { useEffect, useState } from 'react';
 import api from '../../api/axios';
 import {
@@ -40,20 +41,33 @@ function OrderRow({ order, onStatusUpdate }) {
       await api.put(`/orders/${order.id}/status`, { newStatus });
       onStatusUpdate(order.id, newStatus);
     } catch (err) {
-      alert('Lỗi cập nhật trạng thái: ' + (err.response?.data?.message || 'Thử lại'));
+      Swal.fire({
+        icon: "info",
+        text: 'Lỗi cập nhật trạng thái: ' + (err.response?.data?.message || 'Thử lại')
+      });
     } finally {
       setUpdating(false);
     }
   };
 
   const handleCancel = async () => {
-    if (!window.confirm('Hủy đơn hàng này?')) return;
+    if (!(await Swal.fire({
+      title: "X�c nh?n",
+      text: 'Hủy đơn hàng này?',
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "�?ng �",
+      cancelButtonText: "H?y"
+    })).isConfirmed) return;
     setUpdating(true);
     try {
       await api.put(`/orders/${order.id}/status`, { newStatus: 'Cancelled' });
       onStatusUpdate(order.id, 'Cancelled');
     } catch (err) {
-      alert('Lỗi hủy đơn: ' + (err.response?.data?.message || 'Thử lại'));
+      Swal.fire({
+        icon: "info",
+        text: 'Lỗi hủy đơn: ' + (err.response?.data?.message || 'Thử lại')
+      });
     } finally {
       setUpdating(false);
     }

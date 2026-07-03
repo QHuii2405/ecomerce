@@ -1,3 +1,4 @@
+import Swal from "sweetalert2";
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
 import { Link, useNavigate } from 'react-router-dom';
@@ -56,7 +57,10 @@ export default function Products() {
         e.preventDefault();
         e.stopPropagation();
         if (!token) {
-            alert("Vui lòng đăng nhập để sử dụng tính năng yêu thích!");
+            Swal.fire({
+                icon: "info",
+                text: "Vui lòng đăng nhập để sử dụng tính năng yêu thích!"
+            });
             navigate('/login');
             return;
         }
@@ -114,7 +118,10 @@ export default function Products() {
         e.preventDefault();
         e.stopPropagation();
         if (!token) {
-            alert("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
+            Swal.fire({
+                icon: "info",
+                text: "Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!"
+            });
             navigate('/login');
             return;
         }
@@ -122,8 +129,12 @@ export default function Products() {
         showToast(`Đã thêm "${product.name.slice(0, 20)}..." vào giỏ hàng!`);
     };
 
-    // Helper image
     const getProductImage = (product) => {
+        if (product.imageUrls && product.imageUrls.length > 0) {
+            const url = product.imageUrls[0];
+            return url.startsWith('http') ? url : `http://localhost:5092${url}`;
+        }
+        
         const name = product.name?.toLowerCase() || '';
         const category = product.category?.name?.toLowerCase() || '';
         if (name.includes('pro x1') || name.includes('laptop') || name.includes('macbook') || category.includes('laptop') || category.includes('máy tính')) {

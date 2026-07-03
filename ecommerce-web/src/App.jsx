@@ -1,13 +1,15 @@
+import Swal from "sweetalert2";
 import React, { useEffect, useState, useCallback } from 'react';
 import api from './api/axios';
 import { 
     ShoppingCart, Package, Tag, Database, Zap, ArrowRight, Star, 
     AlertCircle, ShoppingBag, Search, User, LogOut, Heart, 
     Phone, Mail, Share2, Globe, AtSign, Award, Truck, ShieldCheck, 
-    CheckCircle2, Menu, X, ArrowUpRight, ChevronRight, HelpCircle, Sparkles 
+    CheckCircle2, Menu, X, ArrowUpRight, ChevronRight, HelpCircle, Sparkles, Bell 
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { addToCart, getCartCount } from './api/cartStore';
+import { useNotification } from './contexts/NotificationContext';
 
 export default function App() {
     const navigate = useNavigate();
@@ -15,6 +17,10 @@ export default function App() {
     const [source, setSource] = useState(''); // Redis Cache or SQL Server Database
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // Banners state
+    const [banners, setBanners] = useState([]);
+    const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
 
     // Search and filter states
     const [searchTerm, setSearchTerm] = useState('');
@@ -32,6 +38,8 @@ export default function App() {
     const userRole = localStorage.getItem('userRole');
     const [cartCount, setCartCount] = useState(getCartCount);
     const [toast, setToast] = useState(null); // { message: string }
+    const { notifications, unreadCount, markAsRead } = useNotification() || { notifications: [], unreadCount: 0, markAsRead: () => {} };
+    const [notificationOpen, setNotificationOpen] = useState(false);
 
     const showToast = (message) => {
         setToast(message);
@@ -47,6 +55,7 @@ export default function App() {
 
     useEffect(() => {
         fetchProducts();
+        fetchBanners();
         
         const handleScroll = () => {
             if (window.scrollY > 50) {
@@ -77,6 +86,24 @@ export default function App() {
         };
     }, []);
 
+    useEffect(() => {
+        if (banners.length > 1) {
+            const interval = setInterval(() => {
+                setCurrentBannerIndex((prev) => (prev + 1) % banners.length);
+            }, 5000);
+            return () => clearInterval(interval);
+        }
+    }, [banners.length]);
+
+    const fetchBanners = async () => {
+        try {
+            const response = await api.get('/Cms/banners?onlyActive=true');
+            setBanners(response.data.data || []);
+        } catch (err) {
+            console.error("Lỗi lấy banners:", err);
+        }
+    };
+
     const fetchProducts = async () => {
         try {
             setLoading(true);
@@ -96,7 +123,10 @@ export default function App() {
         e.preventDefault();
         e.stopPropagation();
         if (!token) {
-            alert("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
+            Swal.fire({
+                icon: "info",
+                text: "Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!"
+            });
             navigate('/login');
             return;
         }
@@ -115,7 +145,10 @@ export default function App() {
     const handleContactSubmit = (e) => {
         e.preventDefault();
         if (!contactForm.name || !contactForm.email || !contactForm.message) {
-            alert("Vui lòng điền đầy đủ thông tin!");
+            Swal.fire({
+                icon: "info",
+                text: "Vui lòng điền đầy đủ thông tin!"
+            });
             return;
         }
         setContactSubmitted(true);
@@ -127,6 +160,11 @@ export default function App() {
 
     // Helper to assign correct beautiful image based on product name/category
     const getProductImage = (product) => {
+        if (product.imageUrls && product.imageUrls.length > 0) {
+            const url = product.imageUrls[0];
+            return url.startsWith('http') ? url : `http://localhost:5092${url}`;
+        }
+        
         const name = product.name?.toLowerCase() || '';
         const category = product.category?.name?.toLowerCase() || '';
         
@@ -224,18 +262,6 @@ export default function App() {
 
                     {/* Search & Actions */}
                     <div className="flex items-center gap-4 lg:gap-6">
-                        {/* Dynamic Caching Source Indicator */}
-                        {source && (
-                            <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary-container/20 px-3 py-1 text-xs font-semibold text-primary backdrop-blur-md">
-                                {source === 'Redis Cache' ? (
-                                    <Zap size={14} className="text-amber-500 fill-amber-500 animate-pulse" />
-                                ) : (
-                                    <Database size={14} className="text-primary" />
-                                )}
-                                <span className="text-[10px] tracking-wider uppercase">{source}</span>
-                            </div>
-                        )}
-
                         {/* Search bar inside header */}
                         <div className="relative hidden lg:block">
                             <input 
@@ -257,6 +283,48 @@ export default function App() {
                                 </span>
                             )}
                         </Link>
+                        
+                        {/* Notification Bell */}
+                        {token && (
+                            <div className="relative">
+                                <button 
+                                    onClick={() => {
+                                        setNotificationOpen(!notificationOpen);
+                                        if (!notificationOpen) markAsRead();
+                                    }}
+                                    className="relative p-1.5 text-on-surface-variant hover:text-primary transition-colors"
+                                >
+                                    <Bell size={20} />
+                                    {unreadCount > 0 && (
+                                        <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] min-w-[18px] h-[18px] flex items-center justify-center rounded-full font-bold px-1">
+                                            {unreadCount > 99 ? '99+' : unreadCount}
+                                        </span>
+                                    )}
+                                </button>
+                                {notificationOpen && (
+                                    <div className="absolute top-full right-0 mt-2 w-80 bg-surface border border-outline-variant/30 rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                                        <div className="p-3 border-b border-outline-variant/20 bg-surface-container-lowest">
+                                            <h4 className="font-bold text-xs text-on-surface">Thông báo hệ thống</h4>
+                                        </div>
+                                        <div className="max-h-80 overflow-y-auto">
+                                            {notifications.length === 0 ? (
+                                                <div className="p-6 text-center text-on-surface-variant text-xs">
+                                                    Không có thông báo mới.
+                                                </div>
+                                            ) : (
+                                                notifications.map((notif, idx) => (
+                                                    <div key={idx} className="p-4 border-b border-outline-variant/10 hover:bg-surface-container-lowest transition-colors">
+                                                        <h5 className="text-[13px] font-bold text-on-surface leading-tight mb-1">{notif.title}</h5>
+                                                        <p className="text-xs text-on-surface-variant">{notif.message}</p>
+                                                        <span className="text-[10px] text-outline block mt-2">{new Date(notif.date).toLocaleString('vi-VN')}</span>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {/* Session / Authentication UI */}
                         {token ? (
@@ -374,9 +442,9 @@ export default function App() {
                     <div className="absolute inset-0 z-0">
                         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-transparent z-10"></div>
                         <img 
-                            className="w-full h-full object-cover object-center transform scale-105 hover:scale-110 transition-transform duration-[10s] ease-out" 
-                            alt="Hardware technology background"
-                            src="https://lh3.googleusercontent.com/aida/AP1WRLtCzJC5IBSYexQRKC338Kux8lU5df0n6aC3Pl0yaVjleZj7T1OfDJLAiuHJJ3q-qIffvIo6bCL0p-lsUy9hjpFiz-CrHkZgiZD0c-TcCT7d4vuqeF0Rx336-ABqWjiL_oS3zBRXwUxDfNV87Xc45Tk98YTMNre3Tf78nvU26iewryMrdUpDVuDQvo_K5mCWlxJt4cem-6byl1Qq7XRrHSm6Cz9k5pXMNl4_IPI951CMDOnFoqhKxtq_muQ"
+                            className="w-full h-full object-cover object-center transform scale-105 hover:scale-110 transition-transform duration-[10s] ease-out transition-opacity duration-1000" 
+                            alt={banners[currentBannerIndex]?.title || "Hardware technology background"}
+                            src={banners.length > 0 ? (banners[currentBannerIndex].imageUrl.startsWith('http') ? banners[currentBannerIndex].imageUrl : `http://localhost:5092${banners[currentBannerIndex].imageUrl}`) : "https://lh3.googleusercontent.com/aida/AP1WRLtCzJC5IBSYexQRKC338Kux8lU5df0n6aC3Pl0yaVjleZj7T1OfDJLAiuHJJ3q-qIffvIo6bCL0p-lsUy9hjpFiz-CrHkZgiZD0c-TcCT7d4vuqeF0Rx336-ABqWjiL_oS3zBRXwUxDfNV87Xc45Tk98YTMNre3Tf78nvU26iewryMrdUpDVuDQvo_K5mCWlxJt4cem-6byl1Qq7XRrHSm6Cz9k5pXMNl4_IPI951CMDOnFoqhKxtq_muQ"}
                         />
                     </div>
                     <div className="relative z-20 max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop w-full py-12">
@@ -386,15 +454,18 @@ export default function App() {
                                 <span>ĐỒNG HÀNH KHỞI TẠO TƯƠNG LAI</span>
                             </div>
                             <h1 className="text-4xl md:text-6xl font-bold leading-tight tracking-tight text-on-surface">
-                                Khám Phá Công Nghệ <br/>
-                                <span className="text-primary bg-gradient-to-r from-primary to-primary-container bg-clip-text text-transparent">Kỷ Nguyên Mới</span>
+                                {banners.length > 0 ? banners[currentBannerIndex].title : (
+                                    <>Khám Phá Công Nghệ <br/><span className="text-primary bg-gradient-to-r from-primary to-primary-container bg-clip-text text-transparent">Kỷ Nguyên Mới</span></>
+                                )}
                             </h1>
                             <p className="text-base md:text-lg text-on-surface-variant max-w-lg leading-relaxed">
-                                Nâng tầm cuộc sống số của bạn với các thiết bị phần cứng được chế tác tinh xảo. Từ dàn máy gaming đỉnh cao đến hệ sinh thái kết nối di động liền mạch, iLuminaty Shop đem tương lai đến hôm nay.
+                                {banners.length > 0 && banners[currentBannerIndex].subtitle ? banners[currentBannerIndex].subtitle : (
+                                    "Nâng tầm cuộc sống số của bạn với các thiết bị phần cứng được chế tác tinh xảo. Từ dàn máy gaming đỉnh cao đến hệ sinh thái kết nối di động liền mạch, iLuminaty Shop đem tương lai đến hôm nay."
+                                )}
                             </p>
                             <div className="flex flex-wrap gap-4 pt-4">
                                 <a 
-                                    href="#shop" 
+                                    href={banners.length > 0 && banners[currentBannerIndex].targetUrl ? banners[currentBannerIndex].targetUrl : "#shop"} 
                                     className="bg-primary text-white px-8 py-4 rounded-xl font-semibold text-sm hover:bg-primary-container transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 flex items-center gap-2 group"
                                 >
                                     Mua Sắm Ngay

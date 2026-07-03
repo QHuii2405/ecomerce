@@ -5,7 +5,7 @@ namespace Domain.Entities;
 public class Order : BaseEntity
 {
     public Guid UserId { get; set; }
-    public string Status { get; set; } = "Pending"; // Pending, Confirmed, Shipping, Delivered, Cancelled
+    public string Status { get; set; } = "Pending"; // Pending, Confirmed, Shipping, Delivered, Cancelled, ReturnRequested, Refunded
     public decimal TotalAmount { get; set; }
     public decimal DiscountAmount { get; set; } = 0;
     public Guid? VoucherId { get; set; }
