@@ -57,15 +57,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Đăng nhập vào Docker Hub (Có lọc khoảng trắng)
+      - name: Debug lỗi cấu hình Secrets
         env:
           DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
         run: |
-          # Dùng script này để cắt bỏ hoàn toàn mọi khoảng trắng, dấu cách, dấu Enter thừa
-          CLEAN_USER=$(echo -n "$DOCKER_USER" | tr -d '\n\r ')
-          CLEAN_PASS=$(echo -n "$DOCKER_PASS" | tr -d '\n\r ')
-          echo -n "$CLEAN_PASS" | docker login -u "$CLEAN_USER" --password-stdin
+          echo "Độ dài Username của bạn là: ${#DOCKER_USER} ký tự."
+          echo "Độ dài Mật khẩu của bạn là: ${#DOCKER_PASS} ký tự."
+          
+          if [ "${#DOCKER_USER}" -eq 0 ]; then
+            echo "LỖI: Username bị rỗng! GitHub không đọc được biến DOCKER_USERNAME."
+            exit 1
+          fi
+          
+          if [ "${#DOCKER_PASS}" -eq 0 ]; then
+            echo "LỖI: Mật khẩu bị rỗng! GitHub không đọc được biến DOCKER_PASSWORD."
+            exit 1
+          fi
+
+      - name: Đăng nhập vào Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build & Push Backend Image
         uses: docker/build-push-action@v5
