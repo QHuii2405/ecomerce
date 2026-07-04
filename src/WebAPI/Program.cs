@@ -103,7 +103,7 @@ builder.Services.AddAuthorization(); // Kích hoạt phân quyền
 // Cấu hình Redis Cache để lưu trữ dữ liệu tạm thời, như thông tin phiên đăng nhập hoặc dữ liệu tạm thời khác [cite: 88]
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = "localhost:6379";
+    options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
     options.InstanceName = "Ecommerce_";
 });
 
@@ -112,7 +112,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:5174", "http://localhost:5175") // Hỗ trợ nhiều port phòng khi 5173 bị kẹt
+        policy.WithOrigins("http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:3000") // Hỗ trợ nhiều port phòng khi 5173 bị kẹt và port 3000 của Docker
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials(); // Yêu cầu cho SignalR WebSockets
@@ -120,6 +120,13 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Tự động áp dụng Migration để tạo Database nếu chưa có (dùng cho Docker)
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
+}
 
 // 4. Cấu hình Pipeline xử lý Request
 app.UseCors("AllowReactApp");

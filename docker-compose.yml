@@ -8,8 +8,46 @@ services:
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=YourStrong@Password123
+    networks:
+      - ecommerce-network
+
   redis:
-    image: redis:latest
+    image: redis:alpine
     container_name: EcommerceRedis
     ports:
       - "6379:6379"
+    networks:
+      - ecommerce-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: EcommerceAPI
+    ports:
+      - "5092:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=EcommerceDB;User Id=sa;Password=YourStrong@Password123;TrustServerCertificate=True;
+      - ConnectionStrings__Redis=redis:6379
+    depends_on:
+      - sqlserver
+      - redis
+    networks:
+      - ecommerce-network
+
+  frontend:
+    build:
+      context: ./ecommerce-web
+      dockerfile: Dockerfile
+    container_name: EcommerceWeb
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - ecommerce-network
+
+networks:
+  ecommerce-network:
+    driver: bridge
