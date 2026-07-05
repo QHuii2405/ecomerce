@@ -1,0 +1,57 @@
+version: '3.8'
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: EcommerceDB_Prod
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - ecommerce-network
+
+  redis:
+    image: redis:alpine
+    container_name: EcommerceRedis_Prod
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ecommerce-network
+
+  backend:
+    image: ${DOCKER_USERNAME}/ecommerce-backend:latest
+    container_name: EcommerceAPI_Prod
+    ports:
+      - "5092:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=EcommerceDB;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;
+      - ConnectionStrings__Redis=redis:6379
+    depends_on:
+      - sqlserver
+      - redis
+    networks:
+      - ecommerce-network
+
+  frontend:
+    image: ${DOCKER_USERNAME}/ecommerce-frontend:latest
+    container_name: EcommerceWeb_Prod
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - ecommerce-network
+
+volumes:
+  sqlserver_data:
+  redis_data:
+
+networks:
+  ecommerce-network:
+    driver: bridge
