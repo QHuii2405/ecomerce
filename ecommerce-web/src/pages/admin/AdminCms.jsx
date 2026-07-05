@@ -126,7 +126,7 @@ export default function AdminCms() {
                     ) : (
                         banners.map(banner => (
                             <div key={banner.id} className="border border-outline-variant/30 rounded-xl overflow-hidden relative group">
-                                <img src={banner.imageUrl.startsWith('http') ? banner.imageUrl : `http://localhost:5092${banner.imageUrl}`} alt={banner.title} className="w-full h-32 object-cover" />
+                                <img src={banner.imageUrl.startsWith('http') ? banner.imageUrl : `${import.meta.env.VITE_API_BASE_URL}${banner.imageUrl}`} alt={banner.title} className="w-full h-32 object-cover" />
                                 <div className="p-3 bg-surface-container-lowest">
                                     <h3 className="font-bold text-sm truncate">{banner.title}</h3>
                                     {banner.subtitle && <p className="text-xs text-on-surface-variant truncate">{banner.subtitle}</p>}

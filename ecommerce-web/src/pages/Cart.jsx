@@ -212,7 +212,7 @@ export default function Cart() {
   const getProductImage = (item) => {
     if (item?.imageUrls && item.imageUrls.length > 0) {
       const url = item.imageUrls[0];
-      return url.startsWith('http') ? url : `http://localhost:5092${url}`;
+      return url.startsWith('http') ? url : `${import.meta.env.VITE_API_BASE_URL}${url}`;
     }
     const name = item?.name || '';
     const n = name.toLowerCase();
