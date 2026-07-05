@@ -1,18 +1,5 @@
 version: '3.8'
 services:
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: EcommerceDB_Prod
-    ports:
-      - "1433:1433"
-    environment:
-      - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=${DB_PASSWORD}
-    volumes:
-      - sqlserver_data:/var/opt/mssql
-    networks:
-      - ecommerce-network
-
   redis:
     image: redis:alpine
     container_name: EcommerceRedis_Prod
@@ -30,10 +17,9 @@ services:
       - "5092:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=EcommerceDB;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;
+      - ConnectionStrings__DefaultConnection=Server=${DB_HOST};Database=EcommerceDB;User Id=${DB_USER};Password=${DB_PASSWORD};TrustServerCertificate=True;
       - ConnectionStrings__Redis=redis:6379
     depends_on:
-      - sqlserver
       - redis
     networks:
       - ecommerce-network
@@ -49,7 +35,6 @@ services:
       - ecommerce-network
 
 volumes:
-  sqlserver_data:
   redis_data:
 
 networks:
