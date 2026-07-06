@@ -19,6 +19,10 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__DefaultConnection=Server=${DB_HOST};Database=EcommerceDB;User Id=${DB_USER};Password=${DB_PASSWORD};TrustServerCertificate=True;
       - ConnectionStrings__Redis=redis:6379
+      - JwtSettings__Secret=${JWT_SECRET}
+      - MoMo__AccessKey=${MOMO_ACCESS_KEY}
+      - MoMo__SecretKey=${MOMO_SECRET_KEY}
+      - EmailSettings__Password=${EMAIL_PASSWORD}
     depends_on:
       - redis
     networks:

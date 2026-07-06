@@ -29,7 +29,7 @@ import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <GoogleOAuthProvider clientId="868316103534-vghj1eq84lqtma1lvknghmc3ifgb73cg.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <NotificationProvider>
         <BrowserRouter>
           <Routes>
