@@ -549,15 +549,15 @@ export default function App() {
                             {/* Laptops */}
                             <div 
                                 onClick={() => toggleCategory('Laptops')}
-                                className={`md:col-span-8 group relative rounded-2xl overflow-hidden cursor-pointer hover-lift border-2 transition-all ${selectedCategory === 'Laptops' ? 'border-primary shadow-lg scale-[0.99]' : 'border-transparent'}`}
+                                className={`md:col-span-8 group relative rounded-3xl overflow-hidden cursor-pointer hover-lift border-2 transition-all ${selectedCategory === 'Laptops' ? 'border-primary shadow-lg scale-[0.99]' : 'border-transparent'}`}
                             >
                                 <div 
-                                    className="w-full h-96 md:h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500" 
-                                    style={{ backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuB6hSI0MjXxtJkkJcOwHAqSTSqQLFLqMl6oWZ97hTY39ucc9vyqUz8vOf8fdRGqAoRq3gRJPSH-vB4PlPlxNVoK0gYuq-3heP-BNLFYLjulBRMEoUtD8a9E9Wv5j0bkQsVoAy3E_JpAS1DM_RSZg81coefXslGzGIxXIsVddAvlNKoF3PnWzhzc2poccXZRQcaVGDkWXRSl70SdEkJUUbppjD4l4UEM5W7eZvXX9ZlpZ14uCCe1A7QZ')` }}
+                                    className="w-full h-96 md:h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-700 ease-out" 
+                                    style={{ backgroundImage: `url('/assets/home-laptops.png')` }}
                                 ></div>
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-8">
-                                    <h3 className="text-white font-bold text-xl md:text-2xl">Laptops & Máy Tính</h3>
-                                    <p className="text-white/80 text-sm mt-1">Sức mạnh công nghệ dành cho sáng tạo và làm việc chuyên nghiệp.</p>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 flex flex-col justify-end p-8">
+                                    <h3 className="text-white font-extrabold text-2xl md:text-3xl drop-shadow-lg">Laptops & Máy Tính</h3>
+                                    <p className="text-white/90 text-sm mt-2 font-medium drop-shadow-md">Sức mạnh công nghệ dành cho sáng tạo và làm việc chuyên nghiệp.</p>
                                     <div className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-primary bg-white/10 w-fit px-3 py-1 rounded-full backdrop-blur-md">
                                         Xem Chi Tiết <ArrowUpRight size={14} />
                                     </div>
@@ -567,15 +567,15 @@ export default function App() {
                             {/* Gaming */}
                             <div 
                                 onClick={() => toggleCategory('Gaming')}
-                                className={`md:col-span-4 md:row-span-2 group relative rounded-2xl overflow-hidden cursor-pointer hover-lift border-2 transition-all ${selectedCategory === 'Gaming' ? 'border-primary shadow-lg scale-[0.99]' : 'border-transparent'}`}
+                                className={`md:col-span-4 md:row-span-2 group relative rounded-3xl overflow-hidden cursor-pointer hover-lift border-2 transition-all ${selectedCategory === 'Gaming' ? 'border-primary shadow-lg scale-[0.99]' : 'border-transparent'}`}
                             >
                                 <div 
-                                    className="w-full h-96 md:h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500" 
-                                    style={{ backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuB8FbDXR4wA4l-wWYxA_LFZLmdx6e-oqdjNC81ZRIAZv3DcrdkWenSf7rePViHM0ugI50_3ggw99t1ra_pYmW74svifW1jB3CfXXYel_me-_LCZphDm4zFbjCE3LOnROfJyArAeXqA2Exd-KDjsUd8urn6LnDU82WCjDC4o5qYL9v2eAFGc-HMqBKRdNf1wv6m_Hz7I_GKzB61oLfH6sbaxr9wLAi73KSkfGrSnJ8ScAojCMKdmTGwm')` }}
+                                    className="w-full h-96 md:h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-700 ease-out" 
+                                    style={{ backgroundImage: `url('/assets/home-gaming.png')` }}
                                 ></div>
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-8">
-                                    <h3 className="text-white font-bold text-xl md:text-2xl">Thiết Bị Gaming</h3>
-                                    <p className="text-white/80 text-sm mt-1">Làm chủ hoàn toàn không gian thực tế ảo.</p>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 flex flex-col justify-end p-8">
+                                    <h3 className="text-white font-extrabold text-2xl md:text-3xl drop-shadow-lg">Thiết Bị Gaming</h3>
+                                    <p className="text-white/90 text-sm mt-2 font-medium drop-shadow-md">Làm chủ hoàn toàn không gian thực tế ảo.</p>
                                     <div className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-primary bg-white/10 w-fit px-3 py-1 rounded-full backdrop-blur-md">
                                         Xem Chi Tiết <ArrowUpRight size={14} />
                                     </div>
@@ -585,15 +585,15 @@ export default function App() {
                             {/* Audio */}
                             <div 
                                 onClick={() => toggleCategory('Audio')}
-                                className={`md:col-span-4 group relative rounded-2xl overflow-hidden cursor-pointer hover-lift border-2 transition-all ${selectedCategory === 'Audio' ? 'border-primary shadow-lg scale-[0.99]' : 'border-transparent'}`}
+                                className={`md:col-span-4 group relative rounded-3xl overflow-hidden cursor-pointer hover-lift border-2 transition-all ${selectedCategory === 'Audio' ? 'border-primary shadow-lg scale-[0.99]' : 'border-transparent'}`}
                             >
                                 <div 
-                                    className="w-full h-64 md:h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500" 
-                                    style={{ backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXu2tSrDnNvFUgKSReQL72nuFly-Eeuh2wXtP1ljrG7Zjy1sg3nDrxaCUNWj7ZwkcEVTjqCME1D6bJ_m9gTos1XDdWOTq4r-iyYs4lMAKaHjvKp0YrAyjpi4Vy1w3S_V1TusuL87vcV_aUi4RGzFwCemMF5eQAsAS7__lwYO9m18KGer0HeBJXJzWB5k0gGKSv5TE66m5w3aYM0y_0PHECHIF7eK5Tzx3Y32-l1_ygOe5tkKH8MbrtrW')` }}
+                                    className="w-full h-64 md:h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-700 ease-out" 
+                                    style={{ backgroundImage: `url('/assets/home-audio.png')` }}
                                 ></div>
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-8">
-                                    <h3 className="text-white font-bold text-xl">Âm Thanh Premium</h3>
-                                    <p className="text-white/80 text-xs mt-1">Chất lượng âm thanh hoàn mỹ không tạp âm.</p>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 flex flex-col justify-end p-8">
+                                    <h3 className="text-white font-extrabold text-2xl drop-shadow-lg">Âm Thanh Premium</h3>
+                                    <p className="text-white/90 text-sm mt-2 font-medium drop-shadow-md">Chất lượng âm thanh hoàn mỹ không tạp âm.</p>
                                     <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-primary bg-white/10 w-fit px-3 py-1 rounded-full backdrop-blur-md">
                                         Xem Chi Tiết <ArrowUpRight size={14} />
                                     </div>
@@ -603,15 +603,15 @@ export default function App() {
                             {/* Smartphones */}
                             <div 
                                 onClick={() => toggleCategory('Smartphones')}
-                                className={`md:col-span-4 group relative rounded-2xl overflow-hidden cursor-pointer hover-lift border-2 transition-all ${selectedCategory === 'Smartphones' ? 'border-primary shadow-lg scale-[0.99]' : 'border-transparent'}`}
+                                className={`md:col-span-4 group relative rounded-3xl overflow-hidden cursor-pointer hover-lift border-2 transition-all ${selectedCategory === 'Smartphones' ? 'border-primary shadow-lg scale-[0.99]' : 'border-transparent'}`}
                             >
                                 <div 
-                                    className="w-full h-64 md:h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500" 
-                                    style={{ backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuAltOeyhWUN8d_OI3RZgPhmFTnEFiE8btibjVA1UyeS4BMmMyjSKaTmgBimNagFrcF5ixaI_tKAShIux-GWN1Ed-N4cXrCROBioCaBreSt4h4NtC8LD-0H3MX6jv_fs4XT3pt7d0fecPOmOrn9wrTrKkLcAH0eYV75rcouQVMTlc39VoiWaFpa2STxaIe2OkNzeota4rS1mkkwmLFdG16EQo8bXdMVcpc2tss9oN1UsRXklpzD_rStA')` }}
+                                    className="w-full h-64 md:h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-700 ease-out" 
+                                    style={{ backgroundImage: `url('/assets/home-smartphones.png')` }}
                                 ></div>
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-8">
-                                    <h3 className="text-white font-bold text-xl">Smartphones</h3>
-                                    <p className="text-white/80 text-xs mt-1">Kết nối không giới hạn mọi lúc mọi nơi.</p>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 flex flex-col justify-end p-8">
+                                    <h3 className="text-white font-extrabold text-2xl drop-shadow-lg">Smartphones</h3>
+                                    <p className="text-white/90 text-sm mt-2 font-medium drop-shadow-md">Kết nối không giới hạn mọi lúc mọi nơi.</p>
                                     <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-primary bg-white/10 w-fit px-3 py-1 rounded-full backdrop-blur-md">
                                         Xem Chi Tiết <ArrowUpRight size={14} />
                                     </div>
