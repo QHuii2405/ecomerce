@@ -85,8 +85,6 @@ jobs:
           file: ./ecommerce-web/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/ecommerce-frontend:latest
-          build-args: |
-            VITE_API_BASE_URL=""
 
   # --- JOB 4: CD - Tự động triển khai lên AWS EC2 ---
   deploy-to-aws:
