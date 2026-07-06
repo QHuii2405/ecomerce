@@ -159,7 +159,7 @@ public class ApplicationDbContext : DbContext
                 Id = adminId,
                 Email = "admin@ecommerce.com",
                 FullName = "System Administrator",
-                PasswordHash = "$2a$11$y2CddBh0H5CK9EmBsbo1EOj8pN26ACgU/Eme8ITQEqi3syLHxEFRG",
+                PasswordHash = "$2b$11$kZ/0UcwxKA/eXzbvAnhS9OaGA.l5bQDSxd/lNqcNh5w3xhNeByN/a", // Admin@123
                 Role = "Admin",
                 PhoneNumber = "0901234567",
                 Address = "123 iLuminaty HQ, TP.HCM",
@@ -171,7 +171,7 @@ public class ApplicationDbContext : DbContext
                 Id = staffId,
                 Email = "staff@iluminaty.com",
                 FullName = "Store Operator",
-                PasswordHash = "$2a$11$9Nm0pHWKVQg31ja3mv6en.MwVYy2fEp11Tn0kqATnBJIehM2iL/Ky",
+                PasswordHash = "$2b$11$kZ/0UcwxKA/eXzbvAnhS9OaGA.l5bQDSxd/lNqcNh5w3xhNeByN/a", // Admin@123
                 Role = "Staff",
                 PhoneNumber = "0907654321",
                 CreatedAt = new DateTime(2026, 6, 24, 0, 0, 0, DateTimeKind.Utc),
