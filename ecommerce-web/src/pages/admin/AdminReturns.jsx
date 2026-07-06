@@ -52,7 +52,7 @@ export default function AdminReturns() {
     const handleViewImages = (imageUrls) => {
         if (!imageUrls || imageUrls.length === 0) return;
         const html = `<div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center;">
-            ${imageUrls.map(url => `<img src="http://localhost:5092${url}" style="max-width:100px; max-height:100px; object-fit:cover; border-radius:8px;" />`).join("")}
+            ${imageUrls.map(url => `<img src="${import.meta.env.VITE_API_BASE_URL}${url}" style="max-width:100px; max-height:100px; object-fit:cover; border-radius:8px;" />`).join("")}
         </div>`;
         Swal.fire({
             title: "Ảnh đính kèm",
