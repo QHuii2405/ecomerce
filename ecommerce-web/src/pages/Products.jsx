@@ -132,7 +132,7 @@ export default function Products() {
     const getProductImage = (product) => {
         if (product.imageUrls && product.imageUrls.length > 0) {
             const url = product.imageUrls[0];
-            return url.startsWith('http') ? url : `${import.meta.env.VITE_API_BASE_URL}${url}`;
+            return url.startsWith('http') ? url : `${(import.meta.env.VITE_API_BASE_URL || '')}${url}`;
         }
         
         const name = product.name?.toLowerCase() || '';

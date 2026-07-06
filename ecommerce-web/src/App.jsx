@@ -162,7 +162,7 @@ export default function App() {
     const getProductImage = (product) => {
         if (product.imageUrls && product.imageUrls.length > 0) {
             const url = product.imageUrls[0];
-            return url.startsWith('http') ? url : `${import.meta.env.VITE_API_BASE_URL}${url}`;
+            return url.startsWith('http') ? url : `${(import.meta.env.VITE_API_BASE_URL || '')}${url}`;
         }
         
         const name = product.name?.toLowerCase() || '';
@@ -444,7 +444,7 @@ export default function App() {
                         <img 
                             className="w-full h-full object-cover object-center transform scale-105 hover:scale-110 transition-transform duration-[10s] ease-out transition-opacity duration-1000" 
                             alt={banners[currentBannerIndex]?.title || "Hardware technology background"}
-                            src={banners.length > 0 ? (banners[currentBannerIndex].imageUrl.startsWith('http') ? banners[currentBannerIndex].imageUrl : `${import.meta.env.VITE_API_BASE_URL}${banners[currentBannerIndex].imageUrl}`) : "https://lh3.googleusercontent.com/aida/AP1WRLtCzJC5IBSYexQRKC338Kux8lU5df0n6aC3Pl0yaVjleZj7T1OfDJLAiuHJJ3q-qIffvIo6bCL0p-lsUy9hjpFiz-CrHkZgiZD0c-TcCT7d4vuqeF0Rx336-ABqWjiL_oS3zBRXwUxDfNV87Xc45Tk98YTMNre3Tf78nvU26iewryMrdUpDVuDQvo_K5mCWlxJt4cem-6byl1Qq7XRrHSm6Cz9k5pXMNl4_IPI951CMDOnFoqhKxtq_muQ"}
+                            src={banners.length > 0 ? (banners[currentBannerIndex].imageUrl.startsWith('http') ? banners[currentBannerIndex].imageUrl : `${(import.meta.env.VITE_API_BASE_URL || '')}${banners[currentBannerIndex].imageUrl}`) : "https://lh3.googleusercontent.com/aida/AP1WRLtCzJC5IBSYexQRKC338Kux8lU5df0n6aC3Pl0yaVjleZj7T1OfDJLAiuHJJ3q-qIffvIo6bCL0p-lsUy9hjpFiz-CrHkZgiZD0c-TcCT7d4vuqeF0Rx336-ABqWjiL_oS3zBRXwUxDfNV87Xc45Tk98YTMNre3Tf78nvU26iewryMrdUpDVuDQvo_K5mCWlxJt4cem-6byl1Qq7XRrHSm6Cz9k5pXMNl4_IPI951CMDOnFoqhKxtq_muQ"}
                         />
                     </div>
                     <div className="relative z-20 max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop w-full py-12">

@@ -13,7 +13,7 @@ export function NotificationProvider({ children }) {
         if (!token) return;
 
         const connection = new signalR.HubConnectionBuilder()
-            .withUrl(import.meta.env.VITE_API_BASE_URL + "/hubs/notifications", {
+            .withUrl((import.meta.env.VITE_API_BASE_URL || '') + "/hubs/notifications", {
                 accessTokenFactory: () => token,
                 withCredentials: true
             })

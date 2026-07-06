@@ -19,7 +19,7 @@ const PRODUCT_IMAGES = {
 
 function getProductImage(product) {
   if (product.imageUrls && product.imageUrls.length > 0) {
-    return product.imageUrls[0].startsWith('http') ? product.imageUrls[0] : `${import.meta.env.VITE_API_BASE_URL}${product.imageUrls[0]}`;
+    return product.imageUrls[0].startsWith('http') ? product.imageUrls[0] : `${(import.meta.env.VITE_API_BASE_URL || '')}${product.imageUrls[0]}`;
   }
   const name = (product.name || '').toLowerCase();
   const cat  = (product.category?.name || '').toLowerCase();
@@ -393,7 +393,7 @@ export default function ProductDetail() {
           <div className="space-y-4">
             <div className="aspect-square bg-surface-container-low rounded-3xl overflow-hidden border border-outline-variant/20 flex items-center justify-center relative group">
               <img
-                src={product.imageUrls && product.imageUrls.length > 0 ? `${import.meta.env.VITE_API_BASE_URL}${product.imageUrls[activeImageIndex]}` : imgSrc}
+                src={product.imageUrls && product.imageUrls.length > 0 ? `${(import.meta.env.VITE_API_BASE_URL || '')}${product.imageUrls[activeImageIndex]}` : imgSrc}
                 alt={product.name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 onError={e => { e.target.src = PRODUCT_IMAGES.laptop; }}
@@ -427,7 +427,7 @@ export default function ProductDetail() {
                       activeImageIndex === idx ? 'border-primary scale-105 ring-2 ring-primary/30' : 'border-outline-variant/30 opacity-70 hover:opacity-100 hover:border-primary/50'
                     }`}
                   >
-                    <img src={`${import.meta.env.VITE_API_BASE_URL}${url}`} alt="" className="w-full h-full object-cover" />
+                    <img src={`${(import.meta.env.VITE_API_BASE_URL || '')}${url}`} alt="" className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>

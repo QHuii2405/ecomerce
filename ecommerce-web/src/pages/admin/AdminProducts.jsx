@@ -163,7 +163,7 @@ export default function AdminProducts() {
                   <div className="col-span-5 flex items-center gap-3 min-w-0">
                     <div className="w-10 h-10 bg-surface-container-lowest rounded-xl flex items-center justify-center flex-shrink-0 border border-outline-variant/20 overflow-hidden">
                       {product.imageUrls && product.imageUrls.length > 0 ? (
-                        <img src={`${import.meta.env.VITE_API_BASE_URL}${product.imageUrls[0]}`} className="w-full h-full object-cover" alt="" />
+                        <img src={`${(import.meta.env.VITE_API_BASE_URL || '')}${product.imageUrls[0]}`} className="w-full h-full object-cover" alt="" />
                       ) : (
                         <Package size={16} className="text-outline" />
                       )}

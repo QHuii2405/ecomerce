@@ -297,7 +297,7 @@ export default function ProductModal({ open, onClose, onSuccess, categories, edi
                 <div className="flex flex-wrap items-center gap-4">
                   {form.imageUrls.map((url, idx) => (
                     <div key={idx} className="relative w-24 h-24 rounded-xl border border-outline-variant/30 overflow-hidden group">
-                      <img src={`${import.meta.env.VITE_API_BASE_URL}${url}`} alt={`Product ${idx}`} className="w-full h-full object-cover" />
+                      <img src={`${(import.meta.env.VITE_API_BASE_URL || '')}${url}`} alt={`Product ${idx}`} className="w-full h-full object-cover" />
                       <button 
                         type="button" 
                         className="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center text-white"

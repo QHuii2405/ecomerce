@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL + '/api',
+    baseURL: (import.meta.env.VITE_API_BASE_URL || '') + '/api',
 });
 
 // Tự động đính kèm Access Token vào Header mỗi khi gửi request
@@ -33,7 +33,7 @@ api.interceptors.response.use(
             if (accessToken && refreshToken) {
                 try {
                     // Gọi API refresh-token qua một instance axios độc lập để tránh lặp vô tận
-                    const response = await axios.post(import.meta.env.VITE_API_BASE_URL + '/api/auth/refresh-token', {
+                    const response = await axios.post((import.meta.env.VITE_API_BASE_URL || '') + '/api/auth/refresh-token', {
                         accessToken: accessToken,
                         refreshToken: refreshToken
                     });
