@@ -184,6 +184,7 @@ public class ApplicationDbContext : DbContext
         var catGamingId    = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c62");
         var catAudioId     = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c63");
         var catSmartId     = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c64");
+        var catAccessoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c65");
 
         var seedDate = new DateTime(2026, 6, 24, 0, 0, 0, DateTimeKind.Utc);
 
@@ -191,7 +192,8 @@ public class ApplicationDbContext : DbContext
             new Category { Id = catLaptopId, Name = "Laptops",     Description = "Laptops & Máy tính xách tay cao cấp", CreatedAt = seedDate, IsDeleted = false },
             new Category { Id = catGamingId, Name = "Gaming",      Description = "Gaming Gear & Phụ kiện Gaming",        CreatedAt = seedDate, IsDeleted = false },
             new Category { Id = catAudioId,  Name = "Audio",       Description = "Thiết bị Âm thanh Cao cấp",            CreatedAt = seedDate, IsDeleted = false },
-            new Category { Id = catSmartId,  Name = "Smartphones", Description = "Smartphone & Thiết bị Di động",        CreatedAt = seedDate, IsDeleted = false }
+            new Category { Id = catSmartId,  Name = "Smartphones", Description = "Smartphone & Thiết bị Di động",        CreatedAt = seedDate, IsDeleted = false },
+            new Category { Id = catAccessoryId, Name = "Accessories", Description = "Phụ kiện Điện thoại & Sạc",        CreatedAt = seedDate, IsDeleted = false }
         );
 
 
@@ -204,48 +206,70 @@ public class ApplicationDbContext : DbContext
         var p6Id = Guid.Parse("d0000000-0000-0000-0000-000000000006");
         var p7Id = Guid.Parse("d0000000-0000-0000-0000-000000000007");
         var p8Id = Guid.Parse("d0000000-0000-0000-0000-000000000008");
+        var p9Id = Guid.Parse("d0000000-0000-0000-0000-000000000009");
+        var p10Id = Guid.Parse("d0000000-0000-0000-0000-000000000010");
 
         var products = new List<Product>
         {
             new() { 
                 Id = p1Id, Name = "MacBook Pro 16 M3 Max", Brand = "Apple", 
                 Description = "Siêu phẩm laptop đồ họa cao cấp nhất từ Apple với chip M3 Max 16-core CPU, 40-core GPU. Màn hình Liquid Retina XDR 120Hz siêu sắc nét. Phù hợp cho dân thiết kế 3D, dựng phim chuyên nghiệp.", 
-                Price = 89990000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false 
+                Price = 89990000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false,
+                ImageUrls = new List<string> { "/image/latop/images (1).jpg", "/image/latop/images (2).jpg", "/image/latop/images (3).jpg" }
             },
             new() { 
                 Id = p2Id, Name = "Asus ROG Strix SCAR 18", Brand = "Asus", 
                 Description = "Quái thú gaming đích thực với cấu hình khủng Intel Core i9-14900HX, RTX 4090 16GB. Màn hình 18 inch ROG Nebula HDR 240Hz. Hệ thống tản nhiệt thông minh Tri-Fan.", 
-                Price = 95000000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false 
+                Price = 95000000, CategoryId = catLaptopId, CreatedAt = seedDate, IsDeleted = false,
+                ImageUrls = new List<string> { "/image/latop/images (4).jpg", "/image/latop/images (5).jpg", "/image/latop/images (6).jpg" }
             },
             new() { 
                 Id = p3Id, Name = "iPhone 15 Pro Max", Brand = "Apple", 
                 Description = "Điện thoại flagship cao cấp với khung Titanium siêu nhẹ, siêu bền. Chip A17 Pro mạnh mẽ cho trải nghiệm gaming mượt mà, hệ thống camera telephoto 5x độc quyền.", 
-                Price = 29990000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false 
+                Price = 29990000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false,
+                ImageUrls = new List<string> { "/image/phone/images (1).jpg", "/image/phone/images (2).jpg", "/image/phone/images (3).jpg" }
             },
             new() { 
                 Id = p4Id, Name = "Samsung Galaxy S24 Ultra", Brand = "Samsung", 
                 Description = "Điện thoại AI đầu tiên thế giới với tính năng Galaxy AI đột phá. Bút S-Pen tích hợp, khung viền Titanium, camera 200MP siêu zoom 100x cực nét.", 
-                Price = 32490000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false 
+                Price = 32490000, CategoryId = catSmartId, CreatedAt = seedDate, IsDeleted = false,
+                ImageUrls = new List<string> { "/image/phone/images (4).jpg", "/image/phone/images (5).jpg", "/image/phone/images (6).jpg" }
             },
             new() {
-                Id = p5Id, Name = "Logitech G Pro X Superlight 2", Brand = "Logitech",
-                Description = "Chuột gaming siêu nhẹ chỉ 60g, trang bị switch lai quang học-cơ học LIGHTFORCE và cảm biến HERO 2 cao cấp. Dành riêng cho tuyển thủ eSports.",
-                Price = 3790000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false
+                Id = p5Id, Name = "Logitech G915 TKL Wireless", Brand = "Logitech",
+                Description = "Bàn phím cơ không dây siêu mỏng, trang bị switch GL Low Profile cho tốc độ phản hồi cực nhanh. Hệ thống LED RGB LIGHTSYNC rực rỡ và thời lượng pin cực khủng.",
+                Price = 3790000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false,
+                ImageUrls = new List<string> { "/image/keyboard/images (1).jpg", "/image/keyboard/images (2).jpg" }
             },
             new() {
                 Id = p6Id, Name = "Razer BlackWidow V4 Pro", Brand = "Razer",
                 Description = "Bàn phím cơ full-size với hệ thống LED RGB Chroma rực rỡ dưới viền, trang bị Macro keys và núm xoay Command Dial đa năng.",
-                Price = 5990000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false
+                Price = 5990000, CategoryId = catGamingId, CreatedAt = seedDate, IsDeleted = false,
+                ImageUrls = new List<string> { "/image/keyboard/images (3).jpg", "/image/keyboard/images (4).jpg" }
             },
             new() {
-                Id = p7Id, Name = "Sony WH-1000XM5", Brand = "Sony",
-                Description = "Tai nghe Over-ear chống ồn chủ động (ANC) tốt nhất thế giới. Tích hợp 8 micro, màng loa 30mm tinh chỉnh âm thanh High-Resolution Audio.",
-                Price = 7490000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false
+                Id = p7Id, Name = "Sony SRS-XV800 Wireless", Brand = "Sony",
+                Description = "Loa Bluetooth không dây công suất lớn với âm thanh 360 độ cực đỉnh. Tích hợp đèn LED đa sắc và cổng cắm micro hát karaoke chuyên nghiệp.",
+                Price = 14490000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false,
+                ImageUrls = new List<string> { "/image/speaker/images (1).jpg", "/image/speaker/images (2).jpg" }
             },
             new() {
-                Id = p8Id, Name = "AirPods Pro 2 (USB-C)", Brand = "Apple",
-                Description = "Tai nghe In-ear True Wireless chống ồn đỉnh cao. Chip H2 xử lý âm thanh trong trẻo, chế độ Xuyên âm thông minh, cổng sạc Type-C thế hệ mới.",
-                Price = 6190000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false
+                Id = p8Id, Name = "JBL Charge 5", Brand = "JBL",
+                Description = "Loa di động chống nước chuẩn IP67 với âm thanh Original Pro Sound cực mạnh. Thời lượng pin 20 tiếng, tích hợp sạc dự phòng vô cùng tiện lợi.",
+                Price = 3490000, CategoryId = catAudioId, CreatedAt = seedDate, IsDeleted = false,
+                ImageUrls = new List<string> { "/image/speaker/images (3).jpg", "/image/speaker/images (4).jpg" }
+            },
+            new() {
+                Id = p9Id, Name = "Anker 735 Charger (GaNPrime 65W)", Brand = "Anker",
+                Description = "Củ sạc siêu nhanh 65W với công nghệ GaN thế hệ mới. Trang bị 2 cổng USB-C và 1 cổng USB-A, thiết kế siêu nhỏ gọn và an toàn tuyệt đối.",
+                Price = 1290000, CategoryId = catAccessoryId, CreatedAt = seedDate, IsDeleted = false,
+                ImageUrls = new List<string> { "/image/charger/images (2).jpg", "/image/charger/images (3).jpg" }
+            },
+            new() {
+                Id = p10Id, Name = "Spigen Tough Armor Case iPhone 15", Brand = "Spigen",
+                Description = "Ốp lưng siêu chống sốc với công nghệ Air Cushion độc quyền. Thiết kế 2 lớp bảo vệ cực tốt kèm chân chống tiện lợi cho việc xem video.",
+                Price = 850000, CategoryId = catAccessoryId, CreatedAt = seedDate, IsDeleted = false,
+                ImageUrls = new List<string> { "/image/phone case/images (1).jpg", "/image/phone case/images (2).jpg" }
             }
         };
 
@@ -261,7 +285,9 @@ public class ApplicationDbContext : DbContext
             new() { Id = Guid.Parse("e0000000-0000-0000-0000-000000000005"), ProductId = p5Id, StockQuantity = 100, ReservedQuantity = 0, CreatedAt = seedDate, IsDeleted = false },
             new() { Id = Guid.Parse("e0000000-0000-0000-0000-000000000006"), ProductId = p6Id, StockQuantity = 30, ReservedQuantity = 0, CreatedAt = seedDate, IsDeleted = false },
             new() { Id = Guid.Parse("e0000000-0000-0000-0000-000000000007"), ProductId = p7Id, StockQuantity = 40, ReservedQuantity = 0, CreatedAt = seedDate, IsDeleted = false },
-            new() { Id = Guid.Parse("e0000000-0000-0000-0000-000000000008"), ProductId = p8Id, StockQuantity = 80, ReservedQuantity = 0, CreatedAt = seedDate, IsDeleted = false }
+            new() { Id = Guid.Parse("e0000000-0000-0000-0000-000000000008"), ProductId = p8Id, StockQuantity = 80, ReservedQuantity = 0, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("e0000000-0000-0000-0000-000000000009"), ProductId = p9Id, StockQuantity = 200, ReservedQuantity = 0, CreatedAt = seedDate, IsDeleted = false },
+            new() { Id = Guid.Parse("e0000000-0000-0000-0000-000000000010"), ProductId = p10Id, StockQuantity = 150, ReservedQuantity = 0, CreatedAt = seedDate, IsDeleted = false }
         };
         modelBuilder.Entity<Inventory>().HasData(inventories);
 
@@ -272,6 +298,11 @@ public class ApplicationDbContext : DbContext
         var v4Id = Guid.Parse("a0000000-0000-0000-0000-000000000004");
         var v5Id = Guid.Parse("a0000000-0000-0000-0000-000000000005");
         var v6Id = Guid.Parse("a0000000-0000-0000-0000-000000000006");
+        var v7Id = Guid.Parse("a0000000-0000-0000-0000-000000000007");
+        var v8Id = Guid.Parse("a0000000-0000-0000-0000-000000000008");
+        var v9Id = Guid.Parse("a0000000-0000-0000-0000-000000000009");
+        var v10Id = Guid.Parse("a0000000-0000-0000-0000-000000000010");
+        var v11Id = Guid.Parse("a0000000-0000-0000-0000-000000000011");
 
         var variants = new List<ProductVariant>
         {
@@ -280,7 +311,12 @@ public class ApplicationDbContext : DbContext
             new() { Id = v3Id, ProductId = p2Id, Sku = "ASUS-SCAR18-4090", Name = "64GB RAM / 2TB SSD / RTX 4090", AttributesJson = "{\"ram\":\"64GB DDR5\",\"storage\":\"2TB SSD Gen4\",\"color\":\"Off Black\",\"cpu\":\"Intel Core i9-14900HX\",\"gpu\":\"NVIDIA RTX 4090 16GB\"}", Price = 95000000, StockQuantity = 3, ReservedQuantity = 0, IsActive = true, CreatedAt = seedDate },
             new() { Id = v4Id, ProductId = p3Id, Sku = "IP15PM-256-NAT", Name = "256GB / Natural Titanium", AttributesJson = "{\"storage\":\"256GB\",\"color\":\"Natural Titanium\",\"screen\":\"6.7 inch Super Retina XDR\"}", Price = 29990000, StockQuantity = 20, ReservedQuantity = 0, IsActive = true, CreatedAt = seedDate },
             new() { Id = v5Id, ProductId = p3Id, Sku = "IP15PM-512-WHT", Name = "512GB / White Titanium", AttributesJson = "{\"storage\":\"512GB\",\"color\":\"White Titanium\",\"screen\":\"6.7 inch Super Retina XDR\"}", Price = 34990000, StockQuantity = 15, ReservedQuantity = 0, IsActive = true, CreatedAt = seedDate },
-            new() { Id = v6Id, ProductId = p4Id, Sku = "S24U-512-BLK", Name = "12GB RAM / 512GB / Titanium Black", AttributesJson = "{\"ram\":\"12GB\",\"storage\":\"512GB\",\"color\":\"Titanium Black\",\"cpu\":\"Snapdragon 8 Gen 3 for Galaxy\"}", Price = 32490000, StockQuantity = 12, ReservedQuantity = 0, IsActive = true, CreatedAt = seedDate }
+            new() { Id = v6Id, ProductId = p4Id, Sku = "S24U-512-BLK", Name = "12GB RAM / 512GB / Titanium Black", AttributesJson = "{\"ram\":\"12GB\",\"storage\":\"512GB\",\"color\":\"Titanium Black\",\"cpu\":\"Snapdragon 8 Gen 3 for Galaxy\"}", Price = 32490000, StockQuantity = 12, ReservedQuantity = 0, IsActive = true, CreatedAt = seedDate },
+            new() { Id = v7Id, ProductId = p5Id, Sku = "LOGI-G915-TKL", Name = "GL Tactile / Black", AttributesJson = "{\"switch\":\"GL Tactile\",\"color\":\"Black\",\"connection\":\"Lightspeed Wireless\"}", Price = 3790000, StockQuantity = 30, ReservedQuantity = 0, IsActive = true, CreatedAt = seedDate },
+            new() { Id = v8Id, ProductId = p6Id, Sku = "RAZER-BW-V4", Name = "Green Switch / Black", AttributesJson = "{\"switch\":\"Razer Green\",\"color\":\"Black\",\"connection\":\"Wired\"}", Price = 5990000, StockQuantity = 25, ReservedQuantity = 0, IsActive = true, CreatedAt = seedDate },
+            new() { Id = v9Id, ProductId = p7Id, Sku = "SONY-XV800", Name = "Standard Edition", AttributesJson = "{\"color\":\"Black\",\"connection\":\"Bluetooth 5.2\"}", Price = 14490000, StockQuantity = 10, ReservedQuantity = 0, IsActive = true, CreatedAt = seedDate },
+            new() { Id = v10Id, ProductId = p8Id, Sku = "JBL-CHG5-BLK", Name = "Black", AttributesJson = "{\"color\":\"Black\",\"battery\":\"20 Hours\"}", Price = 3490000, StockQuantity = 50, ReservedQuantity = 0, IsActive = true, CreatedAt = seedDate },
+            new() { Id = v11Id, ProductId = p9Id, Sku = "ANKER-735-BLK", Name = "65W / Black", AttributesJson = "{\"color\":\"Black\",\"power\":\"65W\",\"ports\":\"2C 1A\"}", Price = 1290000, StockQuantity = 100, ReservedQuantity = 0, IsActive = true, CreatedAt = seedDate }
         };
 
         modelBuilder.Entity<ProductVariant>().HasData(variants);
