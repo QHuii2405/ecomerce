@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecommerce-redis
+  labels:
+    app: ecommerce-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ecommerce-redis
+  template:
+    metadata:
+      labels:
+        app: ecommerce-redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:alpine
+        ports:
+        - containerPort: 6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+spec:
+  selector:
+    app: ecommerce-redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379

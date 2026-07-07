@@ -78,6 +78,16 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/ecommerce-backend:latest
 
+      - name: DevSecOps - Quét lỗ hổng bảo mật Backend Image với Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ secrets.DOCKER_USERNAME }}/ecommerce-backend:latest'
+          format: 'table'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
       - name: Build & Push Frontend Image
         uses: docker/build-push-action@v5
         with:
@@ -88,6 +98,16 @@ jobs:
           build-args: |
             VITE_GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
 
+      - name: DevSecOps - Quét lỗ hổng bảo mật Frontend Image với Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ secrets.DOCKER_USERNAME }}/ecommerce-frontend:latest'
+          format: 'table'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
   # --- JOB 4: CD - Tự động triển khai lên AWS EC2 ---
   deploy-to-aws:
     needs: [push-docker-image]
@@ -97,13 +117,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         
-      - name: Copy docker-compose.prod.yml to Server
+      - name: Copy deployment files to Server
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "docker-compose.prod.yml"
+          source: "docker-compose.prod.yml,prometheus/,nginx/"
           target: "/home/ubuntu/ecommerce"
 
       - name: Deploy via SSH
