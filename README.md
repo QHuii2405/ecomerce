@@ -1,23 +1,48 @@
-# 🛒 Ecommerce Order & Inventory System (Clean Architecture)
+# Ecommerce Order & Inventory System
 
-Hệ thống Backend quản lý đơn hàng và kho hàng được xây dựng bằng **.NET 10**, tập trung vào xử lý giao dịch (Transaction) và tối ưu hiệu năng.
+This repository contains the backend and frontend services for the E-commerce platform. The system is designed to handle order processing and inventory management, built with .NET 10 and React.
 
-## ✨ Tính năng chính
-- **Clean Architecture**: Phân tách rõ ràng các tầng Domain, Application, Infrastructure và WebAPI.
-- **Inventory Management**: Cơ chế **Reserve Stock** (giữ chỗ kho) khi đặt hàng để tránh lỗi overselling.
-- **Security**: Xác thực JWT (Access & Refresh Token), mã hóa mật khẩu BCrypt.
-- **Performance**: Tích hợp **Redis Cache** giúp tăng tốc độ truy vấn sản phẩm gấp 10 lần.
-- **Automation**: **Background Service** tự động quét và hủy đơn hàng quá hạn thanh toán sau 2 giờ.
+## Architecture & Tech Stack
 
-## 🛠 Công nghệ sử dụng
-- **Backend**: .NET 10, Entity Framework Core.
-- **Database**: SQL Server (Docker).
-- **Caching**: Redis (Docker).
-- **Security**: JWT Bearer, Authentication/Authorization.
-- **Tools**: Swagger UI, EF Migrations.
+- **Backend:** .NET 10, ASP.NET Core Web API, Entity Framework Core
+- **Frontend:** React
+- **Database:** Microsoft SQL Server
+- **Caching:** Redis
+- **Infrastructure:** Docker, Kubernetes, Terraform, GitHub Actions
 
-## 🚀 Hướng dẫn chạy dự án
-1. Khởi động Docker: `docker-compose up -d`
-2. Cập nhật Database: `dotnet ef database update --project src/Infrastructure --startup-project src/WebAPI`
-3. Chạy ứng dụng: `dotnet run --project src/WebAPI`
-4. Truy cập Swagger: `http://localhost:5092/swagger`
+## Key Features
+
+- Structured using Clean Architecture principles.
+- Inventory reservation mechanism to prevent overselling during checkout.
+- JWT-based authentication and authorization.
+- Redis caching for product query optimization.
+- Background services for automated tasks (e.g., canceling unpaid orders).
+
+## Prerequisites
+
+- Docker and Docker Compose
+- .NET 10 SDK
+- Node.js 20+ (for frontend development)
+
+## Local Development Setup
+
+1. Start the required infrastructure (SQL Server and Redis):
+   ```bash
+   docker-compose up -d sqlserver redis
+   ```
+2. Apply database migrations:
+   ```bash
+   dotnet ef database update --project src/Infrastructure --startup-project src/WebAPI
+   ```
+3. Run the backend service:
+   ```bash
+   dotnet run --project src/WebAPI
+   ```
+4. The Swagger API documentation will be available at `http://localhost:5092/swagger`.
+
+## Deployment
+
+The repository includes CI/CD pipelines via GitHub Actions and infrastructure as code configurations.
+- **Docker Compose:** Use `docker-compose.prod.yml` for standard deployments.
+- **Kubernetes:** Manifests are located in the `k8s/` directory.
+- **Terraform:** Infrastructure provisioning scripts are located in `terraform/`.
