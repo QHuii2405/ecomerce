@@ -6,6 +6,8 @@ public class ProductResponse
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public decimal Price { get; set; }
+    public decimal? OldPrice { get; set; }
+    public bool IsNew { get; set; }
     public Guid CategoryId { get; set; }
     public string Brand { get; set; } = string.Empty;
     public List<string> ImageUrls { get; set; } = new();
@@ -94,6 +96,8 @@ public class CreateProductRequest
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public decimal Price { get; set; }
+    public decimal? OldPrice { get; set; }
+    public bool IsNew { get; set; } = false;
     public Guid CategoryId { get; set; }
     public string Brand { get; set; } = "iLuminaty";
     public List<string> ImageUrls { get; set; } = new();
@@ -107,6 +111,8 @@ public class UpdateProductRequest
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public decimal Price { get; set; }
+    public decimal? OldPrice { get; set; }
+    public bool IsNew { get; set; } = false;
     public Guid CategoryId { get; set; }
     public string Brand { get; set; } = "iLuminaty";
     public List<string> ImageUrls { get; set; } = new();

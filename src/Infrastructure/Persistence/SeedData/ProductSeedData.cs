@@ -23,7 +23,7 @@ public static class ProductSeedData
             Price = 20600000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c61"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = 24720000m,
             ImageUrls = new List<string> { "/image/latop/images (1).jpg", "/image/latop/images (10).jpg" }
         });
         
@@ -70,7 +70,7 @@ public static class ProductSeedData
             Price = 10500000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c61"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/latop/images (11).jpg", "/image/latop/images (12).jpg" }
         });
         
@@ -105,7 +105,7 @@ public static class ProductSeedData
             Price = 8000000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c61"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = true, OldPrice = null,
             ImageUrls = new List<string> { "/image/latop/images (13).jpg", "/image/latop/images (14).jpg" }
         });
         
@@ -152,7 +152,7 @@ public static class ProductSeedData
             Price = 2700000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c61"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/latop/images (15).jpg", "/image/latop/images (16).jpg" }
         });
         
@@ -187,7 +187,7 @@ public static class ProductSeedData
             Price = 11600000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c61"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = 3240000m,
             ImageUrls = new List<string> { "/image/latop/images (17).jpg", "/image/latop/images (2).jpg" }
         });
         
@@ -234,7 +234,7 @@ public static class ProductSeedData
             Price = 12500000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c61"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = true, OldPrice = null,
             ImageUrls = new List<string> { "/image/latop/images (3).jpg", "/image/latop/images (4).jpg" }
         });
         
@@ -269,7 +269,7 @@ public static class ProductSeedData
             Price = 1000000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c61"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/latop/images (5).jpg", "/image/latop/images (6).jpg" }
         });
         
@@ -316,7 +316,7 @@ public static class ProductSeedData
             Price = 20900000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c61"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/latop/images (7).jpg", "/image/latop/images (8).jpg" }
         });
         
@@ -351,7 +351,7 @@ public static class ProductSeedData
             Price = 12900000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c61"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = true, OldPrice = 25080000m,
             ImageUrls = new List<string> { "/image/latop/images (9).jpg", "/image/latop/images.jpg" }
         });
         
@@ -398,7 +398,7 @@ public static class ProductSeedData
             Price = 7300000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c61"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/latop/images (1).jpg", "/image/latop/images (10).jpg" }
         });
         
@@ -433,7 +433,7 @@ public static class ProductSeedData
             Price = 4600000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c64"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/phone/images (1).jpg", "/image/phone/images (10).jpg" }
         });
         
@@ -480,7 +480,7 @@ public static class ProductSeedData
             Price = 15800000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c64"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = true, OldPrice = null,
             ImageUrls = new List<string> { "/image/phone/images (11).jpg", "/image/phone/images (12).jpg" }
         });
         
@@ -515,7 +515,7 @@ public static class ProductSeedData
             Price = 12500000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c64"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = 18960000m,
             ImageUrls = new List<string> { "/image/phone/images (13).jpg", "/image/phone/images (14).jpg" }
         });
         
@@ -562,7 +562,7 @@ public static class ProductSeedData
             Price = 17200000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c64"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/phone/images (15).jpg", "/image/phone/images (16).jpg" }
         });
         
@@ -597,7 +597,7 @@ public static class ProductSeedData
             Price = 17700000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c64"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = true, OldPrice = null,
             ImageUrls = new List<string> { "/image/phone/images (18).jpg", "/image/phone/images (2).jpg" }
         });
         
@@ -644,7 +644,7 @@ public static class ProductSeedData
             Price = 1300000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c64"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/phone/images (3).jpg", "/image/phone/images (4).jpg" }
         });
         
@@ -679,7 +679,7 @@ public static class ProductSeedData
             Price = 9700000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c64"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = 1560000m,
             ImageUrls = new List<string> { "/image/phone/images (5).jpg", "/image/phone/images (6).jpg" }
         });
         
@@ -726,7 +726,7 @@ public static class ProductSeedData
             Price = 11100000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c64"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = true, OldPrice = null,
             ImageUrls = new List<string> { "/image/phone/images (7).jpg", "/image/phone/images (8).jpg" }
         });
         
@@ -761,7 +761,7 @@ public static class ProductSeedData
             Price = 12300000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c64"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/phone/images (9).jpg", "/image/phone/images.jpg" }
         });
         
@@ -808,7 +808,7 @@ public static class ProductSeedData
             Price = 6800000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c64"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/phone/images (1).jpg", "/image/phone/images (10).jpg" }
         });
         
@@ -843,7 +843,7 @@ public static class ProductSeedData
             Price = 13200000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c62"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = true, OldPrice = 8160000m,
             ImageUrls = new List<string> { "/image/keyboard/images (1).jpg", "/image/keyboard/images (10).jpg" }
         });
         
@@ -890,7 +890,7 @@ public static class ProductSeedData
             Price = 12100000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c62"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/keyboard/images (11).jpg", "/image/keyboard/images (12).jpg" }
         });
         
@@ -925,7 +925,7 @@ public static class ProductSeedData
             Price = 14600000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c62"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/keyboard/images (13).jpg", "/image/keyboard/images (14).jpg" }
         });
         
@@ -972,7 +972,7 @@ public static class ProductSeedData
             Price = 17000000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c62"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = true, OldPrice = null,
             ImageUrls = new List<string> { "/image/keyboard/images (15).jpg", "/image/keyboard/images (16).jpg" }
         });
         
@@ -1007,7 +1007,7 @@ public static class ProductSeedData
             Price = 1400000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c62"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = 20400000m,
             ImageUrls = new List<string> { "/image/keyboard/images (17).jpg", "/image/keyboard/images (18).jpg" }
         });
         
@@ -1054,7 +1054,7 @@ public static class ProductSeedData
             Price = 17000000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c62"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/keyboard/images (2).jpg", "/image/keyboard/images (3).jpg" }
         });
         
@@ -1089,7 +1089,7 @@ public static class ProductSeedData
             Price = 8300000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c62"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = true, OldPrice = null,
             ImageUrls = new List<string> { "/image/keyboard/images (4).jpg", "/image/keyboard/images (5).jpg" }
         });
         
@@ -1136,7 +1136,7 @@ public static class ProductSeedData
             Price = 17400000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c62"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/keyboard/images (6).jpg", "/image/keyboard/images (7).jpg" }
         });
         
@@ -1171,7 +1171,7 @@ public static class ProductSeedData
             Price = 16400000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c62"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = 20880000m,
             ImageUrls = new List<string> { "/image/keyboard/images (8).jpg", "/image/keyboard/images (9).jpg" }
         });
         
@@ -1218,7 +1218,7 @@ public static class ProductSeedData
             Price = 15400000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c62"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = true, OldPrice = null,
             ImageUrls = new List<string> { "/image/keyboard/images.jpg", "/image/keyboard/tải xuống (1).webp" }
         });
         
@@ -1253,7 +1253,7 @@ public static class ProductSeedData
             Price = 9400000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c63"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/speaker/images (1).jpg", "/image/speaker/images (10).jpg" }
         });
         
@@ -1300,7 +1300,7 @@ public static class ProductSeedData
             Price = 9500000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c63"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/speaker/images (11).jpg", "/image/speaker/images (12).jpg" }
         });
         
@@ -1335,7 +1335,7 @@ public static class ProductSeedData
             Price = 14100000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c63"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = true, OldPrice = 11400000m,
             ImageUrls = new List<string> { "/image/speaker/images (13).jpg", "/image/speaker/images (14).jpg" }
         });
         
@@ -1382,7 +1382,7 @@ public static class ProductSeedData
             Price = 16700000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c63"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/speaker/images (15).jpg", "/image/speaker/images (16).jpg" }
         });
         
@@ -1417,7 +1417,7 @@ public static class ProductSeedData
             Price = 1600000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c63"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/speaker/images (19).jpg", "/image/speaker/images (2).jpg" }
         });
         
@@ -1464,7 +1464,7 @@ public static class ProductSeedData
             Price = 10300000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c63"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = true, OldPrice = null,
             ImageUrls = new List<string> { "/image/speaker/images (3).jpg", "/image/speaker/images (4).jpg" }
         });
         
@@ -1499,7 +1499,7 @@ public static class ProductSeedData
             Price = 10400000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c63"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = 12360000m,
             ImageUrls = new List<string> { "/image/speaker/images (5).jpg", "/image/speaker/images (6).jpg" }
         });
         
@@ -1546,7 +1546,7 @@ public static class ProductSeedData
             Price = 17800000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c63"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/speaker/images (7).jpg", "/image/speaker/images (8).jpg" }
         });
         
@@ -1581,7 +1581,7 @@ public static class ProductSeedData
             Price = 2700000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c63"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = true, OldPrice = null,
             ImageUrls = new List<string> { "/image/speaker/images (9).jpg", "/image/speaker/images.jpg" }
         });
         
@@ -1628,7 +1628,7 @@ public static class ProductSeedData
             Price = 7600000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c63"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/speaker/images (1).jpg", "/image/speaker/images (10).jpg" }
         });
         
@@ -1663,7 +1663,7 @@ public static class ProductSeedData
             Price = 5200000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c65"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = 9120000m,
             ImageUrls = new List<string> { "/image/phone case/images (1).jpg", "/image/phone case/images (10).jpg" }
         });
         
@@ -1710,7 +1710,7 @@ public static class ProductSeedData
             Price = 1400000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c65"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = true, OldPrice = null,
             ImageUrls = new List<string> { "/image/phone case/images (11).jpg", "/image/phone case/images (12).jpg" }
         });
         
@@ -1745,7 +1745,7 @@ public static class ProductSeedData
             Price = 8500000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c65"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/phone case/images (13).jpg", "/image/phone case/images (2).jpg" }
         });
         
@@ -1792,7 +1792,7 @@ public static class ProductSeedData
             Price = 10700000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c65"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/phone case/images (26).jpg", "/image/phone case/images (3).jpg" }
         });
         
@@ -1827,7 +1827,7 @@ public static class ProductSeedData
             Price = 10600000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c65"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = true, OldPrice = 12840000m,
             ImageUrls = new List<string> { "/image/phone case/images (4).jpg", "/image/phone case/images (5).jpg" }
         });
         
@@ -1874,7 +1874,7 @@ public static class ProductSeedData
             Price = 6000000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c65"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/phone case/images (6).jpg", "/image/phone case/images (7).jpg" }
         });
         
@@ -1909,7 +1909,7 @@ public static class ProductSeedData
             Price = 20300000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c65"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/phone case/images (8).jpg", "/image/phone case/images (9).jpg" }
         });
         
@@ -1956,7 +1956,7 @@ public static class ProductSeedData
             Price = 9500000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c65"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = true, OldPrice = null,
             ImageUrls = new List<string> { "/image/phone case/images.jpg", "/image/phone case/images (1).jpg" }
         });
         
@@ -1991,7 +1991,7 @@ public static class ProductSeedData
             Price = 12700000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c65"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = 11400000m,
             ImageUrls = new List<string> { "/image/phone case/images (10).jpg", "/image/phone case/images (11).jpg" }
         });
         
@@ -2038,7 +2038,7 @@ public static class ProductSeedData
             Price = 11900000, 
             CategoryId = Guid.Parse("c1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c65"), 
             CreatedAt = seedDate, 
-            IsDeleted = false,
+            IsDeleted = false, IsNew = false, OldPrice = null,
             ImageUrls = new List<string> { "/image/phone case/images (12).jpg", "/image/phone case/images (13).jpg" }
         });
         
@@ -2066,3 +2066,4 @@ public static class ProductSeedData
         return (products, inventories, variants);
     }
 }
+

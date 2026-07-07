@@ -1065,9 +1065,16 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsNew")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<decimal?>("OldPrice")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
@@ -1092,6 +1099,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Laptops cao cấp từ thương hiệu Apple. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/latop/images (1).jpg\",\"/image/latop/images (10).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Apple Premium Laptops Model 1",
                             Price = 20600000m
                         },
@@ -1105,6 +1113,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Laptops cao cấp từ thương hiệu Asus. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/latop/images (11).jpg\",\"/image/latop/images (12).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Asus Premium Laptops Model 2",
                             Price = 10500000m
                         },
@@ -1118,6 +1127,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Laptops cao cấp từ thương hiệu Dell. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/latop/images (13).jpg\",\"/image/latop/images (14).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Dell Premium Laptops Model 3",
                             Price = 8000000m
                         },
@@ -1131,6 +1141,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Laptops cao cấp từ thương hiệu HP. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/latop/images (15).jpg\",\"/image/latop/images (16).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "HP Premium Laptops Model 4",
                             Price = 2700000m
                         },
@@ -1144,6 +1155,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Laptops cao cấp từ thương hiệu Lenovo. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/latop/images (17).jpg\",\"/image/latop/images (2).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Lenovo Premium Laptops Model 5",
                             Price = 11600000m
                         },
@@ -1157,6 +1169,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Laptops cao cấp từ thương hiệu Apple. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/latop/images (3).jpg\",\"/image/latop/images (4).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Apple Premium Laptops Model 6",
                             Price = 12500000m
                         },
@@ -1170,6 +1183,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Laptops cao cấp từ thương hiệu Asus. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/latop/images (5).jpg\",\"/image/latop/images (6).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Asus Premium Laptops Model 7",
                             Price = 1000000m
                         },
@@ -1183,6 +1197,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Laptops cao cấp từ thương hiệu Dell. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/latop/images (7).jpg\",\"/image/latop/images (8).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Dell Premium Laptops Model 8",
                             Price = 20900000m
                         },
@@ -1196,6 +1211,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Laptops cao cấp từ thương hiệu HP. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/latop/images (9).jpg\",\"/image/latop/images.jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "HP Premium Laptops Model 9",
                             Price = 12900000m
                         },
@@ -1209,6 +1225,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Laptops cao cấp từ thương hiệu Lenovo. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/latop/images (1).jpg\",\"/image/latop/images (10).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Lenovo Premium Laptops Model 10",
                             Price = 7300000m
                         },
@@ -1222,6 +1239,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Smartphones cao cấp từ thương hiệu Apple. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/phone/images (1).jpg\",\"/image/phone/images (10).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Apple Premium Smartphones Model 1",
                             Price = 4600000m
                         },
@@ -1235,6 +1253,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Smartphones cao cấp từ thương hiệu Samsung. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/phone/images (11).jpg\",\"/image/phone/images (12).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Samsung Premium Smartphones Model 2",
                             Price = 15800000m
                         },
@@ -1248,6 +1267,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Smartphones cao cấp từ thương hiệu Xiaomi. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/phone/images (13).jpg\",\"/image/phone/images (14).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Xiaomi Premium Smartphones Model 3",
                             Price = 12500000m
                         },
@@ -1261,6 +1281,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Smartphones cao cấp từ thương hiệu Oppo. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/phone/images (15).jpg\",\"/image/phone/images (16).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Oppo Premium Smartphones Model 4",
                             Price = 17200000m
                         },
@@ -1274,6 +1295,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Smartphones cao cấp từ thương hiệu Vivo. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/phone/images (18).jpg\",\"/image/phone/images (2).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Vivo Premium Smartphones Model 5",
                             Price = 17700000m
                         },
@@ -1287,6 +1309,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Smartphones cao cấp từ thương hiệu Apple. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/phone/images (3).jpg\",\"/image/phone/images (4).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Apple Premium Smartphones Model 6",
                             Price = 1300000m
                         },
@@ -1300,6 +1323,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Smartphones cao cấp từ thương hiệu Samsung. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/phone/images (5).jpg\",\"/image/phone/images (6).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Samsung Premium Smartphones Model 7",
                             Price = 9700000m
                         },
@@ -1313,6 +1337,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Smartphones cao cấp từ thương hiệu Xiaomi. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/phone/images (7).jpg\",\"/image/phone/images (8).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Xiaomi Premium Smartphones Model 8",
                             Price = 11100000m
                         },
@@ -1326,6 +1351,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Smartphones cao cấp từ thương hiệu Oppo. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/phone/images (9).jpg\",\"/image/phone/images.jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Oppo Premium Smartphones Model 9",
                             Price = 12300000m
                         },
@@ -1339,6 +1365,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Smartphones cao cấp từ thương hiệu Vivo. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/phone/images (1).jpg\",\"/image/phone/images (10).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Vivo Premium Smartphones Model 10",
                             Price = 6800000m
                         },
@@ -1352,6 +1379,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Gaming cao cấp từ thương hiệu Logitech. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/keyboard/images (1).jpg\",\"/image/keyboard/images (10).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Logitech Premium Gaming Model 1",
                             Price = 13200000m
                         },
@@ -1365,6 +1393,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Gaming cao cấp từ thương hiệu Razer. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/keyboard/images (11).jpg\",\"/image/keyboard/images (12).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Razer Premium Gaming Model 2",
                             Price = 12100000m
                         },
@@ -1378,6 +1407,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Gaming cao cấp từ thương hiệu Corsair. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/keyboard/images (13).jpg\",\"/image/keyboard/images (14).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Corsair Premium Gaming Model 3",
                             Price = 14600000m
                         },
@@ -1391,6 +1421,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Gaming cao cấp từ thương hiệu SteelSeries. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/keyboard/images (15).jpg\",\"/image/keyboard/images (16).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "SteelSeries Premium Gaming Model 4",
                             Price = 17000000m
                         },
@@ -1404,6 +1435,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Gaming cao cấp từ thương hiệu HyperX. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/keyboard/images (17).jpg\",\"/image/keyboard/images (18).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "HyperX Premium Gaming Model 5",
                             Price = 1400000m
                         },
@@ -1417,6 +1449,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Gaming cao cấp từ thương hiệu Logitech. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/keyboard/images (2).jpg\",\"/image/keyboard/images (3).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Logitech Premium Gaming Model 6",
                             Price = 17000000m
                         },
@@ -1430,6 +1463,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Gaming cao cấp từ thương hiệu Razer. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/keyboard/images (4).jpg\",\"/image/keyboard/images (5).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Razer Premium Gaming Model 7",
                             Price = 8300000m
                         },
@@ -1443,6 +1477,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Gaming cao cấp từ thương hiệu Corsair. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/keyboard/images (6).jpg\",\"/image/keyboard/images (7).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Corsair Premium Gaming Model 8",
                             Price = 17400000m
                         },
@@ -1456,6 +1491,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Gaming cao cấp từ thương hiệu SteelSeries. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/keyboard/images (8).jpg\",\"/image/keyboard/images (9).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "SteelSeries Premium Gaming Model 9",
                             Price = 16400000m
                         },
@@ -1469,6 +1505,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Gaming cao cấp từ thương hiệu HyperX. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/keyboard/images.jpg\",\"/image/keyboard/t\\u1EA3i xu\\u1ED1ng (1).webp\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "HyperX Premium Gaming Model 10",
                             Price = 15400000m
                         },
@@ -1482,6 +1519,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Audio cao cấp từ thương hiệu Sony. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/speaker/images (1).jpg\",\"/image/speaker/images (10).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Sony Premium Audio Model 1",
                             Price = 9400000m
                         },
@@ -1495,6 +1533,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Audio cao cấp từ thương hiệu JBL. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/speaker/images (11).jpg\",\"/image/speaker/images (12).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "JBL Premium Audio Model 2",
                             Price = 9500000m
                         },
@@ -1508,6 +1547,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Audio cao cấp từ thương hiệu Bose. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/speaker/images (13).jpg\",\"/image/speaker/images (14).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Bose Premium Audio Model 3",
                             Price = 14100000m
                         },
@@ -1521,6 +1561,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Audio cao cấp từ thương hiệu Marshall. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/speaker/images (15).jpg\",\"/image/speaker/images (16).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Marshall Premium Audio Model 4",
                             Price = 16700000m
                         },
@@ -1534,6 +1575,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Audio cao cấp từ thương hiệu Sennheiser. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/speaker/images (19).jpg\",\"/image/speaker/images (2).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Sennheiser Premium Audio Model 5",
                             Price = 1600000m
                         },
@@ -1547,6 +1589,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Audio cao cấp từ thương hiệu Sony. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/speaker/images (3).jpg\",\"/image/speaker/images (4).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Sony Premium Audio Model 6",
                             Price = 10300000m
                         },
@@ -1560,6 +1603,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Audio cao cấp từ thương hiệu JBL. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/speaker/images (5).jpg\",\"/image/speaker/images (6).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "JBL Premium Audio Model 7",
                             Price = 10400000m
                         },
@@ -1573,6 +1617,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Audio cao cấp từ thương hiệu Bose. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/speaker/images (7).jpg\",\"/image/speaker/images (8).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Bose Premium Audio Model 8",
                             Price = 17800000m
                         },
@@ -1586,6 +1631,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Audio cao cấp từ thương hiệu Marshall. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/speaker/images (9).jpg\",\"/image/speaker/images.jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Marshall Premium Audio Model 9",
                             Price = 2700000m
                         },
@@ -1599,6 +1645,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Audio cao cấp từ thương hiệu Sennheiser. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/speaker/images (1).jpg\",\"/image/speaker/images (10).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Sennheiser Premium Audio Model 10",
                             Price = 7600000m
                         },
@@ -1612,6 +1659,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Accessories cao cấp từ thương hiệu Spigen. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/phone case/images (1).jpg\",\"/image/phone case/images (10).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Spigen Premium Accessories Model 1",
                             Price = 5200000m
                         },
@@ -1625,6 +1673,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Accessories cao cấp từ thương hiệu Anker. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/phone case/images (11).jpg\",\"/image/phone case/images (12).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Anker Premium Accessories Model 2",
                             Price = 1400000m
                         },
@@ -1638,6 +1687,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Accessories cao cấp từ thương hiệu UAG. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/phone case/images (13).jpg\",\"/image/phone case/images (2).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "UAG Premium Accessories Model 3",
                             Price = 8500000m
                         },
@@ -1651,6 +1701,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Accessories cao cấp từ thương hiệu Nillkin. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/phone case/images (26).jpg\",\"/image/phone case/images (3).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Nillkin Premium Accessories Model 4",
                             Price = 10700000m
                         },
@@ -1664,6 +1715,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Accessories cao cấp từ thương hiệu Baseus. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/phone case/images (4).jpg\",\"/image/phone case/images (5).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Baseus Premium Accessories Model 5",
                             Price = 10600000m
                         },
@@ -1677,6 +1729,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Accessories cao cấp từ thương hiệu Spigen. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/phone case/images (6).jpg\",\"/image/phone case/images (7).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Spigen Premium Accessories Model 6",
                             Price = 6000000m
                         },
@@ -1690,6 +1743,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Accessories cao cấp từ thương hiệu Anker. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/phone case/images (8).jpg\",\"/image/phone case/images (9).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Anker Premium Accessories Model 7",
                             Price = 20300000m
                         },
@@ -1703,6 +1757,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Accessories cao cấp từ thương hiệu UAG. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/phone case/images.jpg\",\"/image/phone case/images (1).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "UAG Premium Accessories Model 8",
                             Price = 9500000m
                         },
@@ -1716,6 +1771,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Accessories cao cấp từ thương hiệu Nillkin. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/phone case/images (10).jpg\",\"/image/phone case/images (11).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Nillkin Premium Accessories Model 9",
                             Price = 12700000m
                         },
@@ -1729,6 +1785,7 @@ namespace Infrastructure.Persistence.Migrations
                             Description = "Đây là sản phẩm Accessories cao cấp từ thương hiệu Baseus. Thiết kế sang trọng, hiệu năng vượt trội, phù hợp cho mọi nhu cầu sử dụng.",
                             ImageUrls = "[\"/image/phone case/images (12).jpg\",\"/image/phone case/images (13).jpg\"]",
                             IsDeleted = false,
+                            IsNew = false,
                             Name = "Baseus Premium Accessories Model 10",
                             Price = 11900000m
                         });

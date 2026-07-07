@@ -688,8 +688,8 @@ export default function App() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
                             {filteredProducts.slice(0, 8).map((product, index) => {
                                 const isAvailable = product.inventory?.availableQuantity > 0;
-                                const isNew = index % 3 === 0;
-                                const isSale = index % 4 === 1;
+                                const isNew = product.isNew;
+                                const isSale = product.oldPrice && product.oldPrice > product.price;
                                 
                                 return (
                                     <Link 
@@ -750,7 +750,7 @@ export default function App() {
                                                     </span>
                                                     {isSale && (
                                                         <span className="text-xs text-on-surface-variant line-through">
-                                                            {(product.price * 1.2).toLocaleString()}đ
+                                                            {product.oldPrice.toLocaleString()}đ
                                                         </span>
                                                     )}
                                                 </div>

@@ -7,6 +7,8 @@ public class Product : BaseEntity
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public decimal Price { get; set; }
+    public decimal? OldPrice { get; set; }
+    public bool IsNew { get; set; } = false;
     public Guid CategoryId { get; set; }
     public string Brand { get; set; } = "iLuminaty";
     public string AttributesJson { get; set; } = "{}";

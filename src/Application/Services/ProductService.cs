@@ -88,6 +88,8 @@ public class ProductService : IProductService
                 Name = request.Name,
                 Description = request.Description,
                 Price = request.Price,
+                OldPrice = request.OldPrice,
+                IsNew = request.IsNew,
                 CategoryId = request.CategoryId,
                 Brand = request.Brand,
                 ImageUrls = request.ImageUrls,
@@ -147,6 +149,8 @@ public class ProductService : IProductService
             product.Name = request.Name;
             product.Description = request.Description;
             product.Price = request.Price;
+            product.OldPrice = request.OldPrice;
+            product.IsNew = request.IsNew;
             product.CategoryId = request.CategoryId;
             product.Brand = request.Brand;
             product.ImageUrls = request.ImageUrls;
@@ -234,6 +238,8 @@ public class ProductService : IProductService
             Name = product.Name,
             Description = product.Description,
             Price = product.Price,
+            OldPrice = product.OldPrice,
+            IsNew = product.IsNew,
             CategoryId = product.CategoryId,
             Brand = product.Brand,
             ImageUrls = product.ImageUrls,

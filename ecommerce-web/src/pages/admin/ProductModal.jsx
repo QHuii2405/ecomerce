@@ -12,6 +12,8 @@ const INIT_FORM = {
   imageUrls: [],
   initialStock: 10,
   attributes: {},
+  isNew: false,
+  oldPrice: '',
   variants: []
 };
 
@@ -42,6 +44,8 @@ export default function ProductModal({ open, onClose, onSuccess, categories, edi
         imageUrls: editProduct.imageUrls || [],
         initialStock: editProduct.inventory?.stockQuantity ?? editProduct.inventory?.availableQuantity ?? 0,
         attributes: editProduct.attributes || {},
+        isNew: editProduct.isNew || false,
+        oldPrice: editProduct.oldPrice || '',
         variants: editProduct.variants || []
       });
     } else {
@@ -78,7 +82,9 @@ export default function ProductModal({ open, onClose, onSuccess, categories, edi
         imageUrls: form.imageUrls,
         initialStock: Number(form.initialStock) || 0,
         stockQuantity: Number(form.initialStock) || 0,
-        attributes: form.attributes
+        attributes: form.attributes,
+        isNew: form.isNew,
+        oldPrice: form.oldPrice ? Number(form.oldPrice) : null
       };
 
       if (editProduct) {
@@ -354,6 +360,16 @@ export default function ProductModal({ open, onClose, onSuccess, categories, edi
                   {errors.price && <p className="text-rose-500 text-xs mt-1">{errors.price}</p>}
                 </div>
                 <div>
+                  <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5 block">Giá gốc (Sale)</label>
+                  <input
+                    type="number"
+                    className="w-full bg-surface-container-lowest border border-outline-variant/30 text-on-surface rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary transition-all"
+                    placeholder="VD: 18000000"
+                    value={form.oldPrice}
+                    onChange={e => setForm(p => ({ ...p, oldPrice: e.target.value }))}
+                  />
+                </div>
+                <div>
                   <label className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5 block">Tồn kho ban đầu</label>
                   <input
                     type="number"
@@ -363,6 +379,18 @@ export default function ProductModal({ open, onClose, onSuccess, categories, edi
                     onChange={e => setForm(p => ({ ...p, initialStock: e.target.value }))}
                   />
                 </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="isNew"
+                  className="w-5 h-5 rounded border-outline-variant/30 text-primary focus:ring-primary/30"
+                  checked={form.isNew}
+                  onChange={e => setForm(p => ({ ...p, isNew: e.target.checked }))}
+                />
+                <label htmlFor="isNew" className="text-sm font-semibold text-on-surface-variant cursor-pointer">
+                  Đánh dấu là "Sản phẩm Mới"
+                </label>
               </div>
             </div>
           )}
