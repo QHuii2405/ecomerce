@@ -24,16 +24,19 @@ spec:
           value: "Production"
         - name: ConnectionStrings__Redis
           value: "redis:6379"
-        # Thêm các biến môi trường khác từ Secret/ConfigMap ở đây
+        # Bổ sung chuỗi kết nối RDS (Thay YOUR_RDS_PASSWORD bằng mật khẩu thật của bạn)
+        - name: ConnectionStrings__DefaultConnection
+          value: "Server=iluminaty-shop.c30w2ic6wqx6.ap-southeast-2.rds.amazonaws.com,1433;Database=EcommerceDb;User Id=admin;Password=YOUR_RDS_PASSWORD;TrustServerCertificate=True"
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: backend-service
 spec:
+  type: LoadBalancer
   selector:
     app: ecommerce-backend
   ports:
     - protocol: TCP
-      port: 8080
+      port: 5092
       targetPort: 8080
